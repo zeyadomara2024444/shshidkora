@@ -1358,35 +1358,35 @@ a:hover {
 /* Smaller Mobile Devices (max-width: 480px) */
 @media (max-width: 480px) {
     html {
-        font-size: 11px; /* تم زيادة حجم الخط الأساسي قليلاً جداً ليتناسب مع تكبير العناصر */
+        font-size: 10px; /* رجعتها لـ 10px عشان تكون العناصر أصغر شوية وتدي مساحة */
     }
     body {
-        line-height: 1.5; /* زيادة طفيفة لراحة العين */
+        line-height: 1.45; /* رجعتها زي ما كانت */
     }
     .container {
         width: 98vw; 
-        padding: 0 0.6rem; /* زيادة طفيفة في البادينج لتحسين شكل الموقع */
+        padding: 0 0.5rem; /* رجعتها زي ما كانت */
     }
 
     .main-header {
-        padding: 0.4rem 0; /* زيادة طفيفة في البادينج العلوي والسفلي */
-        border-bottom: none; /* إزالة الخط الأحمر */
+        padding: 0.3rem 0; /* رجعتها زي ما كانت */
+        border-bottom: none; /* إزالة الخط الأحمر هنا فقط */
         height: auto; 
         min-height: unset; 
     }
     .main-header .header-content {
-        padding: 0 0.5rem;
+        padding: 0 0.5rem; /* رجعتها زي ما كانت */
         flex-wrap: nowrap; 
         justify-content: space-between; 
         align-items: center; 
-        gap: 0.6rem; /* زيادة طفيفة في المسافات بين العناصر */
+        gap: 0.5rem; /* رجعتها زي ما كانت */
     }
     .menu-toggle {
         display: none !important; 
     }
     .site-logo {
         order: 0; 
-        font-size: clamp(1.6rem, 5vw, 2rem); /* تكبير حجم اللوجو قليلاً */
+        font-size: clamp(1.4rem, 4.5vw, 1.8rem); /* رجعتها للحجم الأصلي للموبايل */
         flex-basis: auto; 
         margin: 0;
         padding: 0;
@@ -1395,9 +1395,9 @@ a:hover {
         order: 1; 
         display: flex; 
         flex-basis: auto; 
-        margin: 0 0.6rem 0 0; /* تظبيط الهوامش */
-        padding: 0.4rem 0.7rem; /* تكبير البادينج لزيادة حجم البحث */
-        width: clamp(130px, 30vw, 170px); /* تكبير حجم البحث قليلاً */
+        margin: 0 0.5rem 0 0; /* رجعتها زي ما كانت */
+        padding: 0.3rem 0.5rem; /* رجعتها زي ما كانت */
+        width: clamp(120px, 28vw, 150px); /* رجعتها زي ما كانت */
     }
     .telegram-btn {
         display: none !important; 
@@ -1419,12 +1419,12 @@ a:hover {
         align-items: center;
         overflow-y: visible; 
         margin-right: auto; 
-        margin-left: 0.6rem; /* مسافة بين الـ nav والبحث */
+        margin-left: 0.5rem; /* رجعتها زي ما كانت */
         padding: 0;
     }
     .main-nav ul {
         flex-direction: row; 
-        gap: 0.4rem; /* زيادة طفيفة في المسافات بين الروابط */
+        gap: 0.3rem; /* رجعتها زي ما كانت */
         flex-wrap: nowrap; 
         justify-content: center; 
         width: 100%; 
@@ -1440,141 +1440,135 @@ a:hover {
         flex-shrink: 0; 
     }
     .main-nav ul li a {
-        font-size: clamp(0.8rem, 2.8vw, 0.9rem); /* تكبير حجم الخط للروابط */
-        padding: 0.4rem 0.8rem; /* تكبير البادينج للروابط */
+        font-size: clamp(0.7rem, 2.5vw, 0.8rem); /* رجعتها زي ما كانت */
+        padding: 0.3rem 0.6rem; /* رجعتها زي ما كانت */
         white-space: nowrap; 
     }
     
-    /* إخفاء الجزء المحدد باللون الأحمر */
-    .section-title.red-underline-part { /* لو كان فيه كلاس خاصة بالعنصر ده */
-        display: none !important;
-    }
-    /* إذا لم يكن له كلاس خاصة، فسنخفيه بشكل عام في الموبايل */
+    /* إخفاء الجزء المحدد باللون الأحمر (Section Title) */
     .section-title {
         display: none !important; /* هذا سيخفي كل العناوين من نوع section-title في الموبايل */
     }
 
 
     .view-section {
-        padding: 7vw 0; /* زيادة البادينج العلوي والسفلي للأقسام */
+        padding: 6vw 0; /* رجعتها زي ما كانت */
     }
-    .section-title { /* هذا الجزء لن يطبق إذا تم إخفاء section-title بالكامل */
-        font-size: clamp(1.5rem, 4.5vw, 1.9rem); /* تكبير حجم الخط للعناوين في الأقسام */
-        margin-bottom: 5vw; /* زيادة المسافة أسفل العنوان */
-        padding-bottom: 0.4rem;
-    }
+    /* .section-title { لو أردت إظهارها في أماكن أخرى معينة بعد إخفائها عامة في الموبايل */
+    /* هذا الجزء لن يطبق بما أن section-title أصبحت display: none !important; */
+
 
     .filter-controls {
-        gap: 0.4rem; /* زيادة طفيفة في المسافات */
-        margin-bottom: 5vw; 
-        padding: 0.3rem 0.6rem; /* زيادة البادينج */
+        gap: 0.3rem; /* رجعتها زي ما كانت */
+        margin-bottom: 4vw; /* رجعتها زي ما كانت */
+        padding: 0.2rem 0.4rem; /* رجعتها زي ما كانت */
         flex-direction: row; 
         flex-wrap: wrap; 
         max-width: 98%; 
     }
     .filter-btn, .filter-dropdown {
-        padding: 0.4rem 1rem; /* تكبير البادينج */
-        font-size: clamp(0.7rem, 2.5vw, 0.8rem); /* تكبير حجم الخط */
+        padding: 0.3rem 0.8rem; /* رجعتها زي ما كانت */
+        font-size: clamp(0.65rem, 2.2vw, 0.75rem); /* رجعتها زي ما كانت */
         width: auto; 
         flex-grow: 1; 
     }
     .filter-dropdown {
-        padding-left: 1.4rem; 
-        background-position: left 0.55rem center; 
-        background-size: 0.75em; 
+        padding-left: 1.2rem; 
+        background-position: left 0.45rem center; 
+        background-size: 0.65em; 
     }
 
     .match-grid, .news-grid {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* تكبير حجم الكروت قليلاً */
-        gap: 3.5vw; /* زيادة المسافة بين الكروت */
-        padding: 0 2vw; /* زيادة البادينج الجانبي قليلاً */
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* رجعتها زي ما كانت */ 
+        gap: 3vw; /* رجعتها زي ما كانت */
+        padding: 0 1.5vw; /* رجعتها زي ما كانت */
     }
 
     .match-card img {
-        height: clamp(110px, 33vw, 150px); /* طول مناسب للصورة */ 
+        height: clamp(100px, 30vw, 140px); /* رجعتها زي ما كانت */ 
         object-fit: contain; 
         background-color: var(--up-bg-dark); 
     }
     .match-card .match-card-content {
-        padding: 0.6rem; /* تكبير البادينج */
-        min-height: clamp(60px, 10vw, 80px); /* زيادة الحد الأدنى للارتفاع */
+        padding: 0.5rem; /* رجعتها زي ما كانت */
+        min-height: clamp(50px, 8vw, 70px); /* رجعتها زي ما كانت */
     }
     .match-card h3 {
-        font-size: clamp(0.8rem, 3vw, 1rem); /* تكبير حجم الخط */
-        line-height: 1.2; 
+        font-size: clamp(0.75rem, 2.8vw, 0.9rem); /* رجعتها زي ما كانت */
+        line-height: 1.15; 
     }
     .match-card .teams-logos {
-        font-size: clamp(0.8rem, 2.8vw, 0.95rem); /* تكبير حجم الخط */
-        gap: 0.3rem; 
+        font-size: clamp(0.7rem, 2.5vw, 0.85rem); /* رجعتها زي ما كانت */
+        gap: 0.2rem; 
     }
     .match-card .teams-logos .vs-text { 
-        font-size: clamp(0.6rem, 0.8vw, 0.7rem); 
+        font-size: clamp(0.55rem, 0.7vw, 0.65rem); 
     }
     .match-card .team-logo {
-        width: clamp(35px, 9vw, 50px); /* تكبير حجم اللوجو */
-        height: clamp(35px, 9vw, 50px); 
+        width: clamp(30px, 8vw, 45px); /* رجعتها زي ما كانت */
+        height: clamp(30px, 8vw, 45px); 
     }
     .match-card .match-score {
-        font-size: clamp(1.2rem, 4vw, 1.5rem); /* تكبير حجم الخط */
+        font-size: clamp(1rem, 3.5vw, 1.3rem); /* رجعتها زي ما كانت */
     }
     .match-card .match-status {
-        font-size: clamp(0.7rem, 2.8vw, 0.8rem); /* تكبير حجم الخط */
-        padding: 0.3rem 0.6rem; /* تكبير البادينج */
+        font-size: clamp(0.6rem, 2.5vw, 0.7rem); /* رجعتها زي ما كانت */
+        padding: 0.2rem 0.4rem; /* رجعتها زي ما كانت */
     }
 
     .news-card img {
-        height: clamp(100px, 30vw, 130px); /* طول مناسب للصورة */ 
+        height: clamp(90px, 28vw, 120px); /* رجعتها زي ما كانت */ 
         object-fit: cover; 
     }
     .news-card .news-card-content {
-        padding: 0.7rem 0.9rem; /* تكبير البادينج */
+        padding: 0.6rem 0.8rem; /* رجعتها زي ما كانت */
     }
     .news-card h4 {
-        font-size: clamp(0.8rem, 3vw, 1rem); /* تكبير حجم الخط */
-        line-height: 1.25; /* ضبط ارتفاع السطر */
+        font-size: clamp(0.7rem, 2.8vw, 0.85rem); /* رجعتها زي ما كانت */
+        line-height: 1.2;
     }
     .news-card p {
-        font-size: clamp(0.7rem, 2.8vw, 0.8rem); /* تكبير حجم الخط */
-        line-height: 1.5;
+        font-size: clamp(0.6rem, 2.5vw, 0.7rem); /* رجعتها زي ما كانت */
+        line-height: 1.4;
     }
     .news-card .news-date {
-        font-size: 0.65rem; /* تكبير حجم الخط */
+        font-size: 0.6rem; /* رجعتها زي ما كانت */
     }
 
     .pagination-controls {
-        margin-top: 5vw; /* زيادة المسافة العلوية */
-        gap: 1vw; /* زيادة المسافة بين أزرار الترقيم */
+        margin-top: 4.5vw; /* رجعتها زي ما كانت */
+        gap: 0.8vw; /* رجعتها زي ما كانت */
         flex-wrap: wrap; 
     }
     .pagination-controls .btn-page {
-        padding: 0.4rem 1rem; /* تكبير البادينج */
-        font-size: clamp(0.7rem, 2.8vw, 0.8rem); /* تكبير حجم الخط */
+        padding: 0.3rem 0.8rem; /* رجعتها زي ما كانت */
+        font-size: clamp(0.65rem, 2.5vw, 0.75rem); /* رجعتها زي ما كانت */
     }
 
     .match-details-section {
-        padding: 7vw 4.5vw; /* زيادة البادينج */
+        padding: 6.5vw 4vw; /* رجعتها زي ما كانت */
     }
     .match-details-section .back-btn {
-        margin-bottom: 5vw; /* زيادة المسافة */
-        font-size: clamp(0.8rem, 3vw, 0.95rem); /* تكبير حجم الخط */
-        padding: 0.5rem 1.2rem; /* تكبير البادينج */
+        margin-bottom: 4vw; /* رجعتها زي ما كانت */
+        font-size: clamp(0.7rem, 2.8vw, 0.85rem); /* رجعتها زي ما كانت */
+        padding: 0.4rem 1.0rem; /* رجعتها زي ما كانت */
     }
     .video-player-wrapper {
-        margin-bottom: 5vw; /* زيادة المسافة */
-        max-width: 98%; /* التأكد من أن الفيديو يأخذ معظم العرض */
+        margin-bottom: 4vw; /* رجعتها زي ما كانت */
+        max-width: 95%; 
         padding-bottom: 56.25%; /* نسبة 16:9 الطبيعية للفيديو */ 
         border-width: 2px; 
     }
     .match-info-box {
         grid-template-columns: auto 1fr; 
-        gap: 0.4rem; /* زيادة المسافة */
-        padding: 0.6rem; /* زيادة البادينج */
-        margin: 3vw auto; /* زيادة المسافة */
+        gap: 0.3rem; /* رجعتها زي ما كانت */
+        padding: 0.5rem; /* رجعتها زي ما كانت */
+        margin: 2vw auto; /* رجعتها زي ما كانت */
         max-width: 98%; 
     }
     .match-info-box .match-details-thumbnail {
-        width: clamp(50px, 12vw, 70px); /* تكبير حجم الصورة المصغرة */
-        height: clamp(50px, 12vw, 70px);
+        width: clamp(45px, 11vw, 65px); /* رجعتها زي ما كانت */
+        height: clamp(45px, 11vw, 65px);
         margin: 0; 
     }
     .match-info-box .info-columns {
@@ -1582,39 +1576,39 @@ a:hover {
         text-align: right; 
     }
     .match-info-box p {
-        font-size: clamp(0.6rem, 2.5vw, 0.75rem); /* تكبير حجم الخط */
-        padding: 0.3rem 0.6rem; /* تكبير البادينج */
+        font-size: clamp(0.55rem, 2.2vw, 0.7rem); /* رجعتها زي ما كانت */
+        padding: 0.25rem 0.5rem; /* رجعتها زي ما كانت */
     }
     .match-info-box p strong {
-        font-size: clamp(0.55rem, 2.2vw, 0.7rem); /* تكبير حجم الخط */
+        font-size: clamp(0.5rem, 2vw, 0.65rem); /* رجعتها زي ما كانت */
     }
 
     .ad-banner-center {
-        max-width: 98%; /* التأكد من أن الإعلان يأخذ معظم العرض */
-        margin: 4vw auto 5vw auto; /* زيادة المسافات */
-        padding: 12px; /* تكبير البادينج */
+        max-width: 95%; 
+        margin: 3.5vw auto 4vw auto; /* رجعتها زي ما كانت */
+        padding: 10px; /* رجعتها زي ما كانت */
     }
     .ad-banner-center p, .ad-banner-center button {
         display: none;
     }
 
     .suggested-matches-section {
-        margin-top: 4.5vw; /* زيادة المسافة */
-        padding-top: 4.5vw; /* زيادة البادينج */
+        margin-top: 3.5vw; /* رجعتها زي ما كانت */
+        padding-top: 3.5vw; /* رجعتها زي ما كانت */
     }
 
     .main-footer {
-        padding: 5vw 0; /* زيادة البادينج للفوتر */
+        padding: 4vw 0; /* رجعتها زي ما كانت */
     }
     .main-footer p {
-        font-size: clamp(0.7rem, 2.8vw, 0.85rem); /* تكبير حجم الخط */
-        margin-bottom: 2vw;
+        font-size: clamp(0.6rem, 2.5vw, 0.75rem); /* رجعتها زي ما كانت */
+        margin-bottom: 1.5vw;
     }
     .footer-links {
-        gap: 0.5rem; /* زيادة المسافة بين الروابط */
+        gap: 0.4rem; /* رجعتها زي ما كانت */
     }
     .footer-links a {
-        padding: 0.4rem 1rem; /* تكبير البادينج */
-        font-size: clamp(0.7rem, 2.8vw, 0.85rem); /* تكبير حجم الخط */
+        padding: 0.3rem 0.8rem; /* رجعتها زي ما كانت */
+        font-size: clamp(0.65rem, 2.5vw, 0.75rem); /* رجعتها زي ما كانت */
     }
 }
