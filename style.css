@@ -514,9 +514,10 @@ a:hover {
 /* Grids for content cards */
 .match-grid, .news-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* زيادة الحد الأدنى لعرض الكارت */
-    gap: 2vw; /* زيادة بسيطة في المسافة بين الكروت */
-    padding: 0 1vw; /* زيادة بسيطة في padding الشبكة */
+    /* التعديل هنا: زيادة الحد الأدنى لعرض الكارت وتقليل الفجوة */
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* زيادة الحد الأدنى لعرض الكارت ليكون أوسع */
+    gap: 1vw; /* تقليل المسافة بين الكروت لزيادة عرضها */
+    padding: 0 1vw; 
     position: relative;
     z-index: 1;
 }
@@ -625,7 +626,6 @@ a:hover {
 .match-card .teams-logos {
     display: flex;
     align-items: center;
-    /* التعديل هنا: استخدام space-between مع مسافات أقل لزيادة المساحة للأسماء */
     justify-content: space-between; 
     gap: 0.3rem; /* تقليل المسافة بين الأطراف وعلامة VS أكثر */
     font-family: var(--font-body);
@@ -663,7 +663,6 @@ a:hover {
     flex-shrink: 1; /* السماح بالانكماش عند الحاجة */
     gap: 0.2rem; /* تقليل المسافة بين الشعار والاسم داخل نفس الفريق */
     min-width: 0; /* مهم جدًا: السماح للانكماش الكامل قبل تطبيق ellipsis */
-    /* يمكنك إضافة خلفية مؤقتة هنا للتصحيح: background-color: rgba(0,255,0,0.1); */
 }
 
 /* الفريق الأول (على اليمين في RTL) */
@@ -686,7 +685,6 @@ a:hover {
     flex-grow: 1; /* السماح بالنمو */
     flex-shrink: 1; /* السماح بالنص بالانكماش */
     min-width: 0; /* السماح للنص بالانكماش تمامًا قبل تطبيق ellipsis */
-    /* يمكنك إضافة خلفية مؤقتة هنا للتصحيح: background-color: rgba(255,0,255,0.1); */
 }
 
 /* شعار الفريق */
@@ -1219,8 +1217,9 @@ a:hover {
     }
 
     .match-grid, .news-grid {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); 
-        gap: 1.8vw;
+        /* التعديل هنا: زيادة الحد الأدنى لعرض الكارت ليتسع أكثر */
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* زاد من 240px إلى 280px */
+        gap: 1.5vw; /* قلل المسافة بين الكروت */
         padding: 0 1.5vw;
     }
 
@@ -1238,8 +1237,8 @@ a:hover {
     /* === تعديلات على Media Query لـ 992px لأسماء الفرق === */
     .match-card .teams-logos { 
         font-size: clamp(0.85rem, 1.2vw, 1rem); 
-        gap: 0.3rem; 
-        padding: 0 0.3rem; 
+        gap: 0.25rem; /* تقليل المسافة أكثر قليلاً */
+        padding: 0 0.2rem; /* تقليل padding أكثر قليلاً */
         flex-wrap: nowrap;
     }
     .match-card .teams-logos span {
@@ -1249,14 +1248,14 @@ a:hover {
         min-width: 0; 
     }
     .match-card .teams-logos .vs-text {
-        font-size: clamp(1rem, 1.3vw, 1.4rem); /* تقليل حجم VS هنا أيضًا */
-        margin: 0 0.2rem;
+        font-size: clamp(1rem, 1.3vw, 1.4rem); 
+        margin: 0 0.15rem; /* تقليل الهامش حول VS */
     }
     .match-card .teams-logos > div {
         min-width: 0; 
     }
     .match-card .team-logo {
-        width: clamp(35px, 4.5vw, 50px); /* تقليل حجم الشعار قليلاً */
+        width: clamp(35px, 4.5vw, 50px); 
         height: clamp(35px, 4.5vw, 50px);
     }
     /* === نهاية تعديلات Media Query لـ 992px === */
@@ -1495,9 +1494,9 @@ a:hover {
     }
 
     .match-grid {
-        /* تقليل الحد الأدنى لعرض الكارت لجعلها أضيق قليلاً وتظهر بشكل أفضل على شاشات الموبايل الصغيرة */
-        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); 
-        gap: 3vw;
+        /* زيادة عرض الكروت على الموبايل لكي تأخذ مساحة أكبر */
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* زاد من 130px إلى 150px */
+        gap: 2.5vw; /* قلل المسافة بين الكروت لزيادة عرضها الكلي */
         padding: 0 0.8rem !important; 
     }
     .news-grid {
@@ -1520,39 +1519,39 @@ a:hover {
     /* === تعديلات شاملة لـ Mobile Team Names Layout === */
     .match-card .teams-logos {
         flex-direction: row !important; 
-        flex-wrap: nowrap !important; /* مهم جدًا: منع الالتفاف لتمكين ellipsis */
+        flex-wrap: nowrap !important; 
         justify-content: space-between !important; 
         align-items: center !important;
-        gap: 0.05rem !important; /* تقليل المسافة بين العناصر إلى الحد الأدنى */
+        gap: 0.05rem !important; 
         margin-top: 0.1rem !important;
         margin-bottom: 0.1rem !important;
-        padding: 0 0.1rem !important; /* تقليل padding أكثر وأكثر للحصول على أقصى مساحة */
+        padding: 0 0.1rem !important; 
         box-sizing: border-box;
     }
 
-    .match-card .teams-logos > div { /* حاوية كل فريق (الشعار + الاسم) */
+    .match-card .teams-logos > div { 
         display: flex;
         align-items: center;
         flex-grow: 1;
         flex-shrink: 1; 
-        gap: 0.1rem !important; /* تقليل المسافة بين الشعار والاسم داخل الفريق */
-        min-width: 0; /* مهم جدًا ليعمل ellipsis: السماح بالانكماش الكامل */
+        gap: 0.1rem !important; 
+        min-width: 0; 
         max-width: none; 
         padding: 0;
     }
 
     /* الفريق الأول (على اليمين في RTL) */
     .match-card .teams-logos > div:first-of-type {
-        justify-content: flex-end; /* الشعار على اليمين والاسم يليه */
+        justify-content: flex-end; 
     }
 
     /* الفريق الثاني (على اليسار في RTL) */
     .match-card .teams-logos > div:nth-of-type(2) {
-        justify-content: flex-start; /* الشعار على اليسار والاسم يسبقه */
+        justify-content: flex-start; 
     }
 
-    .match-card .teams-logos span { /* أسماء الفرق على الموبايل */
-        font-size: clamp(0.7rem, 3.5vw, 0.85rem) !important; /* تقليل حجم الخط لاسم الفريق أكثر */
+    .match-card .teams-logos span { 
+        font-size: clamp(0.7rem, 3.5vw, 0.85rem) !important; 
         white-space: nowrap; 
         overflow: hidden; 
         text-overflow: ellipsis; 
@@ -1561,8 +1560,8 @@ a:hover {
         min-width: 0; 
     }
     
-    .match-card .team-logo { /* شعارات الفرق على الموبايل */
-        width: clamp(20px, 6vw, 30px) !important; /* تقليل حجم الشعار إلى أقصى حد ممكن */
+    .match-card .team-logo { 
+        width: clamp(20px, 6vw, 30px) !important; 
         height: clamp(20px, 6vw, 30px) !important;
         flex-shrink: 0 !important;
         padding: 0 !important;
@@ -1574,17 +1573,17 @@ a:hover {
     /* هام: محاذاة الشعار والنص للفريق الثاني على الموبايل */
     .match-card .teams-logos > div:nth-of-type(2) .team-logo {
         margin-left: 0 !important; 
-        margin-right: 0.05rem !important; /* مسافة صغيرة جداً بين الشعار واسم الفريق الثاني */
+        margin-right: 0.05rem !important; 
     }
     .match-card .teams-logos > div:nth-of-type(2) span {
         text-align: left !important; 
     }
 
-    .match-card .teams-logos .vs-text { /* "VS" نص على الموبايل */
-        font-size: clamp(0.7rem, 3vw, 1rem) !important; /* تقليل حجم VS إلى أقصى حد */
+    .match-card .teams-logos .vs-text { 
+        font-size: clamp(0.7rem, 3vw, 1rem) !important; 
         font-weight: 900 !important;
         color: var(--up-accent-red) !important;
-        margin: 0 0.05rem !important; /* تقليل الهامش إلى أقصى حد */
+        margin: 0 0.05rem !important; 
         padding: 0 !important;
         flex-shrink: 0 !important;
         line-height: 1;
