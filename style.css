@@ -514,9 +514,9 @@ a:hover {
 /* Grids for content cards */
 .match-grid, .news-grid {
     display: grid;
-    /* التعديل هنا: زيادة الحد الأدنى لعرض الكارت وتقليل الفجوة */
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* زيادة الحد الأدنى لعرض الكارت ليكون أوسع */
-    gap: 1vw; /* تقليل المسافة بين الكروت لزيادة عرضها */
+    /* التعديل هنا: زيادة الحد الأدنى لعرض الكارت وتقليل الفجوة بشكل أكبر */
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); /* زاد من 320px إلى 350px */
+    gap: 0.8vw; /* تقليل المسافة بين الكروت أكثر لزيادة عرضها */
     padding: 0 1vw; 
     position: relative;
     z-index: 1;
@@ -627,69 +627,69 @@ a:hover {
     display: flex;
     align-items: center;
     justify-content: space-between; 
-    gap: 0.3rem; /* تقليل المسافة بين الأطراف وعلامة VS أكثر */
+    gap: 0.3rem; 
     font-family: var(--font-body);
     font-size: clamp(0.9rem, 1vw, 1rem);
     font-weight: 700;
     color: var(--up-text-primary);
     text-shadow: 0 0 4px rgba(0,0,0,0.7);
-    flex-wrap: nowrap; /* مهم جدًا: لا تسمح بالالتفاف على سطر جديد */
+    flex-wrap: nowrap; 
     width: 100%;
     position: relative;
-    padding: 0 0.2rem; /* تقليل padding أكثر لجعل النص يأخذ مساحة أكبر */
-    box-sizing: border-box; /* لضمان أن padding لا يسبب تجاوزًا */
+    padding: 0 0.2rem; 
+    box-sizing: border-box; 
 }
 
 /* لضمان محاذاة "VS" في المنتصف بالضبط بين الفريقين */
 .match-card .teams-logos .vs-text {
     order: 0; 
-    flex-shrink: 0; /* منع "VS" من الانكماش تمامًا */
+    flex-shrink: 0; 
     white-space: nowrap; 
     font-family: var(--font-heading);
-    font-size: clamp(1.1rem, 1.3vw, 1.5rem); /* تقليل حجم خط VS قليلاً */
+    font-size: clamp(1.1rem, 1.3vw, 1.5rem); 
     color: var(--up-accent-red); 
     font-weight: 800;
-    margin: 0 0.2rem; /* مسافة بسيطة حول VS */
+    margin: 0 0.2rem; 
     text-shadow: 0 0 3px rgba(255, 59, 59, 0.6); 
     text-align: center;
-    line-height: 1; /* للتأكد من عدم وجود مسافات إضافية حول النص */
+    line-height: 1; 
 }
 
 /* حاوية كل فريق (الشعار + الاسم) */
 .match-card .teams-logos > div {
     display: flex;
     align-items: center;
-    flex-grow: 1; /* السماح بالنمو لأخذ المساحة المتاحة */
-    flex-shrink: 1; /* السماح بالانكماش عند الحاجة */
-    gap: 0.2rem; /* تقليل المسافة بين الشعار والاسم داخل نفس الفريق */
-    min-width: 0; /* مهم جدًا: السماح للانكماش الكامل قبل تطبيق ellipsis */
+    flex-grow: 1; 
+    flex-shrink: 1; 
+    gap: 0.2rem; 
+    min-width: 0; 
 }
 
 /* الفريق الأول (على اليمين في RTL) */
 .match-card .teams-logos > div:first-of-type {
-    justify-content: flex-end; /* الشعار على اليمين والاسم يليه */
+    justify-content: flex-end; 
     text-align: right;
 }
 
 /* الفريق الثاني (على اليسار في RTL) */
 .match-card .teams-logos > div:nth-of-type(2) {
-    justify-content: flex-start; /* الشعار على اليسار والاسم يسبقه */
+    justify-content: flex-start; 
     text-align: left;
 }
 
 /* نص اسم الفريق (span) */
 .match-card .teams-logos span {
-    white-space: nowrap; /* مهم: ابق النص في سطر واحد */
-    overflow: hidden; /* إخفاء أي جزء يتجاوز الحدود */
-    text-overflow: ellipsis; /* إضافة نقاط (...) إذا كان النص أطول من المساحة المتاحة */
-    flex-grow: 1; /* السماح بالنمو */
-    flex-shrink: 1; /* السماح بالنص بالانكماش */
-    min-width: 0; /* السماح للنص بالانكماش تمامًا قبل تطبيق ellipsis */
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    flex-grow: 1; 
+    flex-shrink: 1; 
+    min-width: 0; 
 }
 
 /* شعار الفريق */
 .match-card .team-logo {
-    width: clamp(40px, 4vw, 55px); /* تقليل حجم الشعار قليلاً على الشاشات الأكبر */
+    width: clamp(40px, 4vw, 55px); 
     height: clamp(40px, 4vw, 55px);
     object-fit: contain;
     border-radius: 50%;
@@ -698,8 +698,8 @@ a:hover {
     box-shadow: inset 0 0 3px rgba(0,0,0,0.2);
     transition: transform var(--transition-fast), box-shadow var(--transition-fast);
     padding: 2px;
-    flex-shrink: 0; /* منع الشعار من الانكماش */
-    margin: 0; /* تأكيد إزالة الهوامش الافتراضية */
+    flex-shrink: 0; 
+    margin: 0; 
 }
 
 /* Hover effect for team logo */
@@ -719,10 +719,14 @@ a:hover {
     overflow: hidden; 
     text-overflow: ellipsis; 
     display: -webkit-box;
-    -webkit-line-clamp: 2; 
+    -webkit-line-clamp: 2; /* لتحديد عدد الأسطر التي تظهر قبل الـ ellipsis */
     -webkit-box-orient: vertical;
     text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
     width: 100%;
+    /* إضافة ضبط أقصى عرض لـ h3 لضمان عدم تمدده بشكل مفرط */
+    max-width: 95%; /* قد يساعد في التحكم بالالتفاف */
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .match-card .match-league {
@@ -1218,8 +1222,8 @@ a:hover {
 
     .match-grid, .news-grid {
         /* التعديل هنا: زيادة الحد الأدنى لعرض الكارت ليتسع أكثر */
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* زاد من 240px إلى 280px */
-        gap: 1.5vw; /* قلل المسافة بين الكروت */
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* زاد من 280px إلى 300px */
+        gap: 1.2vw; /* قلل المسافة بين الكروت أكثر */
         padding: 0 1.5vw;
     }
 
@@ -1237,8 +1241,8 @@ a:hover {
     /* === تعديلات على Media Query لـ 992px لأسماء الفرق === */
     .match-card .teams-logos { 
         font-size: clamp(0.85rem, 1.2vw, 1rem); 
-        gap: 0.25rem; /* تقليل المسافة أكثر قليلاً */
-        padding: 0 0.2rem; /* تقليل padding أكثر قليلاً */
+        gap: 0.25rem; 
+        padding: 0 0.2rem; 
         flex-wrap: nowrap;
     }
     .match-card .teams-logos span {
@@ -1249,7 +1253,7 @@ a:hover {
     }
     .match-card .teams-logos .vs-text {
         font-size: clamp(1rem, 1.3vw, 1.4rem); 
-        margin: 0 0.15rem; /* تقليل الهامش حول VS */
+        margin: 0 0.15rem; 
     }
     .match-card .teams-logos > div {
         min-width: 0; 
@@ -1342,7 +1346,8 @@ a:hover {
     }
 
     html {
-        font-size: 10px;
+        /* التعديل هنا: زيادة حجم الخط الأساسي للموبايل لـ 11px */
+        font-size: 11px !important; /* زاد من 10px إلى 11px */
         width: 100vw !important;
         overflow-x: hidden !important;
         margin: 0 !important;
@@ -1369,7 +1374,8 @@ a:hover {
 
     .container {
         width: 100% !important;
-        padding: 0 0.8rem !important; 
+        /* تقليل padding على أصغر الموبايلات أكثر قليلاً */
+        padding: 0 0.6rem !important; /* زاد من 0.8rem إلى 0.6rem */
         max-width: 100vw !important;
         margin: auto !important;
     }
@@ -1378,7 +1384,7 @@ a:hover {
         padding: 0.4rem 0;
     }
     .main-header .header-content {
-        padding: 0 0.8rem !important; 
+        padding: 0 0.6rem !important; /* تقليل padding هنا أيضًا */
         flex-wrap: wrap;
         justify-content: space-between;
         gap: 0.6rem; 
@@ -1442,11 +1448,6 @@ a:hover {
         white-space: nowrap;
     }
 
-    /* هذا القسم يمكن تفعيله لإخفاء بعض عناصر التنقل على الموبايل إذا لم تكن تريد السكرول الأفقي */
-    /* .main-nav ul li:nth-child(n+4) {
-        display: none !important;
-    } */
-
     .search-bar {
         order: 2 !important;
         display: flex;
@@ -1495,9 +1496,9 @@ a:hover {
 
     .match-grid {
         /* زيادة عرض الكروت على الموبايل لكي تأخذ مساحة أكبر */
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* زاد من 130px إلى 150px */
-        gap: 2.5vw; /* قلل المسافة بين الكروت لزيادة عرضها الكلي */
-        padding: 0 0.8rem !important; 
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); /* زاد من 150px إلى 160px */
+        gap: 2vw; /* قلل المسافة بين الكروت أكثر لزيادة عرضها الكلي */
+        padding: 0 0.6rem !important; /* قلل padding الشبكة أكثر */
     }
     .news-grid {
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -1514,7 +1515,13 @@ a:hover {
         min-height: clamp(60px, 10vw, 80px);
     }
     .match-card h3 {
-        font-size: clamp(0.75rem, 3.2vw, 0.95rem);
+        /* زيادة حجم خط العنوان قليلاً على الموبايل ومرونة أكبر */
+        font-size: clamp(0.85rem, 3.5vw, 1.05rem) !important; /* زاد من 0.75rem */
+        line-height: 1.3 !important; /* زيادة ارتفاع السطر قليلاً */
+        -webkit-line-clamp: 2 !important; /* للتأكيد على سطرين */
+        max-width: 98% !important; /* زيادة أقصى عرض له */
+        margin-left: auto !important;
+        margin-right: auto !important;
     }
     /* === تعديلات شاملة لـ Mobile Team Names Layout === */
     .match-card .teams-logos {
@@ -1613,7 +1620,8 @@ a:hover {
     .video-player-wrapper {
         margin-bottom: 3vw;
         max-width: 100% !important; 
-        padding-bottom: 56.25% !important; 
+        /* التعديل هنا: زيادة طول مشغل الفيديو للموبايل */
+        padding-bottom: 65% !important; /* زاد من 56.25% إلى 65% ليكون أطول قليلاً */
         border-width: 1px !important;
     }
     .ad-banner-center {
