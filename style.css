@@ -366,7 +366,7 @@ a:hover {
 
 /* Mobile menu toggle (الثلاث شرط) */
 .menu-toggle {
-    display: none; /* إخفاؤه افتراضياً - سيتم إظهاره فقط في الميديا كويري للموبايل الصغير جداً إذا لزم الأمر */
+    display: none; /* إخفاؤه افتراضياً - لن يظهر إطلاقاً في هذا التصميم */
     font-size: 1.6rem; 
     padding: 0.25rem 0.5rem;
     color: var(--up-accent-green);
@@ -878,9 +878,9 @@ a:hover {
 .video-player-wrapper {
     position: relative;
     width: 100%;
-    max-width: 800px;
+    max-width: 800px; /* رجعت لأقصى عرض 800px للكمبيوتر */
     height: 0; 
-    padding-bottom: 48%; /* تم التعديل من 40% إلى 48% لزيادة الطول قليلاً مع الحفاظ على نسبة جيدة */ 
+    padding-bottom: 40%; /* رجعت للنسبة الأصلية للكمبيوتر */ 
     margin: 0 auto 1.5vw auto; 
     background-color: #000;
     border-radius: var(--border-radius-card);
@@ -1208,8 +1208,6 @@ a:hover {
         display: none; /* تأكيد إخفائها هنا أيضاً */
     }
 
-    /* .main-nav.active-mobile - هذه الكلاس كانت للموبايل فقط، تم دمجها مع .main-nav الأساسية للموبايل الأصغر */
-
     .view-section {
         padding: 4.5vw 0; 
     }
@@ -1302,8 +1300,8 @@ a:hover {
     }
     .video-player-wrapper {
         margin-bottom: 3vw; 
-        max-width: 700px; /* تم تعديله من 400px إلى 700px */ 
-        padding-bottom: 50%; /* تم التعديل من 40% إلى 50% لزيادة الطول قليلاً */ 
+        max-width: 700px; /* رجعت لأقصى عرض 700px للتابلت */
+        padding-bottom: 40%; /* رجعت للنسبة الأصلية للتابلت */ 
         border-width: 2px; 
     }
     .match-info-box {
@@ -1372,11 +1370,19 @@ a:hover {
 
     .main-header {
         padding: 0.3rem 0;
+        /* إزالة الخط الأحمر من هنا */
+        border-bottom: none; 
+        /* تقليل المساحة التي يأخذها الهيدر */
+        height: auto; /* السماح للمحتوى بتحديد الارتفاع */
+        min-height: unset; /* إلغاء أي حد أدنى للارتفاع لو موجود */
     }
     .main-header .header-content {
         padding: 0 0.5rem;
         flex-wrap: nowrap; /* منع اللف - نريدهم في سطر واحد */
         justify-content: space-between; 
+        /* تقليل المساحة العمودية بين العناصر */
+        align-items: center; 
+        gap: 0.5rem; /* تقليل المسافات بين العناصر في الهيدر */
     }
     .menu-toggle {
         display: none !important; /* إخفاء الثلاث شرط نهائياً */
@@ -1385,6 +1391,9 @@ a:hover {
         order: 0; /* رجع اللوجو لمكانه الطبيعي */
         font-size: clamp(1.4rem, 4.5vw, 1.8rem); 
         flex-basis: auto; 
+        /* تقليل المساحة حول اللوجو */
+        margin: 0;
+        padding: 0;
     }
     .search-bar {
         order: 1; /* خلي البحث يجي بعد اللوجو مباشرة */
@@ -1414,20 +1423,30 @@ a:hover {
         align-items: center;
         overflow-y: visible; /* إلغاء الـ scroll الخاص بالقائمة */
         margin-right: auto; /* عشان اللينكات تبقى في النص ومتبوظش الجنب اليمين */
-        margin-left: 1rem; /* مسافة بين الـ nav والبحث */
+        margin-left: 0.5rem; /* مسافة بين الـ nav والبحث */
+        /* تقليل المساحة العمودية للـ nav bar نفسه */
+        padding: 0;
     }
     .main-nav ul {
         flex-direction: row; /* رجع اللينكات أفقية */
-        gap: 0.5rem; /* تظبيط المسافات بينهم */
-        flex-wrap: wrap; /* السماح باللف إذا كانت الشاشة صغيرة جداً */
+        gap: 0.3rem; /* تظبيط المسافات بينهم - أقل من 0.5 عشان يقعدوا في سطر واحد */
+        flex-wrap: nowrap; /* منع اللف تماما عشان يبقوا في سطر واحد */
         justify-content: center; /* محاذاة اللينكات في المنتصف */
+        width: 100%; /* ضمان أن الـ ul يأخذ العرض الكامل */
+        overflow-x: auto; /* إضافة سكرول أفقي لو اللينكات كتير ومش مكفية */
+        -webkit-overflow-scrolling: touch; /* لتحسين تجربة السكرول على iOS */
+        scrollbar-width: none; /* إخفاء السكرول بار من Firefox */
+    }
+    .main-nav ul::-webkit-scrollbar {
+        display: none; /* إخفاء السكرول بار من Webkit browsers */
     }
     .main-nav ul li {
         margin: 0;
+        flex-shrink: 0; /* منع اللينكات من الانكماش */
     }
     .main-nav ul li a {
         font-size: clamp(0.7rem, 2.5vw, 0.8rem); /* حجم خط مناسب */
-        padding: 0.4rem 0.8rem; /* تظبيط الـ padding */
+        padding: 0.3rem 0.6rem; /* تظبيط الـ padding - أقل عشان يصغر المساحة */
         white-space: nowrap; /* منع اللف داخل الزر نفسه */
     }
     
@@ -1438,6 +1457,7 @@ a:hover {
     .search-bar button {
         font-size: 1.1rem; 
     }
+
 
     .view-section {
         padding: 6vw 0; 
