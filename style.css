@@ -8,7 +8,7 @@
     
     --up-accent-blue: #00CFFF;
     --up-accent-green: #3CE090;
-    --up-accent-red: #FF3B3B; /* اللون الأحمر موجود بالفعل هنا */
+    --up-accent-red: #FF3B3B; 
     --up-accent-purple: #9D4EDD;
 
     --up-text-primary: #E9EEF4;
@@ -38,7 +38,7 @@
     --transition-slow: 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 
     /* Borders & Radius */
-    --border-radius-card: 10px;
+    --border-radius-card: 12px; /* زيادة بسيطة في انحناء حواف الكروت */
     --border-radius-button: 8px;
     --border-radius-full: 50%;
 }
@@ -121,9 +121,9 @@ body::-webkit-scrollbar-thumb:hover {
 /* Generic container for content width and centering */
 .container {
     width: 95vw;
-    max-width: 1200px;
+    max-width: 1280px; /* زيادة أقصى عرض للحاوية قليلاً */
     margin: auto;
-    padding: 0 0.8rem;
+    padding: 0 1rem; /* زيادة padding قليلاً */
 }
 
 /* Global link styles */
@@ -213,7 +213,7 @@ a:hover {
     background: var(--up-gradient-header);
     backdrop-filter: blur(12px);
     color: var(--up-text-primary);
-    padding: 0.6rem 0;
+    padding: 0.7rem 0; /* زيادة padding رأسي قليلاً */
     border-bottom: 2px solid var(--up-accent-blue);
     position: sticky;
     top: 0;
@@ -227,15 +227,16 @@ a:hover {
     flex-wrap: nowrap;
     justify-content: space-between;
     align-items: center;
-    gap: 1rem;
+    gap: 1.2rem; /* زيادة بسيطة في المسافة بين العناصر */
+    padding: 0 1rem; /* إضافة padding أفقي للحاويات الداخلية */
 }
 
 /* Site Logo */
 .site-logo {
-    display: inline-flex;
+    display: flex; /* استخدام flexbox لضمان محاذاة الأيقونة والنص */
     align-items: center;
     font-family: var(--font-heading);
-    font-size: clamp(1.8rem, 3.2vw, 2.2rem);
+    font-size: clamp(2rem, 3.2vw, 2.4rem); /* تكبير حجم الخط قليلاً */
     font-weight: 700;
     letter-spacing: 0.8px;
     flex-shrink: 0;
@@ -247,10 +248,12 @@ a:hover {
 }
 
 .site-logo .logo-icon {
-    font-size: 0.55em;
+    font-size: 0.65em; /* تكبير الأيقونة قليلاً */
     color: var(--up-accent-green);
-    margin-right: 0.08em;
-    animation: pulse-icon 2s infinite alternate ease-in-out;
+    margin-left: 0.1em; /* نقل الأيقونة إلى اليسار قليلاً في RTL */
+    margin-right: 0;
+    vertical-align: middle; /* محاذاة عمودية للأيقونة مع النص */
+    line-height: 1; /* ضبط ارتفاع السطر للأيقونة */
 }
 
 /* Main Navigation */
@@ -269,14 +272,14 @@ a:hover {
     margin: 0;
 }
 .main-nav ul li {
-    margin: 0 0.8rem;
+    margin: 0 1rem; /* زيادة المسافة بين عناصر القائمة */
     position: relative;
     list-style: none;
 }
 .main-nav ul li a {
     font-family: var(--font-body);
-    font-size: clamp(0.8rem, 0.85vw, 0.9rem);
-    padding: 0.6rem 1.2rem;
+    font-size: clamp(0.85rem, 0.85vw, 0.95rem); /* زيادة بسيطة في حجم الخط */
+    padding: 0.7rem 1.4rem; /* زيادة padding للأزرار */
     border-radius: var(--border-radius-button);
     transition: all var(--transition-fast);
     position: relative;
@@ -319,7 +322,7 @@ a:hover {
     align-items: center;
     background: var(--up-bg-medium);
     border-radius: var(--border-radius-button);
-    padding: 0.3rem 0.6rem;
+    padding: 0.4rem 0.7rem; /* زيادة بسيطة في padding */
     box-shadow: var(--up-inset-shadow);
     border: 1px solid var(--up-accent-blue);
     transition: all var(--transition-fast);
@@ -331,15 +334,15 @@ a:hover {
     box-shadow: 0 0 8px var(--up-accent-green), var(--up-inset-shadow);
 }
 .search-bar input {
-    padding: 0.4rem 0.6rem;
+    padding: 0.5rem 0.7rem; /* زيادة بسيطة في padding */
     border: none;
     background: transparent;
     color: var(--up-text-primary);
-    margin-right: 0.4rem;
+    margin-right: 0.5rem; /* زيادة بسيطة في الهامش */
     outline: none;
-    width: clamp(120px, 12vw, 180px);
+    width: clamp(140px, 12vw, 200px); /* زيادة العرض قليلاً */
     font-family: var(--font-body);
-    font-size: clamp(0.75rem, 0.8vw, 0.85rem);
+    font-size: clamp(0.8rem, 0.8vw, 0.9rem); /* زيادة بسيطة في حجم الخط */
     transition: all var(--transition-fast);
 }
 .search-bar input::placeholder {
@@ -355,8 +358,8 @@ a:hover {
     border: none;
     cursor: pointer;
     color: var(--up-accent-blue);
-    font-size: 1rem;
-    padding: 0.2rem;
+    font-size: 1.1rem; /* زيادة بسيطة في حجم الأيقونة */
+    padding: 0.3rem; /* زيادة بسيطة في padding */
     transition: all var(--transition-fast);
 }
 .search-bar button:hover {
@@ -368,8 +371,8 @@ a:hover {
 /* Mobile menu toggle (الثلاث شرط) */
 .menu-toggle {
     display: none;
-    font-size: 1.6rem;
-    padding: 0.25rem 0.5rem;
+    font-size: 1.8rem; /* زيادة حجم الأيقونة */
+    padding: 0.3rem 0.6rem; /* زيادة بسيطة في padding */
     color: var(--up-accent-green);
     border: 1px solid var(--up-accent-green);
     border-radius: var(--border-radius-button);
@@ -383,7 +386,7 @@ a:hover {
 
 /* --- Main Content Display Area --- */
 .view-section {
-    padding: 4vw 0;
+    padding: 5vw 0; /* زيادة padding رأسي قليلاً */
     background-color: var(--up-bg-dark);
     min-height: 50vh;
     opacity: 0;
@@ -421,14 +424,14 @@ a:hover {
 .section-title {
     font-family: var(--font-heading);
     text-align: center;
-    margin-bottom: 3vw;
-    font-size: clamp(2rem, 3vw, 2.5rem);
+    margin-bottom: 3.5vw; /* زيادة الهامش السفلي قليلاً */
+    font-size: clamp(2.2rem, 3vw, 2.7rem); /* تكبير حجم الخط قليلاً */
     color: var(--up-accent-blue);
     text-shadow: 0 0 12px rgba(0, 207, 255, 0.4), 0 0 25px rgba(157, 78, 221, 0.2);
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.6rem; /* زيادة padding السفلي قليلاً */
     border-bottom: 2px solid var(--up-accent-green);
     display: inline-block;
-    margin: 0 auto 3vw auto;
+    margin: 0 auto 3.5vw auto; /* تعديل الهوامش */
     width: fit-content;
     letter-spacing: 1px;
     text-transform: uppercase;
@@ -440,15 +443,15 @@ a:hover {
 .filter-controls {
     display: flex;
     justify-content: center;
-    gap: 0.7rem;
-    margin-bottom: 3vw;
+    gap: 0.8rem; /* زيادة بسيطة في المسافة */
+    margin-bottom: 3.5vw; /* زيادة الهامش السفلي قليلاً */
     flex-wrap: wrap;
-    padding: 0.4rem 1rem;
+    padding: 0.5rem 1.2rem; /* زيادة padding قليلاً */
     background: var(--up-bg-medium);
     border-radius: var(--border-radius-button);
     box-shadow: var(--up-inset-shadow);
     border: 1px solid var(--up-accent-blue);
-    max-width: 600px;
+    max-width: 650px; /* زيادة أقصى عرض قليلاً */
     margin-left: auto;
     margin-right: auto;
     backdrop-filter: blur(6px);
@@ -460,12 +463,12 @@ a:hover {
     background: rgba(0, 207, 255, 0.08);
     color: var(--up-text-primary);
     border: 1px solid var(--up-accent-blue);
-    padding: 0.5rem 1.2rem;
+    padding: 0.6rem 1.4rem; /* زيادة padding قليلاً */
     border-radius: var(--border-radius-button);
     cursor: pointer;
     transition: all var(--transition-fast);
     font-family: var(--font-body);
-    font-size: clamp(0.8rem, 0.9vw, 0.9rem);
+    font-size: clamp(0.85rem, 0.9vw, 0.95rem); /* زيادة بسيطة في حجم الخط */
     font-weight: 600;
     white-space: nowrap;
     text-shadow: 0 0 4px rgba(0,0,0,0.5);
@@ -485,18 +488,18 @@ a:hover {
     background: var(--up-bg-medium);
     color: var(--up-text-primary);
     border: 1px solid var(--up-accent-blue);
-    padding: 0.5rem 1.2rem;
+    padding: 0.6rem 1.4rem; /* زيادة padding قليلاً */
     border-radius: var(--border-radius-button);
     font-family: var(--font-body);
-    font-size: clamp(0.8rem, 0.9vw, 0.9rem);
+    font-size: clamp(0.85rem, 0.9vw, 0.95rem); /* زيادة بسيطة في حجم الخط */
     cursor: pointer;
     outline: none;
     appearance: none;
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23BCC8D6'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
     background-repeat: no-repeat;
-    background-position: left 0.7rem center;
+    background-position: left 0.8rem center; /* تعديل موضع السهم */
     background-size: 0.9em;
-    padding-left: 1.8rem;
+    padding-left: 2rem; /* زيادة padding لترك مساحة للسهم */
     transition: all var(--transition-fast);
     box-shadow: var(--up-inset-shadow);
     backdrop-filter: blur(6px);
@@ -511,9 +514,9 @@ a:hover {
 /* Grids for content cards */
 .match-grid, .news-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 1.5vw;
-    padding: 0 0.5vw;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* زيادة الحد الأدنى لعرض الكارت */
+    gap: 2vw; /* زيادة بسيطة في المسافة بين الكروت */
+    padding: 0 1vw; /* زيادة بسيطة في padding الشبكة */
     position: relative;
     z-index: 1;
 }
@@ -546,7 +549,7 @@ a:hover {
 .match-card {
     background: var(--up-bg-medium);
     border-radius: var(--border-radius-card);
-    overflow: hidden; /* قد نحتاج لتعديل هذا إذا كان النص الطويل يخرج عن الكارد */
+    overflow: hidden; 
     box-shadow: var(--up-shadow-soft);
     transition: all var(--transition-medium);
     cursor: pointer;
@@ -589,7 +592,7 @@ a:hover {
 /* Card image */
 .match-card img {
     width: 100%;
-    height: clamp(180px, 18vw, 240px);
+    height: clamp(190px, 18vw, 250px); 
     object-fit: contain;
     background-color: var(--up-bg-dark);
     display: block;
@@ -604,16 +607,16 @@ a:hover {
 
 /* Card content area */
 .match-card .match-card-content {
-    padding: 0.7rem;
+    padding: 0.8rem; 
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     flex-grow: 1;
-    gap: 0.3rem;
+    gap: 0.4rem; 
     background-color: var(--up-bg-dark);
     border-radius: 0 0 var(--border-radius-card) var(--border-radius-card);
-    min-height: clamp(80px, 7vw, 100px);
+    min-height: clamp(90px, 7vw, 110px); 
     text-align: center;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -622,49 +625,45 @@ a:hover {
 .match-card .teams-logos {
     display: flex;
     align-items: center;
-    /* نغير justify-content إلى center لأننا نريد أن يلتف النص إذا لزم الأمر */
-    justify-content: center; /* سنعيد ضبط هذا في الميديا كويري للموبايل إذا احتجنا لـ space-between */
-    gap: 0.6rem; /* مسافة بين العناصر الرئيسية (فريق1, VS, فريق2) */
+    /* التعديل هنا: استخدام space-between مع مسافات أقل لزيادة المساحة للأسماء */
+    justify-content: space-between; 
+    gap: 0.3rem; /* تقليل المسافة بين الأطراف وعلامة VS أكثر */
     font-family: var(--font-body);
     font-size: clamp(0.9rem, 1vw, 1rem);
     font-weight: 700;
     color: var(--up-text-primary);
     text-shadow: 0 0 4px rgba(0,0,0,0.7);
-    /* السماح بالالتفاف لضمان ظهور النص كاملاً */
-    flex-wrap: wrap; /* هذا هو المفتاح للسماح بالالتفاف */
+    flex-wrap: nowrap; /* مهم جدًا: لا تسمح بالالتفاف على سطر جديد */
     width: 100%;
     position: relative;
-    padding: 0 0.5rem; /* إضافة padding للحماية من التداخل مع حواف الكارد */
-    /* تحديد align-content للسماح بالعناصر بالانتشار عند الالتفاف */
-    align-content: center; 
+    padding: 0 0.2rem; /* تقليل padding أكثر لجعل النص يأخذ مساحة أكبر */
+    box-sizing: border-box; /* لضمان أن padding لا يسبب تجاوزًا */
 }
 
 /* لضمان محاذاة "VS" في المنتصف بالضبط بين الفريقين */
 .match-card .teams-logos .vs-text {
-    order: 0; /* تأكد أن "VS" في المنتصف */
-    flex-shrink: 0; /* منع "VS" من الانكماش */
-    white-space: nowrap; /* "VS" يجب أن يظل في سطر واحد */
+    order: 0; 
+    flex-shrink: 0; /* منع "VS" من الانكماش تمامًا */
+    white-space: nowrap; 
     font-family: var(--font-heading);
-    /* تكبير حجم "VS" */
-    font-size: clamp(1.1rem, 1.5vw, 1.7rem); /* زيادة حجم الخط لـ VS */
-    color: var(--up-accent-red); /* جعل اللون أحمر */
+    font-size: clamp(1.1rem, 1.3vw, 1.5rem); /* تقليل حجم خط VS قليلاً */
+    color: var(--up-accent-red); 
     font-weight: 800;
-    margin: 0 0.3rem; /* مسافة بسيطة حول VS */
-    text-shadow: 0 0 3px rgba(255, 59, 59, 0.6); /* تعديل ظل النص ليتناسب مع الأحمر */
-    /* في حالة الالتفاف، اجعل VS يأخذ كامل العرض ويتوسط */
-    flex-basis: 100%; /* اجعل VS يأخذ سطرًا خاصًا به عند الالتفاف */
+    margin: 0 0.2rem; /* مسافة بسيطة حول VS */
+    text-shadow: 0 0 3px rgba(255, 59, 59, 0.6); 
     text-align: center;
+    line-height: 1; /* للتأكد من عدم وجود مسافات إضافية حول النص */
 }
 
 /* حاوية كل فريق (الشعار + الاسم) */
 .match-card .teams-logos > div {
     display: flex;
     align-items: center;
-    flex-grow: 1; /* السماح بالنمو */
-    flex-shrink: 0; /* مهم: منع حاوية الفريق من الانكماش بشكل كبير */
-    gap: 0.3rem; /* المسافة بين الشعار والاسم داخل نفس الفريق */
-    min-width: 100px; /* تحديد حد أدنى للحجم لتجنب الالتفاف السريع جدًا */
-    max-width: 45%; /* تحديد أقصى عرض لكل فريق لترك مساحة للآخر */
+    flex-grow: 1; /* السماح بالنمو لأخذ المساحة المتاحة */
+    flex-shrink: 1; /* السماح بالانكماش عند الحاجة */
+    gap: 0.2rem; /* تقليل المسافة بين الشعار والاسم داخل نفس الفريق */
+    min-width: 0; /* مهم جدًا: السماح للانكماش الكامل قبل تطبيق ellipsis */
+    /* يمكنك إضافة خلفية مؤقتة هنا للتصحيح: background-color: rgba(0,255,0,0.1); */
 }
 
 /* الفريق الأول (على اليمين في RTL) */
@@ -681,18 +680,19 @@ a:hover {
 
 /* نص اسم الفريق (span) */
 .match-card .teams-logos span {
-    white-space: normal; /* السماح للنص بالالتفاف إلى سطر جديد */
-    overflow: visible; /* السماح للنص بالظهور بالكامل */
-    text-overflow: clip; /* إزالة النقاط (...) */
-    flex-grow: 1;
-    flex-shrink: 1; /* السماح بالنص بالانكماش إذا لزم الأمر قبل الالتفاف */
-    min-width: 0; /* السماح للنص بالانكماش تمامًا */
+    white-space: nowrap; /* مهم: ابق النص في سطر واحد */
+    overflow: hidden; /* إخفاء أي جزء يتجاوز الحدود */
+    text-overflow: ellipsis; /* إضافة نقاط (...) إذا كان النص أطول من المساحة المتاحة */
+    flex-grow: 1; /* السماح بالنمو */
+    flex-shrink: 1; /* السماح بالنص بالانكماش */
+    min-width: 0; /* السماح للنص بالانكماش تمامًا قبل تطبيق ellipsis */
+    /* يمكنك إضافة خلفية مؤقتة هنا للتصحيح: background-color: rgba(255,0,255,0.1); */
 }
 
 /* شعار الفريق */
 .match-card .team-logo {
-    width: clamp(45px, 4.5vw, 60px);
-    height: clamp(45px, 4.5vw, 60px);
+    width: clamp(40px, 4vw, 55px); /* تقليل حجم الشعار قليلاً على الشاشات الأكبر */
+    height: clamp(40px, 4vw, 55px);
     object-fit: contain;
     border-radius: 50%;
     border: 1px solid rgba(0,0,0,0.1);
@@ -701,6 +701,7 @@ a:hover {
     transition: transform var(--transition-fast), box-shadow var(--transition-fast);
     padding: 2px;
     flex-shrink: 0; /* منع الشعار من الانكماش */
+    margin: 0; /* تأكيد إزالة الهوامش الافتراضية */
 }
 
 /* Hover effect for team logo */
@@ -717,10 +718,10 @@ a:hover {
     font-weight: 800;
     line-height: 1.2;
     white-space: normal; /* السماح بالالتفاف لعنوان المباراة ككل */
-    overflow: hidden; /* إخفاء ما يتجاوز السطرين */
-    text-overflow: ellipsis; /* إضافة نقاط (...) إذا تجاوز سطرين */
+    overflow: hidden; 
+    text-overflow: ellipsis; 
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 2; 
     -webkit-box-orient: vertical;
     text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
     width: 100%;
@@ -795,7 +796,7 @@ a:hover {
 }
 .news-card img {
     width: 100%;
-    height: clamp(130px, 13vw, 170px);
+    height: clamp(140px, 13vw, 180px); 
     object-fit: cover;
     display: block;
     border-bottom: 1px solid rgba(0, 207, 255, 0.1);
@@ -806,19 +807,19 @@ a:hover {
     filter: brightness(1.1) saturate(1.1);
 }
 .news-card .news-card-content {
-    padding: 0.8rem 1rem;
+    padding: 0.9rem 1.1rem; 
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    gap: 0.4rem;
+    gap: 0.5rem; 
 }
 .news-card h4 {
     font-family: var(--font-heading);
-    font-size: clamp(0.9rem, 1vw, 1.1rem);
+    font-size: clamp(0.95rem, 1vw, 1.15rem); 
     font-weight: 700;
     line-height: 1.3;
     color: var(--up-text-primary);
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.3rem; 
     text-shadow: 0 0 5px rgba(0,0,0,0.7);
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -828,10 +829,10 @@ a:hover {
 }
 .news-card p {
     font-family: var(--font-body);
-    font-size: clamp(0.75rem, 0.85vw, 0.85rem);
+    font-size: clamp(0.8rem, 0.85vw, 0.9rem); 
     color: var(--up-text-secondary);
     line-height: 1.5;
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.7rem; 
     flex-grow: 1;
     display: -webkit-box;
     -webkit-line-clamp: 3;
@@ -840,7 +841,7 @@ a:hover {
     text-overflow: ellipsis;
 }
 .news-card .news-date {
-    font-size: 0.7rem;
+    font-size: 0.75rem; 
     color: var(--up-text-muted);
     opacity: 0.9;
     text-align: left;
@@ -850,8 +851,8 @@ a:hover {
 .pagination-controls {
     display: none; /* Controlled by JS */
     justify-content: center;
-    margin-top: 3.5vw;
-    gap: 1vw;
+    margin-top: 4vw; 
+    gap: 1.2vw; 
     position: relative;
     z-index: 1;
 }
@@ -859,12 +860,12 @@ a:hover {
     background: var(--up-bg-medium);
     color: var(--up-text-primary);
     border: 1px solid var(--up-accent-blue);
-    padding: 0.6rem 1.5rem;
+    padding: 0.7rem 1.6rem; 
     border-radius: var(--border-radius-button);
     cursor: pointer;
     transition: all var(--transition-fast);
     font-family: var(--font-body);
-    font-size: clamp(0.8rem, 0.9vw, 0.9rem);
+    font-size: clamp(0.85rem, 0.9vw, 0.95rem); 
     box-shadow: var(--up-shadow-soft);
     font-weight: 700;
     text-transform: uppercase;
@@ -891,7 +892,7 @@ a:hover {
 
 /* --- Match Details Section --- */
 .match-details-section {
-    padding: 5vw 3vw;
+    padding: 6vw 3vw; 
     background-color: var(--up-bg-dark);
     border-top: 2px solid var(--up-accent-green);
     box-shadow: 0 0 20px rgba(0,0,0,0.6) inset;
@@ -901,12 +902,12 @@ a:hover {
 }
 
 .match-details-section .back-btn {
-    margin-bottom: clamp(1.5rem, 2.5vw, 2rem);
-    font-size: clamp(0.9rem, 1vw, 1rem);
-    padding: 0.6rem 1.5rem;
+    margin-bottom: clamp(1.8rem, 2.5vw, 2.2rem); 
+    font-size: clamp(1rem, 1vw, 1.1rem); 
+    padding: 0.7rem 1.6rem; 
 }
 .match-details-section .back-btn i {
-    margin-left: 0.3rem;
+    margin-left: 0.4rem; 
     margin-right: 0;
     transform: rotate(180deg);
 }
@@ -915,12 +916,10 @@ a:hover {
 .video-player-wrapper {
     position: relative;
     width: 100%;
-    /* تم تكبير أقصى عرض لمشغل الفيديو */
-    max-width: 800px; /* يمكنك تعديل هذا العرض حسب ما تراه مناسبًا */
+    max-width: 900px; 
     height: 0;
-    /* تم تعديل النسبة لتقصير الطول مع الحفاظ على العرض الجيد */
-    padding-bottom: 40%; /* تم التعديل من 56.25% إلى 40% لتقصير الطول أكثر */
-    margin: 0 auto 1.5vw auto;
+    padding-bottom: 40%; 
+    margin: 0 auto 2vw auto; 
     background-color: #000;
     border-radius: var(--border-radius-card);
     overflow: hidden;
@@ -952,19 +951,19 @@ a:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(10, 17, 31, 0); /* جعل الخلفية شفافة تمامًا */
-    opacity: 1; /* يجب أن يكون مرئياً للتفاعل مع الإعلان */
-    display: flex; /* لضمان تغطية كاملة إذا كان هناك أي محتوى داخله (وإن كان لا يوجد زر الآن) */
+    background-color: rgba(10, 17, 31, 0); 
+    opacity: 1; 
+    display: flex; 
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    z-index: 50; /* تأكد أنه أعلى من الـ iframe */
-    visibility: visible; /* تأكد من أنه مرئي */
+    z-index: 50; 
+    visibility: visible; 
     transition: opacity var(--transition-medium), background-color var(--transition-medium);
 }
 .video-overlay.hidden {
     opacity: 0;
-    pointer-events: none; /* بعد الاختفاء، لا تتفاعل مع النقرات */
+    pointer-events: none; 
 }
 
 /* إخفاء زر "شاهد الآن" (أو أي محتوى آخر) داخل الـ overlay */
@@ -985,10 +984,9 @@ a:hover {
 /* Ad Banner Center (under video) */
 .ad-banner-center {
     width: 100%;
-    /* تم تكبير أقصى عرض ليتناسب مع الفيديو الجديد */
-    max-width: 800px; /* تم التعديل من 700px إلى 800px */
-    margin: 2.5vw auto 3vw auto; /* Position under video */
-    padding: 10px; /* Reduced padding for cleaner look */
+    max-width: 900px; 
+    margin: 3vw auto 3.5vw auto; 
+    padding: 12px; 
     background-color: var(--up-bg-medium);
     border: 1px solid var(--up-accent-blue);
     border-radius: var(--border-radius-card);
@@ -1022,8 +1020,8 @@ a:hover {
 
 /* Suggested Matches Section */
 .suggested-matches-section {
-    margin-top: 2.5vw;
-    padding-top: 2.5vw;
+    margin-top: 3vw; 
+    padding-top: 3vw; 
     border-top: 2px solid var(--up-accent-blue);
 }
 
@@ -1031,7 +1029,7 @@ a:hover {
 .main-footer {
     background-color: var(--up-bg-medium);
     color: var(--up-text-secondary);
-    padding: 2.5vw 0;
+    padding: 3vw 0; 
     text-align: center;
     font-family: var(--font-body);
     border-top: 2px solid var(--up-accent-blue);
@@ -1059,17 +1057,17 @@ a:hover {
 }
 
 .main-footer .footer-content {
-    max-width: 700px;
+    max-width: 750px; 
     margin: 0 auto;
-    padding: 0 1rem;
+    padding: 0 1.2rem; 
     position: relative;
     z-index: 1;
 }
 
 .main-footer p {
-    margin-bottom: 1vw;
-    font-size: clamp(0.75rem, 0.85vw, 0.85rem);
-    line-height: 1.5;
+    margin-bottom: 1.2vw; 
+    font-size: clamp(0.8rem, 0.85vw, 0.9rem); 
+    line-height: 1.6; 
     opacity: 0.95;
     text-shadow: 0 0 2px rgba(0,0,0,0.4);
 }
@@ -1078,17 +1076,17 @@ a:hover {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 0.8rem;
-    margin-top: 0.8vw;
+    gap: 1rem; 
+    margin-top: 1vw; 
 }
 
 .footer-links a {
     color: var(--up-accent-blue);
     text-decoration: none;
     font-family: var(--font-body);
-    font-size: clamp(0.75rem, 0.85vw, 0.85rem);
+    font-size: clamp(0.8rem, 0.85vw, 0.9rem); 
     font-weight: 600;
-    padding: 0.5rem 1.2rem;
+    padding: 0.6rem 1.4rem; 
     border: 1px solid var(--up-accent-blue);
     border-radius: var(--border-radius-button);
     transition: all var(--transition-fast);
@@ -1154,220 +1152,192 @@ a:hover {
     }
     .container {
         width: 95vw;
-        padding: 0 0.6rem;
+        padding: 0 0.8rem; 
+        max-width: 1000px; 
     }
     .main-header {
-        padding: 0.4rem 0;
+        padding: 0.6rem 0;
     }
     .main-header .header-content {
-        gap: 0.7rem;
-        padding: 0 0.6rem;
+        gap: 1rem;
+        padding: 0 0.8rem;
     }
     .site-logo {
-        font-size: clamp(1.6rem, 3.8vw, 2rem);
+        font-size: clamp(1.8rem, 3.8vw, 2.2rem);
+    }
+    .site-logo .logo-icon {
+        font-size: 0.6em; 
     }
     .search-bar {
-        padding: 0.2rem 0.5rem;
-        order: initial;
+        padding: 0.3rem 0.6rem;
     }
     .search-bar input {
-        width: clamp(100px, 15vw, 150px);
-        font-size: clamp(0.7rem, 1.2vw, 0.8rem);
+        width: clamp(120px, 15vw, 180px);
+        font-size: clamp(0.75rem, 1.2vw, 0.85rem);
+    }
+    .search-bar button {
+        font-size: 1rem;
     }
     .main-nav ul {
-        gap: 0.2rem;
-    }
-    .main-nav ul li {
-        margin: 0 0.4rem;
-    }
-    .main-nav ul li a {
-        font-size: clamp(0.75rem, 1.4vw, 0.85rem);
-        padding: 0.4rem 0.9rem;
-    }
-    .menu-toggle {
-        display: none;
-    }
-
-    .main-nav.active-mobile {
-        padding: 0.7rem 0;
-    }
-    .main-nav.active-mobile ul {
         gap: 0.5rem;
     }
-    .main-nav.active-mobile ul li a {
-        padding: 0.6rem 1rem;
+    .main-nav ul li {
+        margin: 0 0.8rem;
+    }
+    .main-nav ul li a {
+        font-size: clamp(0.8rem, 1.4vw, 0.9rem);
+        padding: 0.5rem 1.1rem;
+    }
+    .menu-toggle {
+        display: none !important; 
+        font-size: 1.6rem;
+        padding: 0.25rem 0.5rem;
     }
 
     .view-section {
-        padding: 4.5vw 0;
+        padding: 5vw 0;
     }
     .section-title {
-        font-size: clamp(1.7rem, 3.8vw, 2.1rem);
-        margin-bottom: 3.2vw;
-        padding-bottom: 0.45rem;
+        font-size: clamp(1.9rem, 3.8vw, 2.3rem);
+        margin-bottom: 3.5vw;
+        padding-bottom: 0.5rem;
     }
 
     .filter-controls {
-        gap: 0.5rem;
-        margin-bottom: 3.2vw;
-        padding: 0.3rem 0.8rem;
-        max-width: 90%;
+        gap: 0.6rem;
+        margin-bottom: 3.5vw;
+        padding: 0.4rem 1rem;
+        max-width: 95%;
     }
     .filter-btn, .filter-dropdown {
-        padding: 0.4rem 1.1rem;
-        font-size: clamp(0.75rem, 1.2vw, 0.85rem);
+        padding: 0.5rem 1.2rem;
+        font-size: clamp(0.8rem, 1.2vw, 0.9rem);
     }
     .filter-dropdown {
-        padding-left: 1.5rem;
-        background-position: left 0.6rem center;
-        background-size: 0.8em;
+        padding-left: 1.8rem;
+        background-position: left 0.7rem center;
     }
 
     .match-grid, .news-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); 
         gap: 1.8vw;
-        padding: 0 1.2vw;
+        padding: 0 1.5vw;
     }
 
     .match-card img {
-        height: clamp(150px, 18vw, 210px);
-        object-fit: contain;
-        background-color: var(--up-bg-dark);
+        height: clamp(170px, 18vw, 220px);
     }
     .match-card .match-card-content {
-        min-height: clamp(65px, 8vw, 85px);
-        padding: 0.6rem;
+        min-height: clamp(75px, 8vw, 95px);
+        padding: 0.7rem;
+        gap: 0.35rem;
     }
     .match-card h3 {
-        font-size: clamp(0.85rem, 1.5vw, 1rem);
+        font-size: clamp(0.9rem, 1.5vw, 1.1rem);
     }
-    .match-card .teams-logos { /* Desktop/Tablet: Side-by-side with VS */
-        font-size: clamp(0.8rem, 1.3vw, 0.95rem);
-        gap: 0.3rem; /* Reduced gap */
-        flex-wrap: wrap; /* السماح بالالتفاف على الأجهزة اللوحية أيضًا */
-        justify-content: center; /* توسيط العناصر عند الالتفاف */
-        padding: 0 0.4rem; /* تعديل padding للحماية */
+    /* === تعديلات على Media Query لـ 992px لأسماء الفرق === */
+    .match-card .teams-logos { 
+        font-size: clamp(0.85rem, 1.2vw, 1rem); 
+        gap: 0.3rem; 
+        padding: 0 0.3rem; 
+        flex-wrap: nowrap;
     }
     .match-card .teams-logos span {
-        white-space: normal; /* السماح بالالتفاف */
-        overflow: visible; /* إظهار كل النص */
-        text-overflow: clip; /* إزالة النقاط */
+        white-space: nowrap; 
+        overflow: hidden; 
+        text-overflow: ellipsis; 
+        min-width: 0; 
     }
     .match-card .teams-logos .vs-text {
-        /* تكبير حجم "VS" وتغيير لونه هنا أيضًا */
-        font-size: clamp(1.1rem, 1.5vw, 1.7rem); /* حجم خط أكبر لـ VS */
-        color: var(--up-accent-red); /* اللون الأحمر */
-        margin: 0 0.2rem; /* Reduce margin */
-        flex-basis: 100%; /* اجعل VS يأخذ سطرًا خاصًا به عند الالتفاف */
-        text-align: center;
+        font-size: clamp(1rem, 1.3vw, 1.4rem); /* تقليل حجم VS هنا أيضًا */
+        margin: 0 0.2rem;
     }
     .match-card .teams-logos > div {
-        flex-basis: auto; /* السماح بتحديد الحجم بناءً على المحتوى */
-        flex-grow: 1;
-        flex-shrink: 0; /* منع الانكماش */
-        min-width: 80px; /* يمكن تعديله بناءً على أصغر اسم فريق منطقي */
-        max-width: 45%; /* تحديد أقصى عرض للحفاظ على المساحة للفريق الآخر */
+        min-width: 0; 
     }
     .match-card .team-logo {
-        width: clamp(40px, 5vw, 55px);
-        height: clamp(40px, 5vw, 55px);
+        width: clamp(35px, 4.5vw, 50px); /* تقليل حجم الشعار قليلاً */
+        height: clamp(35px, 4.5vw, 50px);
     }
+    /* === نهاية تعديلات Media Query لـ 992px === */
+
     .match-card .match-score {
-        font-size: clamp(1.2rem, 2vw, 1.5rem);
+        font-size: clamp(1.3rem, 2vw, 1.6rem);
     }
     .match-card .match-status {
-        font-size: clamp(0.7rem, 1.3vw, 0.8rem);
-        padding: 0.3rem 0.7rem;
+        font-size: clamp(0.75rem, 1.3vw, 0.85rem);
+        padding: 0.35rem 0.75rem;
     }
 
     .news-card img {
-        height: clamp(110px, 14vw, 150px);
-        object-fit: cover;
+        height: clamp(120px, 14vw, 160px);
+    }
+    .news-card .news-card-content {
+        padding: 0.8rem 1rem;
+        gap: 0.4rem;
     }
     .news-card h4 {
-        font-size: clamp(0.8rem, 1.5vw, 1rem);
+        font-size: clamp(0.85rem, 1.5vw, 1.05rem);
     }
     .news-card p {
-        font-size: clamp(0.7rem, 1.3vw, 0.8rem);
+        font-size: clamp(0.75rem, 1.3vw, 0.85rem);
+    }
+    .news-card .news-date {
+        font-size: 0.7rem;
     }
 
     .pagination-controls {
-        margin-top: 3.5vw;
-        gap: 1.2vw;
+        margin-top: 4.5vw;
+        gap: 1.5vw;
     }
     .pagination-controls .btn-page {
-        padding: 0.5rem 1.2rem;
-        font-size: clamp(0.75rem, 1.3vw, 0.85rem);
+        padding: 0.6rem 1.4rem;
+        font-size: clamp(0.8rem, 1.3vw, 0.9rem);
     }
 
     .match-details-section {
-        padding: 5.5vw 3.5vw;
+        padding: 6.5vw 4vw;
     }
     .match-details-section .back-btn {
-        margin-bottom: 3vw;
-        font-size: clamp(0.8rem, 1.5vw, 0.95rem);
-        padding: 0.5rem 1.3rem;
+        margin-bottom: 3.5vw;
+        font-size: clamp(0.9rem, 1.5vw, 1.05rem);
+        padding: 0.6rem 1.4rem;
     }
     .video-player-wrapper {
-        margin-bottom: 3vw;
-        max-width: 700px;
-        padding-bottom: 40%;
-        border-width: 2px;
+        margin-bottom: 2.5vw;
+        max-width: 800px;
+        padding-bottom: 45%; 
     }
-    /* The match-info-box styling below is effectively overridden by 'display: none !important;' */
-    .match-info-box {
-        grid-template-columns: auto 1fr;
-        gap: 0.3rem;
-        padding: 0.6rem;
-        margin: 2vw auto;
-        max-width: 700px;
-    }
-    .match-info-box .match-details-thumbnail {
-        width: clamp(55px, 6vw, 75px);
-        height: clamp(55px, 6vw, 75px);
-        border-width: 1px;
-    }
-    .match-info-box p {
-        font-size: clamp(0.65rem, 1.2vw, 0.8rem);
-        line-height: 1.2;
-        padding: 0.3rem 0.6rem;
-    }
-    .match-info-box p strong {
-        font-size: clamp(0.6rem, 1.1vw, 0.75rem);
-    }
-
     .ad-banner-center {
-        max-width: 700px;
-        margin: 2.5vw auto 3vw auto;
-        padding: 10px;
-    }
-    .ad-banner-center p, .ad-banner-center button {
-        display: none;
+        max-width: 800px;
+        margin: 3.5vw auto 4vw auto;
+        padding: 12px;
     }
 
     .suggested-matches-section {
-        margin-top: 2.5vw;
-        padding-top: 2.5vw;
+        margin-top: 3.5vw;
+        padding-top: 3.5vw;
     }
 
     .main-footer {
-        padding: 3.5vw 0;
+        padding: 4vw 0;
     }
     .main-footer p {
-        font-size: clamp(0.7rem, 1.3vw, 0.8rem);
-        margin-bottom: 1.2vw;
+        font-size: clamp(0.75rem, 1.3vw, 0.85rem);
+        margin-bottom: 1.5vw;
     }
     .footer-links {
-        gap: 0.6rem;
+        gap: 0.8rem;
     }
     .footer-links a {
-        padding: 0.45rem 1.1rem;
-        font-size: clamp(0.7rem, 1.3vw, 0.8rem);
+        padding: 0.5rem 1.2rem;
+        font-size: clamp(0.75rem, 1.3vw, 0.85rem);
     }
 }
 
 /* Smaller Mobile Devices (max-width: 480px) */
 @media (max-width: 480px) {
+    /* تجنب !important قدر الإمكان، لكنها ضرورية هنا لضمان تجاوز الأنماط الأساسية */
     * {
         box-sizing: border-box !important;
     }
@@ -1400,7 +1370,7 @@ a:hover {
 
     .container {
         width: 100% !important;
-        padding: 0 1rem !important;
+        padding: 0 0.8rem !important; 
         max-width: 100vw !important;
         margin: auto !important;
     }
@@ -1409,10 +1379,10 @@ a:hover {
         padding: 0.4rem 0;
     }
     .main-header .header-content {
-        padding: 0 1rem !important;
+        padding: 0 0.8rem !important; 
         flex-wrap: wrap;
         justify-content: space-between;
-        gap: 0.8rem;
+        gap: 0.6rem; 
         max-width: 100% !important;
     }
     
@@ -1423,8 +1393,11 @@ a:hover {
     .site-logo {
         order: 0 !important;
         margin-left: auto;
-        margin-right: 0.5rem;
+        margin-right: 0.4rem; 
         font-size: clamp(1.4rem, 4.5vw, 1.8rem) !important;
+    }
+    .site-logo .logo-icon {
+        font-size: 0.55em; 
     }
     .telegram-btn {
         display: none !important;
@@ -1450,8 +1423,8 @@ a:hover {
         flex-direction: row !important;
         justify-content: flex-start !important;
         width: auto !important;
-        gap: 0.8rem !important;
-        padding: 0 0.5rem !important;
+        gap: 0.6rem !important; 
+        padding: 0 0.4rem !important; 
     }
 
     .main-nav ul li {
@@ -1461,7 +1434,7 @@ a:hover {
 
     .main-nav ul li a {
         font-size: clamp(0.7rem, 2.5vw, 0.85rem) !important;
-        padding: 0.5rem 0.8rem !important;
+        padding: 0.4rem 0.7rem !important; 
         max-width: none !important;
         display: inline-flex !important;
         align-items: center;
@@ -1470,152 +1443,207 @@ a:hover {
         white-space: nowrap;
     }
 
-    .main-nav ul li:nth-child(n+4) {
+    /* هذا القسم يمكن تفعيله لإخفاء بعض عناصر التنقل على الموبايل إذا لم تكن تريد السكرول الأفقي */
+    /* .main-nav ul li:nth-child(n+4) {
         display: none !important;
-    }
+    } */
 
     .search-bar {
         order: 2 !important;
         display: flex;
         flex-basis: 100% !important;
-        margin: 0.8rem auto 0.5rem auto;
-        padding: 0.4rem 0.8rem;
+        margin: 0.6rem auto 0.4rem auto; 
+        padding: 0.3rem 0.6rem; 
         max-width: 95% !important;
     }
 
     .search-bar input {
         width: 100% !important;
-        font-size: clamp(0.75rem, 3vw, 0.9rem) !important;
+        font-size: clamp(0.7rem, 3vw, 0.85rem) !important;
         margin-right: 0.2rem !important;
     }
     .search-bar button {
-        font-size: 1.1rem !important;
+        font-size: 1rem !important;
     }
 
 
     .view-section {
-        padding: 8vw 0;
+        padding: 7vw 0;
     }
     .section-title {
         font-size: clamp(1.6rem, 5vw, 2rem);
-        margin-bottom: 5vw;
-        padding-bottom: 0.4rem;
+        margin-bottom: 4vw;
+        padding-bottom: 0.35rem;
     }
 
     .filter-controls {
-        gap: 0.5rem;
-        margin-bottom: 5vw;
-        padding: 0.5rem 1rem !important;
+        gap: 0.4rem;
+        margin-bottom: 4vw;
+        padding: 0.4rem 0.8rem !important;
         flex-direction: column;
         max-width: 100% !important;
     }
     .filter-btn, .filter-dropdown {
-        padding: 0.5rem 1rem;
-        font-size: clamp(0.75rem, 2.8vw, 0.85rem);
+        padding: 0.4rem 0.9rem;
+        font-size: clamp(0.7rem, 2.8vw, 0.8rem);
         width: 100%;
     }
     .filter-dropdown {
-        padding-left: 1.5rem;
-        background-position: left 0.6rem center;
-        background-size: 0.8em;
+        padding-left: 1.4rem;
+        background-position: left 0.5rem center;
+        background-size: 0.75em;
     }
 
-    .match-grid, .news-grid {
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 3.5vw;
-        padding: 0 1rem !important;
-        max-width: 100% !important;
+    .match-grid {
+        /* تقليل الحد الأدنى لعرض الكارت لجعلها أضيق قليلاً وتظهر بشكل أفضل على شاشات الموبايل الصغيرة */
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); 
+        gap: 3vw;
+        padding: 0 0.8rem !important; 
     }
+    .news-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 3vw;
+        padding: 0 0.8rem !important;
+    }
+
 
     .match-card img {
         height: clamp(130px, 40vw, 180px);
-        object-fit: contain;
-        background-color: var(--up-bg-dark);
     }
     .match-card .match-card-content {
-        padding: 0.7rem;
+        padding: 0.6rem;
         min-height: clamp(60px, 10vw, 80px);
     }
     .match-card h3 {
-        font-family: var(--font-heading) !important;
-        font-size: clamp(0.8rem, 3.2vw, 1rem);
-        line-height: 1.2;
-        width: 100%;
-        white-space: normal;
+        font-size: clamp(0.75rem, 3.2vw, 0.95rem);
     }
     /* === تعديلات شاملة لـ Mobile Team Names Layout === */
     .match-card .teams-logos {
-        flex-direction: column !important; /* تكديس عمودي على الموبايل الصغير */
-        gap: 0 !important; /* لا مسافة بين العناصر المكدسة */
-        margin-top: 0.3rem !important;
-        margin-bottom: 0.3rem !important;
-        padding: 0 0.5rem !important;
-        box-sizing: border-box; /* تأكد من تضمين الحشو في العرض */
-        justify-content: center; /* لا حاجة للـ space-between هنا لأنهم سيتكدسون */
+        flex-direction: row !important; 
+        flex-wrap: nowrap !important; /* مهم جدًا: منع الالتفاف لتمكين ellipsis */
+        justify-content: space-between !important; 
+        align-items: center !important;
+        gap: 0.05rem !important; /* تقليل المسافة بين العناصر إلى الحد الأدنى */
+        margin-top: 0.1rem !important;
+        margin-bottom: 0.1rem !important;
+        padding: 0 0.1rem !important; /* تقليل padding أكثر وأكثر للحصول على أقصى مساحة */
+        box-sizing: border-box;
     }
 
     .match-card .teams-logos > div { /* حاوية كل فريق (الشعار + الاسم) */
         display: flex;
         align-items: center;
-        width: 100%;
-        padding: 0; /* لا حشو داخلي */
-        flex-grow: 1; /* السماح بالنمو */
-        flex-shrink: 0; /* مهم: منع حاوية الفريق من الانكماش بشكل كبير */
-        min-width: auto; /* السماح بتحديد الحجم بناءً على المحتوى */
-        max-width: none; /* إزالة الحد الأقصى للعرض للسماح بأخذ المساحة */
+        flex-grow: 1;
+        flex-shrink: 1; 
+        gap: 0.1rem !important; /* تقليل المسافة بين الشعار والاسم داخل الفريق */
+        min-width: 0; /* مهم جدًا ليعمل ellipsis: السماح بالانكماش الكامل */
+        max-width: none; 
+        padding: 0;
     }
 
-    /* الفريق الأول (العلوي في RTL - الشعار على اليمين) */
+    /* الفريق الأول (على اليمين في RTL) */
     .match-card .teams-logos > div:first-of-type {
-        justify-content: flex-end; /* الشعار لليمين، الاسم يليه */
+        justify-content: flex-end; /* الشعار على اليمين والاسم يليه */
     }
 
-    /* الفريق الثاني (السفلي في RTL - الشعار على اليسار) */
+    /* الفريق الثاني (على اليسار في RTL) */
     .match-card .teams-logos > div:nth-of-type(2) {
-        justify-content: flex-start; /* الشعار لليسار، الاسم يسبقه */
+        justify-content: flex-start; /* الشعار على اليسار والاسم يسبقه */
     }
-
 
     .match-card .teams-logos span { /* أسماء الفرق على الموبايل */
-        font-size: clamp(0.8rem, 3.8vw, 1rem) !important;
-        white-space: normal; /* مهم: السماح بالالتفاف إلى سطر جديد */
-        overflow: visible; /* مهم: إظهار كل النص */
-        text-overflow: clip; /* مهم: إزالة النقاط (...) */
-        flex-grow: 1; /* السماح بالنمو */
-        flex-shrink: 1; /* السماح بالانكماش قبل الالتفاف */
-        min-width: 0; /* السماح للنص بالانكماش تمامًا */
+        font-size: clamp(0.7rem, 3.5vw, 0.85rem) !important; /* تقليل حجم الخط لاسم الفريق أكثر */
+        white-space: nowrap; 
+        overflow: hidden; 
+        text-overflow: ellipsis; 
+        flex-grow: 1; 
+        flex-shrink: 1; 
+        min-width: 0; 
     }
     
     .match-card .team-logo { /* شعارات الفرق على الموبايل */
-        width: clamp(35px, 9vw, 45px) !important;
-        height: clamp(35px, 9vw, 45px) !important;
-        flex-shrink: 0 !important; /* منع الشعار من الانكماش */
+        width: clamp(20px, 6vw, 30px) !important; /* تقليل حجم الشعار إلى أقصى حد ممكن */
+        height: clamp(20px, 6vw, 30px) !important;
+        flex-shrink: 0 !important;
         padding: 0 !important;
         border: none !important;
         box-shadow: none !important;
+        margin: 0 !important; 
     }
 
     /* هام: محاذاة الشعار والنص للفريق الثاني على الموبايل */
     .match-card .teams-logos > div:nth-of-type(2) .team-logo {
-        margin-left: 0 !important; /* إزالة الهامش الأيسر */
-        margin-right: 0.2rem !important; /* هامش لليمين بجانب الشعار */
+        margin-left: 0 !important; 
+        margin-right: 0.05rem !important; /* مسافة صغيرة جداً بين الشعار واسم الفريق الثاني */
     }
     .match-card .teams-logos > div:nth-of-type(2) span {
-        text-align: left !important; /* محاذاة اسم الفريق الثاني لليسار */
+        text-align: left !important; 
     }
 
     .match-card .teams-logos .vs-text { /* "VS" نص على الموبايل */
-        /* تكبير حجم "VS" وتغيير لونه هنا أيضًا */
-        font-size: clamp(1.1rem, 4.5vw, 1.7rem) !important; /* حجم خط أكبر لـ VS على الموبايل */
+        font-size: clamp(0.7rem, 3vw, 1rem) !important; /* تقليل حجم VS إلى أقصى حد */
         font-weight: 900 !important;
         color: var(--up-accent-red) !important;
-        margin: 0.2rem 0 !important; /* هامش عمودي لفصل الفرق */
+        margin: 0 0.05rem !important; /* تقليل الهامش إلى أقصى حد */
         padding: 0 !important;
         flex-shrink: 0 !important;
         line-height: 1;
-        width: 100%; /* أخذ العرض الكامل عند التكديس */
-        text-align: center; /* توسيط "VS" */
-        order: -1; /* وضعه منطقياً بين حاويتي الفريقين */
+        width: auto; 
+        text-align: center;
+        order: 0; 
     }
-    /* ... (احتفظ بباقي الأنماط لـ 480px) ... */
+    
+    .pagination-controls {
+        margin-top: 5vw;
+        gap: 0.8rem;
+        flex-wrap: wrap; 
+    }
+    .pagination-controls .btn-page {
+        padding: 0.5rem 1rem;
+        font-size: clamp(0.75rem, 2.8vw, 0.85rem);
+    }
+
+    .match-details-section {
+        padding: 7vw 4vw;
+    }
+    .match-details-section .back-btn {
+        margin-bottom: 4vw;
+        font-size: clamp(0.85rem, 2.5vw, 1rem);
+        padding: 0.5rem 1.2rem;
+    }
+    .video-player-wrapper {
+        margin-bottom: 3vw;
+        max-width: 100% !important; 
+        padding-bottom: 56.25% !important; 
+        border-width: 1px !important;
+    }
+    .ad-banner-center {
+        max-width: 100% !important;
+        margin: 4vw auto 4.5vw auto;
+        padding: 8px;
+    }
+
+    .suggested-matches-section {
+        margin-top: 4vw;
+        padding-top: 4vw;
+    }
+
+    .main-footer {
+        padding: 5vw 0;
+    }
+    .main-footer p {
+        font-size: clamp(0.7rem, 2.8vw, 0.8rem);
+        margin-bottom: 2vw;
+    }
+    .footer-links {
+        gap: 0.6rem;
+        flex-direction: column; 
+        align-items: center;
+    }
+    .footer-links a {
+        padding: 0.5rem 1rem;
+        font-size: clamp(0.7rem, 2.8vw, 0.8rem);
+        width: 80%; 
+        max-width: 200px;
+    }
 }
