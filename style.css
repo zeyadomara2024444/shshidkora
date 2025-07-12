@@ -1358,227 +1358,223 @@ a:hover {
 /* Smaller Mobile Devices (max-width: 480px) */
 @media (max-width: 480px) {
     html {
-        font-size: 10px; /* Base font size adjusted for smaller screens */
+        font-size: 11px; /* تم زيادة حجم الخط الأساسي قليلاً جداً ليتناسب مع تكبير العناصر */
     }
     body {
-        line-height: 1.45; 
+        line-height: 1.5; /* زيادة طفيفة لراحة العين */
     }
     .container {
         width: 98vw; 
-        padding: 0 0.5rem; 
+        padding: 0 0.6rem; /* زيادة طفيفة في البادينج لتحسين شكل الموقع */
     }
 
     .main-header {
-        padding: 0.3rem 0;
-        /* إزالة الخط الأحمر من هنا */
-        border-bottom: none; 
-        /* تقليل المساحة التي يأخذها الهيدر */
-        height: auto; /* السماح للمحتوى بتحديد الارتفاع */
-        min-height: unset; /* إلغاء أي حد أدنى للارتفاع لو موجود */
+        padding: 0.4rem 0; /* زيادة طفيفة في البادينج العلوي والسفلي */
+        border-bottom: none; /* إزالة الخط الأحمر */
+        height: auto; 
+        min-height: unset; 
     }
     .main-header .header-content {
         padding: 0 0.5rem;
-        flex-wrap: nowrap; /* منع اللف - نريدهم في سطر واحد */
+        flex-wrap: nowrap; 
         justify-content: space-between; 
-        /* تقليل المساحة العمودية بين العناصر */
         align-items: center; 
-        gap: 0.5rem; /* تقليل المسافات بين العناصر في الهيدر */
+        gap: 0.6rem; /* زيادة طفيفة في المسافات بين العناصر */
     }
     .menu-toggle {
-        display: none !important; /* إخفاء الثلاث شرط نهائياً */
+        display: none !important; 
     }
     .site-logo {
-        order: 0; /* رجع اللوجو لمكانه الطبيعي */
-        font-size: clamp(1.4rem, 4.5vw, 1.8rem); 
+        order: 0; 
+        font-size: clamp(1.6rem, 5vw, 2rem); /* تكبير حجم اللوجو قليلاً */
         flex-basis: auto; 
-        /* تقليل المساحة حول اللوجو */
         margin: 0;
         padding: 0;
     }
     .search-bar {
-        order: 1; /* خلي البحث يجي بعد اللوجو مباشرة */
+        order: 1; 
         display: flex; 
-        flex-basis: auto; /* خليه ياخد مساحته الطبيعية */
-        margin: 0 0.5rem 0 0; /* تظبيط الهوامش */
-        padding: 0.3rem 0.5rem;
-        width: clamp(120px, 28vw, 150px); /* حجم مناسب للبحث في الهيدر */
+        flex-basis: auto; 
+        margin: 0 0.6rem 0 0; /* تظبيط الهوامش */
+        padding: 0.4rem 0.7rem; /* تكبير البادينج لزيادة حجم البحث */
+        width: clamp(130px, 30vw, 170px); /* تكبير حجم البحث قليلاً */
     }
     .telegram-btn {
-        display: none !important; /* تأكيد إخفاء زر التليجرام */
+        display: none !important; 
     }
 
     .main-nav {
-        display: flex; /* إظهار الـ navigation بار الأصلي */
-        flex-basis: auto; /* يرجع ياخد مساحته الطبيعية */
-        order: 0; /* يرجع في ترتيبه الطبيعي بعد اللوجو */
-        position: static; /* إلغاء الـ fixed عشان يبقى جزء من التدفق الطبيعي للصفحة */
+        display: flex; 
+        flex-basis: auto; 
+        order: 0; 
+        position: static; 
         top: auto;
         left: auto;
         width: auto;
         height: auto;
-        background-color: transparent; /* إلغاء الخلفية الكاملة */
-        backdrop-filter: none; /* إلغاء الـ blur */
-        justify-content: center; /* رجع محاذاة اللينكات في النص */
+        background-color: transparent; 
+        backdrop-filter: none; 
+        justify-content: center; 
         z-index: auto; 
         align-items: center;
-        overflow-y: visible; /* إلغاء الـ scroll الخاص بالقائمة */
-        margin-right: auto; /* عشان اللينكات تبقى في النص ومتبوظش الجنب اليمين */
-        margin-left: 0.5rem; /* مسافة بين الـ nav والبحث */
-        /* تقليل المساحة العمودية للـ nav bar نفسه */
+        overflow-y: visible; 
+        margin-right: auto; 
+        margin-left: 0.6rem; /* مسافة بين الـ nav والبحث */
         padding: 0;
     }
     .main-nav ul {
-        flex-direction: row; /* رجع اللينكات أفقية */
-        gap: 0.3rem; /* تظبيط المسافات بينهم - أقل من 0.5 عشان يقعدوا في سطر واحد */
-        flex-wrap: nowrap; /* منع اللف تماما عشان يبقوا في سطر واحد */
-        justify-content: center; /* محاذاة اللينكات في المنتصف */
-        width: 100%; /* ضمان أن الـ ul يأخذ العرض الكامل */
-        overflow-x: auto; /* إضافة سكرول أفقي لو اللينكات كتير ومش مكفية */
-        -webkit-overflow-scrolling: touch; /* لتحسين تجربة السكرول على iOS */
-        scrollbar-width: none; /* إخفاء السكرول بار من Firefox */
+        flex-direction: row; 
+        gap: 0.4rem; /* زيادة طفيفة في المسافات بين الروابط */
+        flex-wrap: nowrap; 
+        justify-content: center; 
+        width: 100%; 
+        overflow-x: auto; 
+        -webkit-overflow-scrolling: touch; 
+        scrollbar-width: none; 
     }
     .main-nav ul::-webkit-scrollbar {
-        display: none; /* إخفاء السكرول بار من Webkit browsers */
+        display: none; 
     }
     .main-nav ul li {
         margin: 0;
-        flex-shrink: 0; /* منع اللينكات من الانكماش */
+        flex-shrink: 0; 
     }
     .main-nav ul li a {
-        font-size: clamp(0.7rem, 2.5vw, 0.8rem); /* حجم خط مناسب */
-        padding: 0.3rem 0.6rem; /* تظبيط الـ padding - أقل عشان يصغر المساحة */
-        white-space: nowrap; /* منع اللف داخل الزر نفسه */
+        font-size: clamp(0.8rem, 2.8vw, 0.9rem); /* تكبير حجم الخط للروابط */
+        padding: 0.4rem 0.8rem; /* تكبير البادينج للروابط */
+        white-space: nowrap; 
     }
     
-    .search-bar input {
-        width: 100%; 
-        font-size: clamp(0.75rem, 2.8vw, 0.85rem); 
+    /* إخفاء الجزء المحدد باللون الأحمر */
+    .section-title.red-underline-part { /* لو كان فيه كلاس خاصة بالعنصر ده */
+        display: none !important;
     }
-    .search-bar button {
-        font-size: 1.1rem; 
+    /* إذا لم يكن له كلاس خاصة، فسنخفيه بشكل عام في الموبايل */
+    .section-title {
+        display: none !important; /* هذا سيخفي كل العناوين من نوع section-title في الموبايل */
     }
 
 
     .view-section {
-        padding: 6vw 0; 
+        padding: 7vw 0; /* زيادة البادينج العلوي والسفلي للأقسام */
     }
-    .section-title {
-        font-size: clamp(1.3rem, 4vw, 1.7rem); 
-        margin-bottom: 4vw; 
-        padding-bottom: 0.3rem;
+    .section-title { /* هذا الجزء لن يطبق إذا تم إخفاء section-title بالكامل */
+        font-size: clamp(1.5rem, 4.5vw, 1.9rem); /* تكبير حجم الخط للعناوين في الأقسام */
+        margin-bottom: 5vw; /* زيادة المسافة أسفل العنوان */
+        padding-bottom: 0.4rem;
     }
 
     .filter-controls {
-        gap: 0.3rem; 
-        margin-bottom: 4vw; 
-        padding: 0.2rem 0.4rem; 
-        flex-direction: row; /* رجع الفلاتر أفقية */
-        flex-wrap: wrap; /* السماح باللف */
+        gap: 0.4rem; /* زيادة طفيفة في المسافات */
+        margin-bottom: 5vw; 
+        padding: 0.3rem 0.6rem; /* زيادة البادينج */
+        flex-direction: row; 
+        flex-wrap: wrap; 
         max-width: 98%; 
     }
     .filter-btn, .filter-dropdown {
-        padding: 0.3rem 0.8rem; 
-        font-size: clamp(0.65rem, 2.2vw, 0.75rem); 
-        width: auto; /* السماح لكل زر ياخد عرضه الطبيعي */
-        flex-grow: 1; /* السماح لهم بالتمدد إذا لزم الأمر */
+        padding: 0.4rem 1rem; /* تكبير البادينج */
+        font-size: clamp(0.7rem, 2.5vw, 0.8rem); /* تكبير حجم الخط */
+        width: auto; 
+        flex-grow: 1; 
     }
     .filter-dropdown {
-        padding-left: 1.2rem; 
-        background-position: left 0.45rem center; 
-        background-size: 0.65em; 
+        padding-left: 1.4rem; 
+        background-position: left 0.55rem center; 
+        background-size: 0.75em; 
     }
 
     .match-grid, .news-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* 2 أو 3 كولم حسب المساحة */ 
-        gap: 3vw; 
-        padding: 0 1.5vw; 
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* تكبير حجم الكروت قليلاً */
+        gap: 3.5vw; /* زيادة المسافة بين الكروت */
+        padding: 0 2vw; /* زيادة البادينج الجانبي قليلاً */
     }
 
     .match-card img {
-        height: clamp(100px, 30vw, 140px); /* طول مناسب للصورة */ 
+        height: clamp(110px, 33vw, 150px); /* طول مناسب للصورة */ 
         object-fit: contain; 
         background-color: var(--up-bg-dark); 
     }
     .match-card .match-card-content {
-        padding: 0.5rem; 
-        min-height: clamp(50px, 8vw, 70px); 
+        padding: 0.6rem; /* تكبير البادينج */
+        min-height: clamp(60px, 10vw, 80px); /* زيادة الحد الأدنى للارتفاع */
     }
     .match-card h3 {
-        font-size: clamp(0.75rem, 2.8vw, 0.9rem); 
-        line-height: 1.15; 
+        font-size: clamp(0.8rem, 3vw, 1rem); /* تكبير حجم الخط */
+        line-height: 1.2; 
     }
     .match-card .teams-logos {
-        font-size: clamp(0.7rem, 2.5vw, 0.85rem); 
-        gap: 0.2rem; 
+        font-size: clamp(0.8rem, 2.8vw, 0.95rem); /* تكبير حجم الخط */
+        gap: 0.3rem; 
     }
     .match-card .teams-logos .vs-text { 
-        font-size: clamp(0.55rem, 0.7vw, 0.65rem); 
+        font-size: clamp(0.6rem, 0.8vw, 0.7rem); 
     }
     .match-card .team-logo {
-        width: clamp(30px, 8vw, 45px); 
-        height: clamp(30px, 8vw, 45px); 
+        width: clamp(35px, 9vw, 50px); /* تكبير حجم اللوجو */
+        height: clamp(35px, 9vw, 50px); 
     }
     .match-card .match-score {
-        font-size: clamp(1rem, 3.5vw, 1.3rem); 
+        font-size: clamp(1.2rem, 4vw, 1.5rem); /* تكبير حجم الخط */
     }
     .match-card .match-status {
-        font-size: clamp(0.6rem, 2.5vw, 0.7rem); 
-        padding: 0.2rem 0.4rem; 
+        font-size: clamp(0.7rem, 2.8vw, 0.8rem); /* تكبير حجم الخط */
+        padding: 0.3rem 0.6rem; /* تكبير البادينج */
     }
 
     .news-card img {
-        height: clamp(90px, 28vw, 120px); 
+        height: clamp(100px, 30vw, 130px); /* طول مناسب للصورة */ 
         object-fit: cover; 
     }
     .news-card .news-card-content {
-        padding: 0.6rem 0.8rem; 
+        padding: 0.7rem 0.9rem; /* تكبير البادينج */
     }
     .news-card h4 {
-        font-size: clamp(0.7rem, 2.8vw, 0.85rem); 
-        line-height: 1.2;
+        font-size: clamp(0.8rem, 3vw, 1rem); /* تكبير حجم الخط */
+        line-height: 1.25; /* ضبط ارتفاع السطر */
     }
     .news-card p {
-        font-size: clamp(0.6rem, 2.5vw, 0.7rem); 
-        line-height: 1.4;
+        font-size: clamp(0.7rem, 2.8vw, 0.8rem); /* تكبير حجم الخط */
+        line-height: 1.5;
     }
     .news-card .news-date {
-        font-size: 0.6rem;
+        font-size: 0.65rem; /* تكبير حجم الخط */
     }
 
     .pagination-controls {
-        margin-top: 4.5vw; 
-        gap: 0.8vw; 
+        margin-top: 5vw; /* زيادة المسافة العلوية */
+        gap: 1vw; /* زيادة المسافة بين أزرار الترقيم */
         flex-wrap: wrap; 
     }
     .pagination-controls .btn-page {
-        padding: 0.3rem 0.8rem; 
-        font-size: clamp(0.65rem, 2.5vw, 0.75rem); 
+        padding: 0.4rem 1rem; /* تكبير البادينج */
+        font-size: clamp(0.7rem, 2.8vw, 0.8rem); /* تكبير حجم الخط */
     }
 
     .match-details-section {
-        padding: 6.5vw 4vw; 
+        padding: 7vw 4.5vw; /* زيادة البادينج */
     }
     .match-details-section .back-btn {
-        margin-bottom: 4vw; 
-        font-size: clamp(0.7rem, 2.8vw, 0.85rem); 
-        padding: 0.4rem 1.0rem; 
+        margin-bottom: 5vw; /* زيادة المسافة */
+        font-size: clamp(0.8rem, 3vw, 0.95rem); /* تكبير حجم الخط */
+        padding: 0.5rem 1.2rem; /* تكبير البادينج */
     }
     .video-player-wrapper {
-        margin-bottom: 4vw; 
-        max-width: 95%; 
-        padding-bottom: 56.25%; /* رجعت لـ 16:9 عشان تبقى نسبة طبيعية ومناسبة للعرض على الموبايل */ 
+        margin-bottom: 5vw; /* زيادة المسافة */
+        max-width: 98%; /* التأكد من أن الفيديو يأخذ معظم العرض */
+        padding-bottom: 56.25%; /* نسبة 16:9 الطبيعية للفيديو */ 
         border-width: 2px; 
     }
     .match-info-box {
         grid-template-columns: auto 1fr; 
-        gap: 0.3rem; 
-        padding: 0.5rem; 
-        margin: 2vw auto; 
+        gap: 0.4rem; /* زيادة المسافة */
+        padding: 0.6rem; /* زيادة البادينج */
+        margin: 3vw auto; /* زيادة المسافة */
         max-width: 98%; 
     }
     .match-info-box .match-details-thumbnail {
-        width: clamp(45px, 11vw, 65px); 
-        height: clamp(45px, 11vw, 65px);
+        width: clamp(50px, 12vw, 70px); /* تكبير حجم الصورة المصغرة */
+        height: clamp(50px, 12vw, 70px);
         margin: 0; 
     }
     .match-info-box .info-columns {
@@ -1586,42 +1582,39 @@ a:hover {
         text-align: right; 
     }
     .match-info-box p {
-        font-size: clamp(0.55rem, 2.2vw, 0.7rem); 
-        padding: 0.25rem 0.5rem; 
-        text-align: right; 
+        font-size: clamp(0.6rem, 2.5vw, 0.75rem); /* تكبير حجم الخط */
+        padding: 0.3rem 0.6rem; /* تكبير البادينج */
     }
     .match-info-box p strong {
-        font-size: clamp(0.5rem, 2vw, 0.65rem); 
-        width: auto; 
-        text-align: right; 
+        font-size: clamp(0.55rem, 2.2vw, 0.7rem); /* تكبير حجم الخط */
     }
 
     .ad-banner-center {
-        max-width: 95%; 
-        margin: 3.5vw auto 4vw auto; 
-        padding: 10px;
+        max-width: 98%; /* التأكد من أن الإعلان يأخذ معظم العرض */
+        margin: 4vw auto 5vw auto; /* زيادة المسافات */
+        padding: 12px; /* تكبير البادينج */
     }
     .ad-banner-center p, .ad-banner-center button {
         display: none;
     }
 
     .suggested-matches-section {
-        margin-top: 3.5vw; 
-        padding-top: 3.5vw; 
+        margin-top: 4.5vw; /* زيادة المسافة */
+        padding-top: 4.5vw; /* زيادة البادينج */
     }
 
     .main-footer {
-        padding: 4vw 0;
+        padding: 5vw 0; /* زيادة البادينج للفوتر */
     }
     .main-footer p {
-        font-size: clamp(0.6rem, 2.5vw, 0.75rem); 
-        margin-bottom: 1.5vw;
+        font-size: clamp(0.7rem, 2.8vw, 0.85rem); /* تكبير حجم الخط */
+        margin-bottom: 2vw;
     }
     .footer-links {
-        gap: 0.4rem; 
+        gap: 0.5rem; /* زيادة المسافة بين الروابط */
     }
     .footer-links a {
-        padding: 0.3rem 0.8rem; 
-        font-size: clamp(0.65rem, 2.5vw, 0.75rem); 
+        padding: 0.4rem 1rem; /* تكبير البادينج */
+        font-size: clamp(0.7rem, 2.8vw, 0.85rem); /* تكبير حجم الخط */
     }
 }
