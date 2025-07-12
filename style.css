@@ -1569,31 +1569,31 @@ a:hover {
         align-items: center !important;
         justify-content: center !important;
         /* **تم التعديل هنا لتقليل الفجوة الإجمالية بين عناصر الفريق** */
-        gap: 0.2rem !important; /* تقليل المسافة بين العناصر قدر الإمكان */
+        gap: 0.15rem !important; /* تقليل المسافة بين العناصر قدر الإمكان */
         flex-wrap: nowrap !important; /* **مهم جداً**: منع العناصر من النزول لسطر جديد */
         width: 100% !important; 
         /* **تم التعديل هنا لتقليل البادينج الأفقي** */
-        padding: 0 0.3rem !important; /* إضافة padding أفقي بسيط */
+        padding: 0 0.2rem !important; /* إضافة padding أفقي بسيط جدا */
     }
     .match-card .teams-logos span { /* أسماء الفرق - Improved for text visibility */
         white-space: nowrap !important; /* منع اسم الفريق من النزول سطر جديد */
         overflow: hidden !important; /* إخفاء أي جزء زائد من اسم الفريق لو طويل جداً */
         text-overflow: ellipsis !important; /* إضافة نقاط (...) للاسم الطويل */
-        /* **تم التعديل هنا لزيادة المساحة المخصصة لاسم الفريق** */
-        max-width: calc(50% - 2.8rem) !important; /* Updated calculation for better fit */
+        /* **تم التعديل هنا لزيادة المساحة المخصصة لاسم الفريق أكثر** */
+        max-width: calc(50% - 2.9rem) !important; /* Updated calculation for better fit */
         flex-grow: 1; /* Allow them to grow and take available space */
         min-width: 25px; /* Ensure a minimum width to prevent complete collapse */
     }
     .match-card .teams-logos .vs-text { 
         font-size: clamp(0.6rem, 2vw, 0.7rem) !important; 
         flex-shrink: 0 !important; /* منع الـ VS من انها تصغر */
-        /* **تم التعديل هنا لتقليل البادينج لـ VS** */
-        padding: 0 0.15rem !important;
+        /* **تم التعديل هنا لتقليل البادينج لـ VS أكثر** */
+        padding: 0 0.1rem !important;
     }
     .match-card .team-logo {
-        /* **تم التعديل هنا لتقليل حجم اللوجو قليلاً جداً** */
-        width: clamp(32px, 8vw, 45px) !important; 
-        height: clamp(32px, 8vw, 45px) !important; 
+        /* **تم التعديل هنا لتقليل حجم اللوجو بشكل طفيف جداً** */
+        width: clamp(30px, 7.5vw, 40px) !important; 
+        height: clamp(30px, 7.5vw, 40px) !important; 
         object-fit: contain !important; 
         flex-shrink: 0 !important; /* منع اللوجو من انه يصغر */
     }
