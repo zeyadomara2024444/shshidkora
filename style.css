@@ -1376,69 +1376,77 @@ a:hover {
 /* Smaller Mobile Devices (max-width: 480px) */
 @media (max-width: 480px) {
     html {
-        font-size: 13px; /* تم تكبير حجم الموقع قليلاً للفون */
+        font-size: 11px; 
     }
     body {
-        line-height: 1.5; /* تم تعديل هذا أيضاً لجعل المحتوى أسهل للقراءة */
+        line-height: 1.45; 
     }
     .container {
-        width: 95vw; /* تم توسيع العرض قليلاً */
-        padding: 0 0.8rem; 
+        width: 98vw; 
+        padding: 0 0.5rem; 
     }
 
     .main-header {
-        padding: 0.6rem 0; /* زيادة البادينج ليظهر بشكل أفضل */
+        padding: 0.3rem 0;
     }
     .main-header .header-content {
-        padding: 0 0.8rem;
-        flex-wrap: nowrap; /* منع اللف لجعل العناصر بجانب بعضها */
+        padding: 0 0.5rem;
+        flex-wrap: wrap; 
         justify-content: space-between; 
     }
     .menu-toggle {
-        display: none; /* إخفاء زر الثلاث شرط */
+        order: 0; 
+        display: block; 
+        margin-right: 0.5rem; 
+        margin-left: auto; 
     }
     .site-logo {
-        order: 0; /* إعادة الترتيب ليظهر الشعار أولاً */
-        font-size: clamp(1.6rem, 4vw, 2rem); /* تكبير حجم الشعار */
+        order: 1; 
+        font-size: clamp(1.4rem, 4.5vw, 1.8rem); 
         flex-basis: auto; 
     }
     .search-bar {
-        order: 1; /* إعادة الترتيب ليظهر شريط البحث بجانب الشعار أو بعده مباشرة */
+        order: 2; 
         display: flex; 
-        flex-basis: auto; /* السماح له بأخذ مساحة مرنة */
-        margin: 0; /* إزالة الهوامش الزائدة */
-        padding: 0.4rem 0.6rem; /* ضبط البادينج ليتناسب */
-        width: clamp(120px, 28vw, 160px); /* حجم متناسق لشريط البحث */
+        flex-basis: 100%; 
+        margin: 0.5rem auto 0.2rem auto; 
+        padding: 0.3rem 0.5rem;
     }
     .telegram-btn {
-        display: inline-flex !important; /* إظهار زر التليجرام إذا كان موجوداً، أو يمكن تركه display: none إذا كنت لا تريده */
+        display: none !important; 
     }
 
     .main-nav {
-        display: flex; /* إظهار قائمة التنقل */
-        flex-basis: auto; /* السماح لها بأخذ مساحة مرنة */
-        order: 2; /* ترتيب قائمة التنقل بعد الشعار وشريط البحث */
-        position: static; /* إزالة التثبيت ليعود جزءاً من التدفق الطبيعي */
-        width: auto;
-        height: auto;
-        background-color: transparent; /* إزالة الخلفية الشفافة fullscreen */
-        backdrop-filter: none; /* إزالة تأثير Blur */
-        justify-content: center; /* توسيط العناصر */
-        z-index: auto; 
+        display: none; 
+        flex-basis: 100%; 
+        order: 3; 
+    }
+    .main-nav.active-mobile { 
+        flex-direction: column;
+        padding: 0.5rem 0; 
+        display: flex;
+        position: fixed; 
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(10, 17, 31, 0.98); 
+        backdrop-filter: blur(10px);
+        justify-content: center;
+        z-index: 99; 
         align-items: center;
-        overflow-y: visible; 
-        flex-grow: 1; /* السماح لها بالتمدد */
+        overflow-y: auto; 
     }
-    .main-nav ul {
-        flex-direction: row; /* إعادة الترتيب الأفقي */
-        gap: 0.8rem; /* مسافة بين العناصر */
+    .main-nav.active-mobile ul {
+        flex-direction: column;
+        gap: 1rem; 
     }
-    .main-nav ul li {
+    .main-nav.active-mobile ul li {
         margin: 0;
     }
-    .main-nav ul li a {
-        font-size: clamp(0.75rem, 2.5vw, 0.9rem); /* ضبط حجم الخط ليتناسب */
-        padding: 0.6rem 1rem; /* ضبط البادينج */
+    .main-nav.active-mobile ul li a {
+        font-size: clamp(1.2rem, 4vw, 1.5rem); 
+        padding: 0.8rem 1.5rem;
     }
 
     .search-bar input {
@@ -1454,121 +1462,123 @@ a:hover {
         padding: 6vw 0; 
     }
     .section-title {
-        font-size: clamp(1.6rem, 5vw, 2rem); /* تكبير حجم العنوان قليلاً */
+        font-size: clamp(1.3rem, 4vw, 1.7rem); 
         margin-bottom: 4vw; 
-        padding-bottom: 0.4rem;
+        padding-bottom: 0.3rem;
     }
 
     .filter-controls {
-        gap: 0.5rem; /* إعادة ضبط المسافة */
+        gap: 0.3rem; 
         margin-bottom: 4vw; 
-        padding: 0.3rem 0.6rem; /* ضبط البادينج */
-        flex-direction: row; /* إعادة الترتيب الأفقي */
-        flex-wrap: wrap; /* السماح باللف إذا كانت العناصر كثيرة */
-        max-width: 95%; /* زيادة العرض قليلاً */
+        padding: 0.2rem 0.4rem; 
+        flex-direction: column; 
+        max-width: 98%; 
     }
     .filter-btn, .filter-dropdown {
-        padding: 0.4rem 1rem; /* ضبط البادينج */
-        font-size: clamp(0.7rem, 2.5vw, 0.8rem); /* ضبط حجم الخط */
-        width: auto; /* السماح بعرض مرن */
+        padding: 0.3rem 0.8rem; 
+        font-size: clamp(0.65rem, 2.2vw, 0.75rem); 
+        width: 100%; 
     }
     .filter-dropdown {
-        padding-left: 1.5rem; 
-        background-position: left 0.6rem center; 
-        background-size: 0.8em; 
+        padding-left: 1.2rem; 
+        background-position: left 0.45rem center; 
+        background-size: 0.65em; 
     }
 
     .match-grid, .news-grid {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* تصغير حجم البطاقات ليتناسب مع عمودين أو أكثر */
-        gap: 3vw; /* زيادة المسافة بين البطاقات */
-        padding: 0 2vw; /* زيادة البادينج الجانبي */
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 2.5vw; 
+        padding: 0 1.5vw; 
     }
 
     .match-card img {
-        height: clamp(140px, 40vw, 200px); /* تكبير ارتفاع الصورة */
-        object-fit: cover; /* لضمان ملء الصورة للمساحة بشكل جيد */
+        height: clamp(120px, 38vw, 160px); 
+        object-fit: contain; 
         background-color: var(--up-bg-dark); 
     }
     .match-card .match-card-content {
-        padding: 0.7rem; /* زيادة البادينج */
-        min-height: clamp(60px, 10vw, 80px); /* ضبط الارتفاع الأدنى */
+        padding: 0.5rem; 
+        min-height: clamp(50px, 8vw, 70px); 
     }
     .match-card h3 {
-        font-size: clamp(0.85rem, 3.5vw, 1.1rem); /* تكبير حجم الخط */
-        line-height: 1.2; 
+        font-size: clamp(0.75rem, 2.8vw, 0.9rem); 
+        line-height: 1.15; 
     }
     .match-card .teams-logos {
-        font-size: clamp(0.8rem, 3vw, 1rem); /* تكبير حجم الخط */
-        gap: 0.4rem; /* زيادة المسافة */
+        font-size: clamp(0.7rem, 2.5vw, 0.85rem); 
+        gap: 0.2rem; 
     }
     .match-card .teams-logos .vs-text { 
-        font-size: clamp(0.6rem, 1.2vw, 0.75rem); /* تكبير حجم الخط */
+        font-size: clamp(0.55rem, 0.7vw, 0.65rem); 
     }
     .match-card .team-logo {
-        width: clamp(40px, 12vw, 55px); /* تكبير حجم الشعار */
-        height: clamp(40px, 12vw, 55px); 
+        width: clamp(30px, 8vw, 45px); 
+        height: clamp(30px, 8vw, 45px); 
     }
     .match-card .match-score {
-        font-size: clamp(1.2rem, 4.5vw, 1.6rem); /* تكبير حجم الخط */
+        font-size: clamp(1rem, 3.5vw, 1.3rem); 
     }
     .match-card .match-status {
-        font-size: clamp(0.7rem, 3vw, 0.8rem); /* تكبير حجم الخط */
-        padding: 0.3rem 0.6rem; /* ضبط البادينج */
+        font-size: clamp(0.6rem, 2.5vw, 0.7rem); 
+        padding: 0.2rem 0.4rem; 
     }
 
     .news-card img {
-        height: clamp(120px, 35vw, 160px); /* تكبير ارتفاع الصورة */
+        height: clamp(90px, 28vw, 120px); 
         object-fit: cover; 
     }
     .news-card .news-card-content {
-        padding: 0.8rem 1rem; /* زيادة البادينج */
+        padding: 0.6rem 0.8rem; 
     }
     .news-card h4 {
-        font-size: clamp(0.8rem, 3.2vw, 1rem); /* تكبير حجم الخط */
-        line-height: 1.3;
+        font-size: clamp(0.7rem, 2.8vw, 0.85rem); 
+        line-height: 1.2;
     }
     .news-card p {
-        font-size: clamp(0.7rem, 2.8vw, 0.85rem); /* تكبير حجم الخط */
-        line-height: 1.5;
+        font-size: clamp(0.6rem, 2.5vw, 0.7rem); 
+        line-height: 1.4;
     }
     .news-card .news-date {
-        font-size: 0.7rem;
+        font-size: 0.6rem;
     }
 
     .pagination-controls {
-        margin-top: 5vw; /* زيادة المسافة العلوية */
-        gap: 1.5vw; /* زيادة المسافة بين الأزرار */
+        margin-top: 4.5vw; 
+        gap: 0.8vw; 
         flex-wrap: wrap; 
     }
     .pagination-controls .btn-page {
-        padding: 0.4rem 1rem; /* ضبط البادينج */
-        font-size: clamp(0.7rem, 3vw, 0.85rem); /* تكبير حجم الخط */
+        padding: 0.3rem 0.8rem; 
+        font-size: clamp(0.65rem, 2.5vw, 0.75rem); 
     }
 
     .match-details-section {
-        padding: 7vw 4vw; /* زيادة البادينج */
+        padding: 6.5vw 4vw; 
     }
     .match-details-section .back-btn {
-        margin-bottom: 5vw; /* زيادة المسافة السفلية */
-        font-size: clamp(0.8rem, 3.5vw, 1rem); /* تكبير حجم الخط */
-        padding: 0.5rem 1.2rem; /* ضبط البادينج */
+        margin-bottom: 4vw; 
+        font-size: clamp(0.7rem, 2.8vw, 0.85rem); 
+        padding: 0.4rem 1.0rem; 
     }
     .video-player-wrapper {
-        margin-bottom: 5vw; /* زيادة المسافة السفلية */
-        max-width: 100%; /* استخدام أقصى عرض متاح */
-        padding-bottom: 56.25%; /* إعادة النسبة الأصلية 16:9 لجعل الفيديو أطول */ 
+        margin-bottom: 4vw; 
+        /* تم تكبير أقصى عرض لمشغل الفيديو للموبايل */
+        max-width: 95%; 
+        /* تم تعديل النسبة لتقصير الطول أكثر */
+        padding-bottom: 40%; /* تم التعديل من 56.25% إلى 40% */ 
         border-width: 2px; 
     }
     .match-info-box {
         grid-template-columns: auto 1fr; 
-        gap: 0.4rem; /* زيادة المسافة */
-        padding: 0.6rem; /* زيادة البادينج */
-        margin: 3vw auto; /* زيادة الهوامش */
-        max-width: 100%; /* استخدام أقصى عرض متاح */
+        gap: 0.3rem; 
+        padding: 0.5rem; 
+        margin: 2vw auto; 
+        /* تم تكبير أقصى عرض ليتناسب مع الفيديو الجديد */
+        max-width: 98%; 
     }
     .match-info-box .match-details-thumbnail {
-        width: clamp(55px, 15vw, 80px); /* تكبير حجم الصورة المصغرة */
-        height: clamp(55px, 15vw, 80px);
+        width: clamp(45px, 11vw, 65px); 
+        height: clamp(45px, 11vw, 65px);
         margin: 0; 
     }
     .match-info-box .info-columns {
@@ -1576,42 +1586,43 @@ a:hover {
         text-align: right; 
     }
     .match-info-box p {
-        font-size: clamp(0.65rem, 2.8vw, 0.8rem); /* تكبير حجم الخط */
-        padding: 0.3rem 0.6rem; 
+        font-size: clamp(0.55rem, 2.2vw, 0.7rem); 
+        padding: 0.25rem 0.5rem; 
         text-align: right; 
     }
     .match-info-box p strong {
-        font-size: clamp(0.6rem, 2.5vw, 0.75rem); /* تكبير حجم الخط */
+        font-size: clamp(0.5rem, 2vw, 0.65rem); 
         width: auto; 
         text-align: right; 
     }
 
     .ad-banner-center {
-        max-width: 100%; /* استخدام أقصى عرض متاح */
-        margin: 4.5vw auto 5vw auto; /* زيادة الهوامش */
-        padding: 15px; /* زيادة البادينج */
+        /* تم تكبير أقصى عرض ليتناسب مع الفيديو الجديد */
+        max-width: 95%; 
+        margin: 3.5vw auto 4vw auto; 
+        padding: 10px;
     }
     .ad-banner-center p, .ad-banner-center button {
         display: none;
     }
 
     .suggested-matches-section {
-        margin-top: 4.5vw; 
-        padding-top: 4.5vw; 
+        margin-top: 3.5vw; 
+        padding-top: 3.5vw; 
     }
 
     .main-footer {
-        padding: 5vw 0; /* زيادة البادينج */
+        padding: 4vw 0;
     }
     .main-footer p {
-        font-size: clamp(0.7rem, 3vw, 0.85rem); /* تكبير حجم الخط */
-        margin-bottom: 2vw;
+        font-size: clamp(0.6rem, 2.5vw, 0.75rem); 
+        margin-bottom: 1.5vw;
     }
     .footer-links {
-        gap: 0.6rem; /* زيادة المسافة */
+        gap: 0.4rem; 
     }
     .footer-links a {
-        padding: 0.4rem 1rem; /* ضبط البادينج */
-        font-size: clamp(0.7rem, 3vw, 0.85rem); /* تكبير حجم الخط */
+        padding: 0.3rem 0.8rem; 
+        font-size: clamp(0.65rem, 2.5vw, 0.75rem); 
     }
 }
