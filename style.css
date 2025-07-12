@@ -1200,16 +1200,14 @@ a:hover {
     }
 
     .match-grid, .news-grid {
-        /* التعديل هنا: زيادة الحد الأدنى لعرض الكارت ليتسع أكثر */
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
         gap: 1.2vw; 
         padding: 0 1.5vw;
     }
 
     .match-card img {
-        /* التعديل هنا: object-fit: cover for tablets */
         height: clamp(170px, 18vw, 220px);
-        object-fit: cover; /* مهم: الصورة ستغطي المساحة بالكامل هنا أيضًا */
+        object-fit: cover; 
     }
     .match-card .match-card-content {
         min-height: clamp(75px, 8vw, 95px);
@@ -1327,8 +1325,7 @@ a:hover {
     }
 
     html {
-        /* التعديل هنا: زيادة حجم الخط الأساسي للموبايل لـ 11px */
-        font-size: 11px !important; /* زاد من 10px إلى 11px */
+        font-size: 11px !important; 
         width: 100vw !important;
         overflow-x: hidden !important;
         margin: 0 !important;
@@ -1355,7 +1352,6 @@ a:hover {
 
     .container {
         width: 100% !important;
-        /* تقليل padding على أصغر الموبايلات أكثر قليلاً */
         padding: 0 0.6rem !important; 
         max-width: 100vw !important;
         margin: auto !important;
@@ -1477,8 +1473,8 @@ a:hover {
 
     .match-grid {
         /* زيادة عرض الكروت على الموبايل لكي تأخذ مساحة أكبر */
-        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); /* زاد من 160px إلى 170px */
-        gap: 1.5vw; /* قلل المسافة بين الكروت أكثر */
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* زاد من 170px إلى 180px - مما يجعل الكروت أوسع */
+        gap: 1.2vw; /* قلل المسافة بين الكروت أكثر */
         padding: 0 0.6rem !important; /* قلل padding الشبكة أكثر */
     }
     .news-grid {
@@ -1490,8 +1486,8 @@ a:hover {
 
     .match-card img {
         /* التعديل هنا: object-fit: cover for mobile, وتعديل الارتفاع ليتناسب */
-        height: clamp(100px, 30vw, 150px) !important; /* ارتفاع الصورة للموبايل */
-        object-fit: cover !important; /* مهم: الصورة ستغطي المساحة بالكامل هنا */
+        height: clamp(120px, 35vw, 180px) !important; /* زاد من 30vw إلى 35vw ليكون أعلى */
+        object-fit: cover !important; 
         display: block !important;
     }
     .match-card .match-card-content {
@@ -1603,8 +1599,7 @@ a:hover {
     .video-player-wrapper {
         margin-bottom: 3vw;
         max-width: 100% !important; 
-        /* التعديل هنا: زيادة طول مشغل الفيديو للموبايل */
-        padding-bottom: 70% !important; /* زاد من 65% إلى 70% ليكون أطول قليلاً، جرب 75% إذا لم يعجبك */
+        padding-bottom: 70% !important; 
         border-width: 1px !important;
     }
     .ad-banner-center {
