@@ -1378,18 +1378,18 @@ a:hover {
 @media (max-width: 480px) {
     html {
         font-size: 10px; 
-        width: 100vw; 
+        width: 100vw; /* Ensure HTML is exactly viewport width */
     }
     body {
         line-height: 1.5; 
-        overflow-x: hidden; 
-        width: 100vw; 
+        overflow-x: hidden; /* Double-ensure no horizontal scroll */
+        width: 100vw; /* Ensure body is exactly viewport width */
     }
     .container {
-        width: 100%; 
-        padding: 0 0.8rem; 
-        box-sizing: border-box; 
-        max-width: 100vw; 
+        width: 100%; /* Use 100% of parent, combined with max-width on larger screens */
+        padding: 0 0.8rem; /* Use a fixed padding */
+        box-sizing: border-box; /* Crucial: padding does not add to total width */
+        max-width: 100vw; /* Ensure container itself doesn't exceed viewport */
     }
 
     .main-header {
@@ -1400,8 +1400,8 @@ a:hover {
         flex-wrap: wrap; 
         justify-content: space-between; 
         gap: 0.8rem; 
-        max-width: 100%; 
-        box-sizing: border-box; 
+        max-width: 100%; /* Ensure content doesn't overflow */
+        box-sizing: border-box; /* Ensure padding is included in width */
     }
     .menu-toggle {
         order: 0; 
@@ -1422,8 +1422,8 @@ a:hover {
         flex-basis: 100%; 
         margin: 0.8rem auto 0.5rem auto; 
         padding: 0.4rem 0.8rem;
-        max-width: 100%; 
-        box-sizing: border-box; 
+        max-width: 100%; /* Ensure search bar doesn't overflow */
+        box-sizing: border-box; /* Ensure padding is included in width */
     }
     .telegram-btn {
         display: none !important; 
@@ -1438,42 +1438,39 @@ a:hover {
         position: fixed;
         top: 0;
         left: 0;
-        width: 100vw; 
-        height: 100vh; 
-        background-color: rgba(10, 17, 31, 0.99); 
-        backdrop-filter: blur(15px); 
+        width: 100vw; /* Explicitly use 100vw */
+        height: 100vh; /* Explicitly use 100vh */
+        background-color: rgba(10, 17, 31, 0.99); /* Slightly more opaque background */
+        backdrop-filter: blur(15px); /* Stronger blur effect */
         display: flex;
         flex-direction: column; 
         justify-content: center; 
         align-items: center; 
-        z-index: 9999; 
+        z-index: 9999; /* Maximize z-index to be absolutely on top */
         overflow-y: auto; 
-        padding: 4rem 1rem; /* زيادة الـ padding الكلي للقائمة من فوق وتحت وجوانب */
-        box-sizing: border-box; /* تأكيد أن الـ padding لا يزيد العرض الكلي */
+        padding: 2rem 0; /* Add overall padding for content not to touch edges */
         animation: fadeIn 0.3s ease-out; 
     }
     .main-nav.active-mobile ul {
         flex-direction: column; 
-        gap: 2.2rem; /* تقليل المسافة بين الروابط شوية عشان ما تبقاش متباعدة أوي */
-        padding: 0; 
-        width: 100%; 
+        gap: 2.5rem; /* Significantly increase space between menu items */
+        padding: 0; /* Remove internal padding from ul itself */
+        width: 100%; /* Ensure ul takes full width of its parent (main-nav) */
     }
     .main-nav.active-mobile ul li {
-        width: 100%; 
-        text-align: center; 
+        width: 100%; /* Make list items take full width */
+        text-align: center; /* Center text within each list item */
     }
     .main-nav.active-mobile ul li a {
-        font-size: clamp(1.6rem, 5.5vw, 2rem); /* تعديل حجم الخط ليكون مناسب */
-        padding: 1.2rem 0.5rem; /* تعديل الـ padding للروابط نفسها */
-        display: block; 
+        font-size: clamp(1.8rem, 6vw, 2.2rem); /* Make text much larger for mobile tapability */
+        padding: 1.5rem 0.5rem; /* Adjust padding for larger buttons, no horizontal padding */
+        display: block; /* Make links block-level to take full width */
         border-radius: var(--border-radius-button); 
         background: var(--up-bg-medium); 
         color: var(--up-text-primary); 
         box-shadow: var(--up-shadow-soft); 
         border: 1px solid var(--up-accent-blue); 
         transition: all var(--transition-fast);
-        max-width: 90%; /* تحديد أقصى عرض للرابط نفسه */
-        margin: auto; /* توسيط الرابط داخل الـ li */
     }
     .main-nav.active-mobile ul li a:hover,
     .main-nav.active-mobile ul li a.active {
@@ -1507,8 +1504,8 @@ a:hover {
         margin-bottom: 5vw; 
         padding: 0.5rem 1rem; 
         flex-direction: column; 
-        max-width: 100%; 
-        box-sizing: border-box; 
+        max-width: 100%; /* Ensure max-width doesn't cause overflow */
+        box-sizing: border-box; /* Ensure padding is included in width */
     }
     .filter-btn, .filter-dropdown {
         padding: 0.5rem 1rem; 
@@ -1522,11 +1519,11 @@ a:hover {
     }
 
     .match-grid, .news-grid {
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* Slightly smaller min-width for cards */
         gap: 3.5vw; 
         padding: 0 1rem; 
-        max-width: 100%; 
-        box-sizing: border-box; 
+        max-width: 100%; /* Ensure grid doesn't overflow */
+        box-sizing: border-box; /* Ensure padding is included in width */
     }
 
     .match-card img {
@@ -1541,15 +1538,15 @@ a:hover {
     .match-card h3 {
         font-size: clamp(0.8rem, 3.2vw, 1rem); 
         line-height: 1.2; 
-        width: 100%; 
-        white-space: normal; 
+        width: 100%; /* Ensure it doesn't grow too wide */
+        white-space: normal; /* Allow text to wrap */
     }
     .match-card .teams-logos {
         font-size: clamp(0.75rem, 2.8vw, 0.9rem); 
         gap: 0.4rem; 
-        width: 100%; 
-        flex-wrap: wrap; 
-        justify-content: center; 
+        width: 100%; /* Ensure it doesn't grow too wide */
+        flex-wrap: wrap; /* Allow team logos to wrap if names are too long */
+        justify-content: center; /* Center them when wrapped */
     }
     .match-card .teams-logos .vs-text { 
         font-size: clamp(0.6rem, 2vw, 0.7rem); 
@@ -1580,7 +1577,7 @@ a:hover {
     .news-card p {
         font-size: clamp(0.7rem, 2.8vw, 0.85rem); 
         line-height: 1.5;
-        word-break: break-word; 
+        word-break: break-word; /* Allow long words to break and wrap */
     }
     .news-card .news-date {
         font-size: 0.65rem;
@@ -1598,8 +1595,8 @@ a:hover {
 
     .match-details-section {
         padding: 8vw 1rem; 
-        max-width: 100%; 
-        box-sizing: border-box; 
+        max-width: 100%; /* Ensure section doesn't overflow */
+        box-sizing: border-box; /* Ensure padding is included in width */
     }
     .match-details-section .back-btn {
         margin-bottom: 5vw; 
@@ -1608,7 +1605,7 @@ a:hover {
     }
     .video-player-wrapper {
         margin-bottom: 4vw; 
-        max-width: 100%; 
+        max-width: 100%; /* Ensure it's not trying to be larger than screen */
         padding-bottom: 56.25%; 
         border-width: 2px; 
     }
@@ -1617,8 +1614,8 @@ a:hover {
         gap: 0.5rem; 
         padding: 0.8rem 1rem; 
         margin: 3vw auto; 
-        max-width: 100%; 
-        box-sizing: border-box; 
+        max-width: 100%; /* Ensure box doesn't overflow */
+        box-sizing: border-box; /* Ensure padding is included in width */
     }
     .match-info-box .match-details-thumbnail {
         width: clamp(60px, 15vw, 80px); 
@@ -1635,7 +1632,7 @@ a:hover {
         padding: 0.3rem 0.6rem; 
         text-align: center; 
         width: 90%; 
-        word-break: break-word; 
+        word-break: break-word; /* Allow long words to break and wrap */
     }
     .match-info-box p strong {
         font-size: clamp(0.6rem, 2.2vw, 0.75rem); 
@@ -1643,10 +1640,10 @@ a:hover {
     }
 
     .ad-banner-center {
-        max-width: 100%; 
+        max-width: 100%; /* Ensure ad banner doesn't overflow */
         margin: 4.5vw auto 5vw auto; 
         padding: 15px;
-        box-sizing: border-box; 
+        box-sizing: border-box; /* Ensure padding is included in width */
     }
     .ad-banner-center p, .ad-banner-center button {
         display: none;
