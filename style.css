@@ -1376,41 +1376,44 @@ a:hover {
 /* Smaller Mobile Devices (max-width: 480px) */
 @media (max-width: 480px) {
     html {
-        font-size: 11px; 
+        font-size: 10px; /* تقليل حجم الخط الأساسي شوية لتحسين التناسب */
     }
     body {
-        line-height: 1.45; 
+        line-height: 1.5; /* تعديل الـ line-height لقراءة أفضل */
     }
     .container {
-        width: 98vw; 
-        padding: 0 0.5rem; 
+        width: 96vw; /* زيادة عرض الـ container شوية */
+        padding: 0 0.8rem; /* زيادة الـ padding الأفقي */
     }
 
     .main-header {
-        padding: 0.3rem 0;
+        padding: 0.4rem 0;
     }
     .main-header .header-content {
-        padding: 0 0.5rem;
+        padding: 0 0.8rem;
         flex-wrap: wrap; 
         justify-content: space-between; 
+        gap: 0.8rem; 
     }
     .menu-toggle {
         order: 0; 
         display: block; 
         margin-right: 0.5rem; 
         margin-left: auto; 
+        font-size: 1.8rem; /* تكبير حجم أيقونة التوجل */
+        padding: 0.3rem 0.6rem;
     }
     .site-logo {
         order: 1; 
-        font-size: clamp(1.4rem, 4.5vw, 1.8rem); 
+        font-size: clamp(1.6rem, 5.5vw, 2rem); 
         flex-basis: auto; 
     }
     .search-bar {
         order: 2; 
         display: flex; 
         flex-basis: 100%; 
-        margin: 0.5rem auto 0.2rem auto; 
-        padding: 0.3rem 0.5rem;
+        margin: 0.8rem auto 0.5rem auto; 
+        padding: 0.4rem 0.8rem;
     }
     .telegram-btn {
         display: none !important; 
@@ -1433,174 +1436,179 @@ a:hover {
         background-color: rgba(10, 17, 31, 0.98); 
         backdrop-filter: blur(10px);
         justify-content: center;
-        z-index: 99; 
+        z-index: 999; /* زيادة الـ z-index لضمان أنها فوق كل شيء */
         align-items: center;
-        overflow-y: auto; 
+        overflow-y: auto; /* تسمح بالتمرير إذا كانت الروابط كثيرة */
+        animation: fadeIn 0.3s ease-out; /* إضافة أنيميشن بسيطة للظهور */
     }
     .main-nav.active-mobile ul {
         flex-direction: column;
-        gap: 1rem; 
+        gap: 1.5rem; /* زيادة المسافة بين الروابط */
+        padding: 1rem 0; /* إضافة بعض الـ padding */
     }
     .main-nav.active-mobile ul li {
         margin: 0;
     }
     .main-nav.active-mobile ul li a {
-        font-size: clamp(1.2rem, 4vw, 1.5rem); 
-        padding: 0.8rem 1.5rem;
+        font-size: clamp(1.4rem, 5vw, 1.8rem); /* تكبير حجم الخط للروابط */
+        padding: 1rem 2rem; /* تكبير حجم الـ padding للروابط */
+        min-width: 200px; /* ضمان عرض أدنى للروابط */
+        text-align: center; /* توسيط النص */
     }
 
     .search-bar input {
         width: 100%; 
-        font-size: clamp(0.75rem, 2.8vw, 0.85rem); 
+        font-size: clamp(0.8rem, 3.2vw, 0.9rem); 
     }
     .search-bar button {
-        font-size: 1.1rem; 
+        font-size: 1.2rem; 
     }
 
 
     .view-section {
-        padding: 6vw 0; 
+        padding: 8vw 0; 
     }
     .section-title {
-        font-size: clamp(1.3rem, 4vw, 1.7rem); 
-        margin-bottom: 4vw; 
-        padding-bottom: 0.3rem;
+        font-size: clamp(1.6rem, 5vw, 2rem); 
+        margin-bottom: 5vw; 
+        padding-bottom: 0.4rem;
     }
 
     .filter-controls {
-        gap: 0.3rem; 
-        margin-bottom: 4vw; 
-        padding: 0.2rem 0.4rem; 
+        gap: 0.5rem; 
+        margin-bottom: 5vw; 
+        padding: 0.4rem 0.6rem; 
         flex-direction: column; 
-        max-width: 98%; 
+        max-width: 95%; 
     }
     .filter-btn, .filter-dropdown {
-        padding: 0.3rem 0.8rem; 
-        font-size: clamp(0.65rem, 2.2vw, 0.75rem); 
+        padding: 0.5rem 1rem; 
+        font-size: clamp(0.75rem, 2.8vw, 0.85rem); 
         width: 100%; 
     }
     .filter-dropdown {
-        padding-left: 1.2rem; 
-        background-position: left 0.45rem center; 
-        background-size: 0.65em; 
+        padding-left: 1.5rem; 
+        background-position: left 0.6rem center; 
+        background-size: 0.8em; 
     }
 
     .match-grid, .news-grid {
-        grid-template-columns: repeat(2, 1fr); 
-        gap: 2.5vw; 
-        padding: 0 1.5vw; 
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+        gap: 3.5vw; 
+        padding: 0 2vw; 
     }
 
     .match-card img {
-        height: clamp(120px, 38vw, 160px); 
+        height: clamp(130px, 40vw, 180px); 
         object-fit: contain; 
         background-color: var(--up-bg-dark); 
     }
     .match-card .match-card-content {
-        padding: 0.5rem; 
-        min-height: clamp(50px, 8vw, 70px); 
+        padding: 0.7rem; 
+        min-height: clamp(60px, 10vw, 80px); 
     }
     .match-card h3 {
-        font-size: clamp(0.75rem, 2.8vw, 0.9rem); 
-        line-height: 1.15; 
+        font-size: clamp(0.8rem, 3.2vw, 1rem); 
+        line-height: 1.2; 
     }
     .match-card .teams-logos {
-        font-size: clamp(0.7rem, 2.5vw, 0.85rem); 
-        gap: 0.2rem; 
+        font-size: clamp(0.75rem, 2.8vw, 0.9rem); 
+        gap: 0.4rem; 
     }
     .match-card .teams-logos .vs-text { 
-        font-size: clamp(0.55rem, 0.7vw, 0.65rem); 
+        font-size: clamp(0.6rem, 2vw, 0.7rem); 
     }
     .match-card .team-logo {
-        width: clamp(30px, 8vw, 45px); 
-        height: clamp(30px, 8vw, 45px); 
+        width: clamp(35px, 9vw, 50px); 
+        height: clamp(35px, 9vw, 50px); 
     }
     .match-card .match-score {
-        font-size: clamp(1rem, 3.5vw, 1.3rem); 
+        font-size: clamp(1.2rem, 4vw, 1.5rem); 
     }
     .match-card .match-status {
-        font-size: clamp(0.6rem, 2.5vw, 0.7rem); 
-        padding: 0.2rem 0.4rem; 
+        font-size: clamp(0.65rem, 2.8vw, 0.75rem); 
+        padding: 0.3rem 0.6rem; 
     }
 
     .news-card img {
-        height: clamp(90px, 28vw, 120px); 
+        height: clamp(100px, 30vw, 140px); 
         object-fit: cover; 
     }
     .news-card .news-card-content {
-        padding: 0.6rem 0.8rem; 
+        padding: 0.8rem 1rem; 
     }
     .news-card h4 {
-        font-size: clamp(0.7rem, 2.8vw, 0.85rem); 
-        line-height: 1.2;
+        font-size: clamp(0.8rem, 3.2vw, 1rem); 
+        line-height: 1.3;
     }
     .news-card p {
-        font-size: clamp(0.6rem, 2.5vw, 0.7rem); 
-        line-height: 1.4;
+        font-size: clamp(0.7rem, 2.8vw, 0.85rem); 
+        line-height: 1.5;
     }
     .news-card .news-date {
-        font-size: 0.6rem;
+        font-size: 0.65rem;
     }
 
     .pagination-controls {
-        margin-top: 4.5vw; 
-        gap: 0.8vw; 
+        margin-top: 5vw; 
+        gap: 1.5vw; 
         flex-wrap: wrap; 
     }
     .pagination-controls .btn-page {
-        padding: 0.3rem 0.8rem; 
-        font-size: clamp(0.65rem, 2.5vw, 0.75rem); 
+        padding: 0.4rem 1rem; 
+        font-size: clamp(0.7rem, 2.8vw, 0.8rem); 
     }
 
     .match-details-section {
-        padding: 6.5vw 4vw; 
+        padding: 8vw 5vw; 
     }
     .match-details-section .back-btn {
-        margin-bottom: 4vw; 
-        font-size: clamp(0.7rem, 2.8vw, 0.85rem); 
-        padding: 0.4rem 1.0rem; 
+        margin-bottom: 5vw; 
+        font-size: clamp(0.8rem, 3.2vw, 0.95rem); 
+        padding: 0.5rem 1.2rem; 
     }
     .video-player-wrapper {
         margin-bottom: 4vw; 
         /* تم تكبير أقصى عرض لمشغل الفيديو للموبايل */
         max-width: 95%; 
         /* تم تعديل النسبة لتقصير الطول أكثر */
-        padding-bottom: 40%; /* تم التعديل من 56.25% إلى 40% */ 
+        padding-bottom: 56.25%; /* تم التعديل من 40% إلى 56.25% */ 
         border-width: 2px; 
     }
     .match-info-box {
-        grid-template-columns: auto 1fr; 
-        gap: 0.3rem; 
-        padding: 0.5rem; 
-        margin: 2vw auto; 
+        grid-template-columns: 1fr; /* جعلها عمود واحد لتعرض المحتوى بشكل أفضل */
+        gap: 0.5rem; 
+        padding: 0.8rem; 
+        margin: 3vw auto; 
         /* تم تكبير أقصى عرض ليتناسب مع الفيديو الجديد */
-        max-width: 98%; 
+        max-width: 95%; 
     }
     .match-info-box .match-details-thumbnail {
-        width: clamp(45px, 11vw, 65px); 
-        height: clamp(45px, 11vw, 65px);
-        margin: 0; 
+        width: clamp(60px, 15vw, 80px); 
+        height: clamp(60px, 15vw, 80px);
+        margin: 0 auto 0.5rem auto; 
     }
     .match-info-box .info-columns {
-        align-items: flex-start; 
-        text-align: right; 
+        align-items: center; 
+        text-align: center; 
+        gap: 0.3rem;
     }
     .match-info-box p {
-        font-size: clamp(0.55rem, 2.2vw, 0.7rem); 
-        padding: 0.25rem 0.5rem; 
-        text-align: right; 
+        font-size: clamp(0.65rem, 2.5vw, 0.8rem); 
+        padding: 0.3rem 0.6rem; 
+        text-align: center; 
+        width: 90%; 
     }
     .match-info-box p strong {
-        font-size: clamp(0.5rem, 2vw, 0.65rem); 
-        width: auto; 
-        text-align: right; 
+        font-size: clamp(0.6rem, 2.2vw, 0.75rem); 
+        text-align: center; 
     }
 
     .ad-banner-center {
         /* تم تكبير أقصى عرض ليتناسب مع الفيديو الجديد */
         max-width: 95%; 
-        margin: 3.5vw auto 4vw auto; 
-        padding: 10px;
+        margin: 4.5vw auto 5vw auto; 
+        padding: 15px;
     }
     .ad-banner-center p, .ad-banner-center button {
         display: none;
@@ -1612,17 +1620,21 @@ a:hover {
     }
 
     .main-footer {
-        padding: 4vw 0;
+        padding: 5vw 0;
     }
     .main-footer p {
-        font-size: clamp(0.6rem, 2.5vw, 0.75rem); 
-        margin-bottom: 1.5vw;
+        font-size: clamp(0.7rem, 2.8vw, 0.85rem); 
+        margin-bottom: 2vw;
     }
     .footer-links {
-        gap: 0.4rem; 
+        gap: 0.6rem; 
+        flex-direction: column; 
+        align-items: center;
     }
     .footer-links a {
-        padding: 0.3rem 0.8rem; 
-        font-size: clamp(0.65rem, 2.5vw, 0.75rem); 
+        padding: 0.4rem 1rem; 
+        font-size: clamp(0.75rem, 3vw, 0.9rem); 
+        width: 80%; 
+        max-width: 250px; 
     }
 }
