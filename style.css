@@ -1382,15 +1382,16 @@ a:hover {
         line-height: 1.5; /* تعديل الـ line-height لقراءة أفضل */
     }
     .container {
-        width: 96vw; /* زيادة عرض الـ container شوية */
-        padding: 0 0.8rem; /* زيادة الـ padding الأفقي */
+        width: 100vw; /* خلي الـ container ياخد عرض الشاشة بالكامل */
+        padding: 0 1rem; /* زوّد الـ padding شوية لراحة العين */
+        box-sizing: border-box; /* تأكيد الـ box-sizing عشان الـ padding ما يزودش العرض */
     }
 
     .main-header {
         padding: 0.4rem 0;
     }
     .main-header .header-content {
-        padding: 0 0.8rem;
+        padding: 0 1rem; /* زوّد الـ padding الأفقي هنا أيضاً */
         flex-wrap: wrap; 
         justify-content: space-between; 
         gap: 0.8rem; 
@@ -1443,16 +1444,16 @@ a:hover {
     }
     .main-nav.active-mobile ul {
         flex-direction: column;
-        gap: 1.5rem; /* زيادة المسافة بين الروابط */
-        padding: 1rem 0; /* إضافة بعض الـ padding */
+        gap: 1.8rem; /* زيادة المسافة بين الروابط */
+        padding: 1.5rem 0; /* إضافة بعض الـ padding */
     }
     .main-nav.active-mobile ul li {
         margin: 0;
     }
     .main-nav.active-mobile ul li a {
-        font-size: clamp(1.4rem, 5vw, 1.8rem); /* تكبير حجم الخط للروابط */
-        padding: 1rem 2rem; /* تكبير حجم الـ padding للروابط */
-        min-width: 200px; /* ضمان عرض أدنى للروابط */
+        font-size: clamp(1.5rem, 5.5vw, 2rem); /* تكبير حجم الخط للروابط */
+        padding: 1.2rem 2.5rem; /* تكبير حجم الـ padding للروابط */
+        min-width: 240px; /* ضمان عرض أدنى للروابط */
         text-align: center; /* توسيط النص */
     }
 
@@ -1477,9 +1478,9 @@ a:hover {
     .filter-controls {
         gap: 0.5rem; 
         margin-bottom: 5vw; 
-        padding: 0.4rem 0.6rem; 
+        padding: 0.5rem 1rem; /* زوّد الـ padding الأفقي هنا */
         flex-direction: column; 
-        max-width: 95%; 
+        max-width: 98%; 
     }
     .filter-btn, .filter-dropdown {
         padding: 0.5rem 1rem; 
@@ -1495,7 +1496,7 @@ a:hover {
     .match-grid, .news-grid {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
         gap: 3.5vw; 
-        padding: 0 2vw; 
+        padding: 0 1rem; /* زوّد الـ padding الأفقي للشبكة */
     }
 
     .match-card img {
@@ -1560,7 +1561,7 @@ a:hover {
     }
 
     .match-details-section {
-        padding: 8vw 5vw; 
+        padding: 8vw 1rem; /* زوّد الـ padding الأفقي للقسم ده */
     }
     .match-details-section .back-btn {
         margin-bottom: 5vw; 
@@ -1578,10 +1579,10 @@ a:hover {
     .match-info-box {
         grid-template-columns: 1fr; /* جعلها عمود واحد لتعرض المحتوى بشكل أفضل */
         gap: 0.5rem; 
-        padding: 0.8rem; 
+        padding: 0.8rem 1rem; /* زوّد الـ padding الأفقي هنا */
         margin: 3vw auto; 
         /* تم تكبير أقصى عرض ليتناسب مع الفيديو الجديد */
-        max-width: 95%; 
+        max-width: 98%; 
     }
     .match-info-box .match-details-thumbnail {
         width: clamp(60px, 15vw, 80px); 
@@ -1606,7 +1607,7 @@ a:hover {
 
     .ad-banner-center {
         /* تم تكبير أقصى عرض ليتناسب مع الفيديو الجديد */
-        max-width: 95%; 
+        max-width: 98%; 
         margin: 4.5vw auto 5vw auto; 
         padding: 15px;
     }
