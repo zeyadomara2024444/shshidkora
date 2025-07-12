@@ -634,10 +634,16 @@ a:hover {
     position: relative;
 }
 
-.match-card .teams-logos span {
+.match-card .teams-logos span { /* Added rules for text within team logos */
     display: inline-block; 
     vertical-align: middle; 
+    white-space: nowrap; /* Prevent text wrapping */
+    overflow: hidden; /* Hide overflow content */
+    text-overflow: ellipsis; /* Add ellipsis for overflow text */
+    max-width: calc(50% - 1.5rem); /* Adjust max-width to leave space for icon and VS text */
+    /* Original clamp: font-size: clamp(0.9rem, 1vw, 1rem); applies here */
 }
+
 
 /* Circular Team Logo */
 .match-card .team-logo {
@@ -1317,7 +1323,7 @@ a:hover {
         margin-bottom: 3vw; 
         /* تم تكبير أقصى عرض لمشغل الفيديو للتابلت */
         max-width: 700px; /* تم التعديل من 400px إلى 700px */ 
-        /* تم تعديل النسبة لتقصير الطول أكثر */
+        /* تم تعديل النسبة لتقصير الطول مع الحفاظ على العرض الجيد */
         padding-bottom: 40%; /* تم التعديل من 56.25% إلى 40% لتقصير الطول أكثر */ 
         border-width: 2px; 
     }
@@ -1498,6 +1504,15 @@ a:hover {
         max-width: 95% !important; /* لجعله أصغر قليلاً من عرض الشاشة الكامل */
     }
 
+    .search-bar input { /* Adjusted for better text fit */
+        width: 100% !important; /* Make it take full width of its container */
+        font-size: clamp(0.75rem, 3vw, 0.9rem) !important; /* Allow text to be slightly larger */
+        margin-right: 0.2rem !important; /* Reduce margin to make more space for text */
+    }
+    .search-bar button {
+        font-size: 1.1rem !important; /* Slightly smaller icon */
+    }
+
 
     .view-section {
         padding: 8vw 0; 
@@ -1558,11 +1573,14 @@ a:hover {
         width: 100% !important; 
         padding: 0 0.5rem !important; /* إضافة padding أفقي بسيط */
     }
-    .match-card .teams-logos span { /* أسماء الفرق */
+    .match-card .teams-logos span { /* أسماء الفرق - Improved for text visibility */
         white-space: nowrap !important; /* منع اسم الفريق من النزول سطر جديد */
         overflow: hidden !important; /* إخفاء أي جزء زائد من اسم الفريق لو طويل جداً */
         text-overflow: ellipsis !important; /* إضافة نقاط (...) للاسم الطويل */
-        max-width: 40% !important; /* تحديد أقصى عرض لاسم الفريق */
+        /* Increased max-width to give more space to the team names */
+        max-width: calc(50% - 2.5rem) !important; /* Updated calculation for better fit */
+        flex-grow: 1; /* Allow them to grow and take available space */
+        min-width: 20px; /* Ensure a minimum width to prevent complete collapse */
     }
     .match-card .teams-logos .vs-text { 
         font-size: clamp(0.6rem, 2vw, 0.7rem) !important; 
@@ -1626,7 +1644,8 @@ a:hover {
     .video-player-wrapper {
         margin-bottom: 4vw; 
         max-width: 100% !important; 
-        padding-bottom: 56.25%; 
+        /* Increased padding-bottom slightly for a longer video on mobile */
+        padding-bottom: 60% !important; /* Adjusted from 56.25% for slightly more height */
         border-width: 2px; 
     }
     .match-info-box {
