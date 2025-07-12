@@ -1569,34 +1569,34 @@ a:hover {
         align-items: center !important;
         justify-content: center !important;
         /* **تم التعديل هنا لتقليل الفجوة الإجمالية بين عناصر الفريق لأقصى حد** */
-        gap: 0.05rem !important; /* تقليل المسافة بين العناصر قدر الإمكان، أقل من 0.1 */
+        gap: 0.1rem !important; /* زيادة المسافة قليلاً بين العناصر لتحسين المظهر */
         flex-wrap: nowrap !important; /* **مهم جداً**: منع العناصر من النزول لسطر جديد */
         width: 100% !important;
         /* **تم التعديل هنا لزيادة البادينج الأفقي للكارت نفسه** */
-        padding: 0 0.1rem !important; /* إضافة padding أفقي بسيط لابعاد المحتوى عن حواف الكارت */
+        padding: 0 0.2rem !important; /* إضافة padding أفقي بسيط لابعاد المحتوى عن حواف الكارت */
     }
     .match-card .teams-logos span { /* أسماء الفرق - Improved for text visibility */
         white-space: nowrap !important; /* منع اسم الفريق من النزول سطر جديد */
         overflow: hidden !important; /* إخفاء أي جزء زائد من اسم الفريق لو طويل جداً */
         text-overflow: ellipsis !important; /* إضافة نقاط (...) للاسم الطويل */
         /* **تم التعديل هنا لزيادة المساحة المخصصة لاسم الفريق أكثر وأكثر** */
-        max-width: calc(50% - 2.0rem) !important; /* Adjusted calculation for better fit */
-        flex-grow: 1; /* Allow them to grow and take available space */
-        min-width: 20px; /* Ensure a minimum width to prevent complete collapse */
+        max-width: calc(50% - 2.5rem) !important; /* حساب جديد للمساحة المتاحة للاسم */
+        flex-grow: 1; /* للسماح لهم بالنمو وتوزيع المساحة */
+        min-width: 25px; /* ضمان حد أدنى للعرض لمنع الانهيار الكامل */
         /* **تعديل حجم خط أسماء الفرق بشكل أكبر قليلاً** */
-        font-size: clamp(0.75rem, 3.0vw, 0.9rem) !important; /* زيادة حجم الخط قليلاً جداً ليتناسب مع المساحة الجديدة */
+        font-size: clamp(0.75rem, 3.0vw, 0.9rem) !important; /* زيادة حجم الخط ليكون أوضح */
     }
     .match-card .teams-logos .vs-text {
-        /* **تعديل حجم خط VS** */
-        font-size: clamp(0.5rem, 1.5vw, 0.6rem) !important; /* تصغير حجم الخط أكثر لـ VS */
+        /* **تعديل حجم خط VS - تم تكبيره قليلاً** */
+        font-size: clamp(0.6rem, 2.0vw, 0.75rem) !important; /* تكبير حجم الخط لـ VS ليكون أوضح */
         flex-shrink: 0 !important; /* منع الـ VS من انها تصغر */
         /* **تم التعديل هنا لتقليل البادينج لـ VS لأقل حد** */
-        padding: 0 0.02rem !important; /* أقل بادينج ممكن */
+        padding: 0 0.1rem !important; /* تقليل البادينج حول VS */
     }
     .match-card .team-logo {
         /* **تم التعديل هنا لتقليل حجم اللوجو بشكل طفيف جداً** */
-        width: clamp(25px, 6.5vw, 35px) !important; /* تصغير اللوجو أكثر */
-        height: clamp(25px, 6.5vw, 35px) !important; /* تصغير اللوجو أكثر */
+        width: clamp(28px, 7vw, 38px) !important; /* حجم الشعار الذي كان يعمل بشكل جيد سابقاً */
+        height: clamp(28px, 7vw, 38px) !important; /* حجم الشعار الذي كان يعمل بشكل جيد سابقاً */
         object-fit: contain !important;
         flex-shrink: 0 !important; /* منع اللوجو من انه يصغر */
     }
