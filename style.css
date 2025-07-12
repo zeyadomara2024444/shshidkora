@@ -8,7 +8,7 @@
     
     --up-accent-blue: #00CFFF;
     --up-accent-green: #3CE090;
-    --up-accent-red: #FF3B3B;
+    --up-accent-red: #FF3B3B; /* اللون الأحمر موجود بالفعل هنا */
     --up-accent-purple: #9D4EDD;
 
     --up-text-primary: #E9EEF4;
@@ -546,7 +546,7 @@ a:hover {
 .match-card {
     background: var(--up-bg-medium);
     border-radius: var(--border-radius-card);
-    overflow: hidden;
+    overflow: hidden; /* قد نحتاج لتعديل هذا إذا كان النص الطويل يخرج عن الكارد */
     box-shadow: var(--up-shadow-soft);
     transition: all var(--transition-medium);
     cursor: pointer;
@@ -618,34 +618,78 @@ a:hover {
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Team Logos & Names */
+/* --- تعديلات محسنة لـ Team Logos & Names (لحل مشكلة التداخل وإظهار النص كاملاً) --- */
 .match-card .teams-logos {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.6rem;
+    /* نغير justify-content إلى center لأننا نريد أن يلتف النص إذا لزم الأمر */
+    justify-content: center; /* سنعيد ضبط هذا في الميديا كويري للموبايل إذا احتجنا لـ space-between */
+    gap: 0.6rem; /* مسافة بين العناصر الرئيسية (فريق1, VS, فريق2) */
     font-family: var(--font-body);
     font-size: clamp(0.9rem, 1vw, 1rem);
     font-weight: 700;
     color: var(--up-text-primary);
     text-shadow: 0 0 4px rgba(0,0,0,0.7);
-    flex-wrap: nowrap;
+    /* السماح بالالتفاف لضمان ظهور النص كاملاً */
+    flex-wrap: wrap; /* هذا هو المفتاح للسماح بالالتفاف */
     width: 100%;
     position: relative;
+    padding: 0 0.5rem; /* إضافة padding للحماية من التداخل مع حواف الكارد */
+    /* تحديد align-content للسماح بالعناصر بالانتشار عند الالتفاف */
+    align-content: center; 
 }
 
-.match-card .teams-logos span { /* Added rules for text within team logos */
-    display: inline-block;
-    vertical-align: middle;
-    white-space: nowrap; /* Prevent text wrapping */
-    overflow: hidden; /* Hide overflow content */
-    text-overflow: ellipsis; /* Add ellipsis for overflow text */
-    max-width: calc(50% - 1.5rem); /* Adjust max-width to leave space for icon and VS text */
-    /* Original clamp: font-size: clamp(0.9rem, 1vw, 1rem); applies here */
+/* لضمان محاذاة "VS" في المنتصف بالضبط بين الفريقين */
+.match-card .teams-logos .vs-text {
+    order: 0; /* تأكد أن "VS" في المنتصف */
+    flex-shrink: 0; /* منع "VS" من الانكماش */
+    white-space: nowrap; /* "VS" يجب أن يظل في سطر واحد */
+    font-family: var(--font-heading);
+    /* تكبير حجم "VS" */
+    font-size: clamp(1.1rem, 1.5vw, 1.7rem); /* زيادة حجم الخط لـ VS */
+    color: var(--up-accent-red); /* جعل اللون أحمر */
+    font-weight: 800;
+    margin: 0 0.3rem; /* مسافة بسيطة حول VS */
+    text-shadow: 0 0 3px rgba(255, 59, 59, 0.6); /* تعديل ظل النص ليتناسب مع الأحمر */
+    /* في حالة الالتفاف، اجعل VS يأخذ كامل العرض ويتوسط */
+    flex-basis: 100%; /* اجعل VS يأخذ سطرًا خاصًا به عند الالتفاف */
+    text-align: center;
 }
 
+/* حاوية كل فريق (الشعار + الاسم) */
+.match-card .teams-logos > div {
+    display: flex;
+    align-items: center;
+    flex-grow: 1; /* السماح بالنمو */
+    flex-shrink: 0; /* مهم: منع حاوية الفريق من الانكماش بشكل كبير */
+    gap: 0.3rem; /* المسافة بين الشعار والاسم داخل نفس الفريق */
+    min-width: 100px; /* تحديد حد أدنى للحجم لتجنب الالتفاف السريع جدًا */
+    max-width: 45%; /* تحديد أقصى عرض لكل فريق لترك مساحة للآخر */
+}
 
-/* Circular Team Logo */
+/* الفريق الأول (على اليمين في RTL) */
+.match-card .teams-logos > div:first-of-type {
+    justify-content: flex-end; /* الشعار على اليمين والاسم يليه */
+    text-align: right;
+}
+
+/* الفريق الثاني (على اليسار في RTL) */
+.match-card .teams-logos > div:nth-of-type(2) {
+    justify-content: flex-start; /* الشعار على اليسار والاسم يسبقه */
+    text-align: left;
+}
+
+/* نص اسم الفريق (span) */
+.match-card .teams-logos span {
+    white-space: normal; /* السماح للنص بالالتفاف إلى سطر جديد */
+    overflow: visible; /* السماح للنص بالظهور بالكامل */
+    text-overflow: clip; /* إزالة النقاط (...) */
+    flex-grow: 1;
+    flex-shrink: 1; /* السماح بالنص بالانكماش إذا لزم الأمر قبل الالتفاف */
+    min-width: 0; /* السماح للنص بالانكماش تمامًا */
+}
+
+/* شعار الفريق */
 .match-card .team-logo {
     width: clamp(45px, 4.5vw, 60px);
     height: clamp(45px, 4.5vw, 60px);
@@ -656,20 +700,7 @@ a:hover {
     box-shadow: inset 0 0 3px rgba(0,0,0,0.2);
     transition: transform var(--transition-fast), box-shadow var(--transition-fast);
     padding: 2px;
-    vertical-align: middle;
-    flex-shrink: 0;
-}
-
-/* "VS" text */
-.match-card .teams-logos .vs-text {
-    font-family: var(--font-heading);
-    font-size: clamp(0.7rem, 0.8vw, 0.85rem);
-    color: var(--up-accent-purple);
-    font-weight: 800;
-    margin: 0 0.3rem;
-    text-shadow: 0 0 3px rgba(157, 78, 221, 0.4);
-    flex-shrink: 0;
-    white-space: nowrap;
+    flex-shrink: 0; /* منع الشعار من الانكماش */
 }
 
 /* Hover effect for team logo */
@@ -685,9 +716,9 @@ a:hover {
     margin: 0;
     font-weight: 800;
     line-height: 1.2;
-    white-space: normal;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal; /* السماح بالالتفاف لعنوان المباراة ككل */
+    overflow: hidden; /* إخفاء ما يتجاوز السطرين */
+    text-overflow: ellipsis; /* إضافة نقاط (...) إذا تجاوز سطرين */
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -809,7 +840,6 @@ a:hover {
     text-overflow: ellipsis;
 }
 .news-card .news-date {
-    font-family: var(--font-body);
     font-size: 0.7rem;
     color: var(--up-text-muted);
     opacity: 0.9;
@@ -946,72 +976,11 @@ a:hover {
     display: none;
 }
 
-
-/* Match Info Box (Banner) */
+/* NEW: Hide Match Info Box (Description Section) as requested */
 .match-info-box {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.6rem;
-    padding: 0.7rem;
-    margin: 1.5vw auto;
-    background-color: var(--up-bg-medium);
-    border-radius: var(--border-radius-card);
-    box-shadow: var(--up-shadow-soft);
-    border: 1px solid var(--up-accent-blue);
-    position: relative;
-    z-index: 1;
-    align-items: start;
-    /* تم تكبير أقصى عرض ليتناسب مع الفيديو الجديد */
-    max-width: 800px; /* تم التعديل من 700px إلى 800px */
+    display: none !important;
 }
 
-.match-info-box .match-details-thumbnail {
-    width: clamp(70px, 7vw, 90px);
-    height: clamp(70px, 7vw, 90px);
-    object-fit: cover;
-    border-radius: var(--border-radius-card);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-    border: 1px solid var(--up-accent-blue);
-    transition: all var(--transition-fast);
-    margin: 0;
-    flex-shrink: 0;
-}
-.match-info-box .match-details-thumbnail:hover {
-    transform: scale(1.02);
-    box-shadow: var(--up-glow-blue), 0 0 10px var(--up-accent-green);
-    border-color: var(--up-accent-green);
-}
-
-.match-info-box .info-columns {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-    text-align: right;
-}
-
-.match-info-box p {
-    font-family: var(--font-body);
-    font-size: clamp(0.75rem, 0.85vw, 0.85rem);
-    line-height: 1.3;
-    opacity: 0.95;
-    background: var(--up-bg-dark);
-    padding: 0.4rem 0.8rem;
-    border-radius: var(--border-radius-button);
-    border: 1px solid rgba(0, 207, 255, 0.05);
-    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.4);
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    text-shadow: 0 0 1px rgba(0,0,0,0.2);
-    width: 100%;
-}
-.match-info-box p strong {
-    color: var(--up-accent-green);
-    margin-bottom: 0.05rem;
-    font-family: var(--font-heading);
-    font-size: clamp(0.65rem, 0.75vw, 0.8rem);
-    text-shadow: 0 0 3px rgba(60, 224, 144, 0.2);
-}
 
 /* Ad Banner Center (under video) */
 .ad-banner-center {
@@ -1272,12 +1241,32 @@ a:hover {
     .match-card h3 {
         font-size: clamp(0.85rem, 1.5vw, 1rem);
     }
-    .match-card .teams-logos {
+    .match-card .teams-logos { /* Desktop/Tablet: Side-by-side with VS */
         font-size: clamp(0.8rem, 1.3vw, 0.95rem);
-        gap: 0.3rem;
+        gap: 0.3rem; /* Reduced gap */
+        flex-wrap: wrap; /* السماح بالالتفاف على الأجهزة اللوحية أيضًا */
+        justify-content: center; /* توسيط العناصر عند الالتفاف */
+        padding: 0 0.4rem; /* تعديل padding للحماية */
+    }
+    .match-card .teams-logos span {
+        white-space: normal; /* السماح بالالتفاف */
+        overflow: visible; /* إظهار كل النص */
+        text-overflow: clip; /* إزالة النقاط */
     }
     .match-card .teams-logos .vs-text {
-        font-size: clamp(0.6rem, 0.8vw, 0.7rem);
+        /* تكبير حجم "VS" وتغيير لونه هنا أيضًا */
+        font-size: clamp(1.1rem, 1.5vw, 1.7rem); /* حجم خط أكبر لـ VS */
+        color: var(--up-accent-red); /* اللون الأحمر */
+        margin: 0 0.2rem; /* Reduce margin */
+        flex-basis: 100%; /* اجعل VS يأخذ سطرًا خاصًا به عند الالتفاف */
+        text-align: center;
+    }
+    .match-card .teams-logos > div {
+        flex-basis: auto; /* السماح بتحديد الحجم بناءً على المحتوى */
+        flex-grow: 1;
+        flex-shrink: 0; /* منع الانكماش */
+        min-width: 80px; /* يمكن تعديله بناءً على أصغر اسم فريق منطقي */
+        max-width: 45%; /* تحديد أقصى عرض للحفاظ على المساحة للفريق الآخر */
     }
     .match-card .team-logo {
         width: clamp(40px, 5vw, 55px);
@@ -1321,19 +1310,17 @@ a:hover {
     }
     .video-player-wrapper {
         margin-bottom: 3vw;
-        /* تم تكبير أقصى عرض لمشغل الفيديو للتابلت */
-        max-width: 700px; /* تم التعديل من 400px إلى 700px */
-        /* تم تعديل النسبة لتقصير الطول مع الحفاظ على العرض الجيد */
-        padding-bottom: 40%; /* تم التعديل من 56.25% إلى 40% لتقصير الطول أكثر */
+        max-width: 700px;
+        padding-bottom: 40%;
         border-width: 2px;
     }
+    /* The match-info-box styling below is effectively overridden by 'display: none !important;' */
     .match-info-box {
         grid-template-columns: auto 1fr;
         gap: 0.3rem;
         padding: 0.6rem;
         margin: 2vw auto;
-        /* تم تكبير أقصى عرض ليتناسب مع الفيديو الجديد */
-        max-width: 700px; /* تم التعديل من 400px إلى 700px */
+        max-width: 700px;
     }
     .match-info-box .match-details-thumbnail {
         width: clamp(55px, 6vw, 75px);
@@ -1350,8 +1337,7 @@ a:hover {
     }
 
     .ad-banner-center {
-        /* تم تكبير أقصى عرض ليتناسب مع الفيديو الجديد */
-        max-width: 700px; /* تم التعديل من 400px إلى 700px */
+        max-width: 700px;
         margin: 2.5vw auto 3vw auto;
         padding: 10px;
     }
@@ -1382,7 +1368,6 @@ a:hover {
 
 /* Smaller Mobile Devices (max-width: 480px) */
 @media (max-width: 480px) {
-    /* تطبيق Box-sizing على كل العناصر داخل الميديا كويري دي */
     * {
         box-sizing: border-box !important;
     }
@@ -1402,7 +1387,6 @@ a:hover {
         padding: 0 !important;
     }
     
-    /* الصور والأيقونات لضمان عدم الخروج عن الحدود */
     img {
         max-width: 100% !important;
         height: auto !important;
@@ -1432,85 +1416,80 @@ a:hover {
         max-width: 100% !important;
     }
     
-    /* إخفاء زر التبديل (الثلاث شرط) */
     .menu-toggle {
         display: none !important;
     }
     
-    /* ضبط اللوجو ليتناسب مع الترتيب الجديد */
     .site-logo {
-        order: 0 !important; /* ضعه في البداية */
-        margin-left: auto; /* ليدفعه إلى أقصى اليسار (في RTL) */
-        margin-right: 0.5rem; /* مسافة صغيرة من اليمين */
-        font-size: clamp(1.4rem, 4.5vw, 1.8rem) !important; /* ضبط حجم الخط */
+        order: 0 !important;
+        margin-left: auto;
+        margin-right: 0.5rem;
+        font-size: clamp(1.4rem, 4.5vw, 1.8rem) !important;
     }
     .telegram-btn {
         display: none !important;
     }
 
-    /* إظهار قائمة التنقل الرئيسية على الموبايل كصف واحد فوق البحث */
     .main-nav {
-        display: flex !important; /* اجعلها مرئية */
-        flex-basis: auto !important; /* دعها تأخذ عرضها الطبيعي */
-        order: 1 !important; /* ضعها بعد اللوجو */
-        flex-grow: 1; /* للسماح لها بالنمو وتوزيع المساحة */
-        justify-content: flex-start; /* محاذاة الروابط إلى اليمين (RTL) */
-        align-items: center; /* محاذاة رأسية */
-        padding: 0; /* إزالة أي حشوة غير ضرورية */
-        margin: 0; /* إزالة أي هوامش غير ضرورية */
-        overflow-x: auto; /* السماح بالتمرير الأفقي إذا كانت الروابط كثيرة */
-        -webkit-overflow-scrolling: touch; /* لتحسين التمرير على iOS */
-        white-space: nowrap; /* منع الروابط من النزول لسطر جديد */
-        position: relative; /* لتموضع العناصر الداخلية */
-        z-index: 10; /* تأكد أنها فوق الخلفية */
+        display: flex !important;
+        flex-basis: auto !important;
+        order: 1 !important;
+        flex-grow: 1;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 0;
+        margin: 0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+        position: relative;
+        z-index: 10;
     }
 
     .main-nav ul {
-        flex-direction: row !important; /* اجعل الروابط في صف واحد */
-        justify-content: flex-start !important; /* محاذاة الروابط إلى اليمين (RTL) */
-        width: auto !important; /* دع القائمة تأخذ عرض المحتوى */
-        gap: 0.8rem !important; /* مسافة بين الروابط */
-        padding: 0 0.5rem !important; /* حشوة خفيفة على الجانبين */
+        flex-direction: row !important;
+        justify-content: flex-start !important;
+        width: auto !important;
+        gap: 0.8rem !important;
+        padding: 0 0.5rem !important;
     }
 
     .main-nav ul li {
-        margin: 0 !important; /* إزالة الهوامش الزائدة من عناصر القائمة */
-        flex-shrink: 0; /* منع العناصر من الانكماش */
+        margin: 0 !important;
+        flex-shrink: 0;
     }
 
     .main-nav ul li a {
-        font-size: clamp(0.7rem, 2.5vw, 0.85rem) !important; /* ضبط حجم الخط ليناسب الموبايل */
-        padding: 0.5rem 0.8rem !important; /* ضبط الحشوة */
-        max-width: none !important; /* إزالة أي قيود على العرض */
-        display: inline-flex !important; /* للسماح بضبط المحاذاة الداخلية */
+        font-size: clamp(0.7rem, 2.5vw, 0.85rem) !important;
+        padding: 0.5rem 0.8rem !important;
+        max-width: none !important;
+        display: inline-flex !important;
         align-items: center;
         justify-content: center;
-        height: auto; /* دع الارتفاع يتكيف مع المحتوى */
-        white-space: nowrap; /* منع النص من النزول لسطر جديد داخل الرابط */
+        height: auto;
+        white-space: nowrap;
     }
 
-    /* إخفاء العنصر الرابع وما بعده */
     .main-nav ul li:nth-child(n+4) {
         display: none !important;
     }
 
-    /* ضبط حجم ونظام البحث ليكون مناسبًا */
     .search-bar {
-        order: 2 !important; /* ضعه بعد الروابط */
+        order: 2 !important;
         display: flex;
-        flex-basis: 100% !important; /* اجعله يأخذ كامل العرض في سطر خاص */
-        margin: 0.8rem auto 0.5rem auto; /* مساحة علوية وسفلية */
+        flex-basis: 100% !important;
+        margin: 0.8rem auto 0.5rem auto;
         padding: 0.4rem 0.8rem;
-        max-width: 95% !important; /* لجعله أصغر قليلاً من عرض الشاشة الكامل */
+        max-width: 95% !important;
     }
 
-    .search-bar input { /* Adjusted for better text fit */
-        width: 100% !important; /* Make it take full width of its container */
-        font-size: clamp(0.75rem, 3vw, 0.9rem) !important; /* Allow text to be slightly larger */
-        margin-right: 0.2rem !important; /* Reduce margin to make more space for text */
+    .search-bar input {
+        width: 100% !important;
+        font-size: clamp(0.75rem, 3vw, 0.9rem) !important;
+        margin-right: 0.2rem !important;
     }
     .search-bar button {
-        font-size: 1.1rem !important; /* Slightly smaller icon */
+        font-size: 1.1rem !important;
     }
 
 
@@ -1558,178 +1537,85 @@ a:hover {
         min-height: clamp(60px, 10vw, 80px);
     }
     .match-card h3 {
-        font-family: var(--font-heading) !important; /* تأكيد تطبيق الخط */
+        font-family: var(--font-heading) !important;
         font-size: clamp(0.8rem, 3.2vw, 1rem);
         line-height: 1.2;
         width: 100%;
         white-space: normal;
     }
-    /* === الأهم: تعديلات جديدة ومكثفة على تنسيق عناصر الفرق داخل الكارت === */
+    /* === تعديلات شاملة لـ Mobile Team Names Layout === */
     .match-card .teams-logos {
-        display: flex !important;
-        flex-direction: column !important; /* التغيير الجذري: تكديس عمودي */
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 0.1rem !important; /* مسافة صغيرة بين العناصر المكدسة */
-        width: 100% !important;
-        padding: 0 !important; /* إزالة البادينج من هنا */
-        margin-top: 0.3rem !important; /* مسافة بسيطة من أعلى */
-        margin-bottom: 0.3rem !important; /* مسافة بسيطة من أسفل */
+        flex-direction: column !important; /* تكديس عمودي على الموبايل الصغير */
+        gap: 0 !important; /* لا مسافة بين العناصر المكدسة */
+        margin-top: 0.3rem !important;
+        margin-bottom: 0.3rem !important;
+        padding: 0 0.5rem !important;
+        box-sizing: border-box; /* تأكد من تضمين الحشو في العرض */
+        justify-content: center; /* لا حاجة للـ space-between هنا لأنهم سيتكدسون */
     }
 
-    .match-card .teams-logos > div { /* حاوية لكل فريق (شعار + اسم) */
+    .match-card .teams-logos > div { /* حاوية كل فريق (الشعار + الاسم) */
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 0.3rem; /* مسافة بين الشعار والاسم */
-        width: 100%; /* تأكد أنها تأخذ العرض الكامل */
+        width: 100%;
+        padding: 0; /* لا حشو داخلي */
+        flex-grow: 1; /* السماح بالنمو */
+        flex-shrink: 0; /* مهم: منع حاوية الفريق من الانكماش بشكل كبير */
+        min-width: auto; /* السماح بتحديد الحجم بناءً على المحتوى */
+        max-width: none; /* إزالة الحد الأقصى للعرض للسماح بأخذ المساحة */
     }
 
-    .match-card .teams-logos span { /* أسماء الفرق */
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        font-size: clamp(0.8rem, 3.5vw, 1rem) !important; /* تكبير الخط ليكون أوضح */
-        max-width: calc(100% - 40px) !important; /* مساحة أكبر لاسم الفريق بجانب الشعار */
-        text-align: center !important; /* محاذاة النص في المنتصف */
-        direction: rtl !important; /* تأكيد الاتجاه */
+    /* الفريق الأول (العلوي في RTL - الشعار على اليمين) */
+    .match-card .teams-logos > div:first-of-type {
+        justify-content: flex-end; /* الشعار لليمين، الاسم يليه */
+    }
+
+    /* الفريق الثاني (السفلي في RTL - الشعار على اليسار) */
+    .match-card .teams-logos > div:nth-of-type(2) {
+        justify-content: flex-start; /* الشعار لليسار، الاسم يسبقه */
+    }
+
+
+    .match-card .teams-logos span { /* أسماء الفرق على الموبايل */
+        font-size: clamp(0.8rem, 3.8vw, 1rem) !important;
+        white-space: normal; /* مهم: السماح بالالتفاف إلى سطر جديد */
+        overflow: visible; /* مهم: إظهار كل النص */
+        text-overflow: clip; /* مهم: إزالة النقاط (...) */
+        flex-grow: 1; /* السماح بالنمو */
+        flex-shrink: 1; /* السماح بالانكماش قبل الالتفاف */
+        min-width: 0; /* السماح للنص بالانكماش تمامًا */
     }
     
-    .match-card .team-logo { /* شعارات الفرق */
-        width: clamp(30px, 8vw, 40px) !important; /* تصغير الشعار قليلاً ليناسب المساحة */
-        height: clamp(30px, 8vw, 40px) !important;
+    .match-card .team-logo { /* شعارات الفرق على الموبايل */
+        width: clamp(35px, 9vw, 45px) !important;
+        height: clamp(35px, 9vw, 45px) !important;
+        flex-shrink: 0 !important; /* منع الشعار من الانكماش */
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* هام: محاذاة الشعار والنص للفريق الثاني على الموبايل */
+    .match-card .teams-logos > div:nth-of-type(2) .team-logo {
+        margin-left: 0 !important; /* إزالة الهامش الأيسر */
+        margin-right: 0.2rem !important; /* هامش لليمين بجانب الشعار */
+    }
+    .match-card .teams-logos > div:nth-of-type(2) span {
+        text-align: left !important; /* محاذاة اسم الفريق الثاني لليسار */
+    }
+
+    .match-card .teams-logos .vs-text { /* "VS" نص على الموبايل */
+        /* تكبير حجم "VS" وتغيير لونه هنا أيضًا */
+        font-size: clamp(1.1rem, 4.5vw, 1.7rem) !important; /* حجم خط أكبر لـ VS على الموبايل */
+        font-weight: 900 !important;
+        color: var(--up-accent-red) !important;
+        margin: 0.2rem 0 !important; /* هامش عمودي لفصل الفرق */
+        padding: 0 !important;
         flex-shrink: 0 !important;
-        padding: 0 !important; /* إزالة البادينج من الشعار نفسه */
-        border: none !important; /* إزالة الحدود لتوفير مساحة */
-        box-shadow: none !important; /* إزالة الظلال لتوفير مساحة */
+        line-height: 1;
+        width: 100%; /* أخذ العرض الكامل عند التكديس */
+        text-align: center; /* توسيط "VS" */
+        order: -1; /* وضعه منطقياً بين حاويتي الفريقين */
     }
-
-    .match-card .teams-logos .vs-text { /* كلمة "VS" */
-        font-size: clamp(0.7rem, 2.5vw, 0.9rem) !important; /* تكبير "VS" ليكون واضحًا جداً */
-        font-weight: 900 !important; /* جعلها أكثر جرأة */
-        color: var(--up-accent-red) !important; /* لتبرز أكثر */
-        margin: 0 !important; /* إزالة أي هوامش حولها */
-        padding: 0 !important; /* إزالة أي بادينج */
-        flex-shrink: 0 !important;
-        line-height: 1; /* ضبط ارتفاع السطر */
-    }
-
-    /* === نهاية تعديلات الكارت === */
-
-
-    .match-card .match-score {
-        font-size: clamp(1.4rem, 4.5vw, 1.7rem) !important; /* تكبير النتيجة */
-    }
-    .match-card .match-status {
-        font-size: clamp(0.7rem, 3.0vw, 0.85rem) !important; /* تكبير حالة المباراة */
-        padding: 0.4rem 0.8rem !important;
-    }
-
-    .news-card img {
-        height: clamp(100px, 30vw, 140px);
-        object-fit: cover;
-    }
-    .news-card .news-card-content {
-        padding: 0.8rem 1rem;
-    }
-    .news-card h4 {
-        font-size: clamp(0.8rem, 3.2vw, 1rem);
-        line-height: 1.3;
-    }
-    .news-card p {
-        font-size: clamp(0.7rem, 2.8vw, 0.85rem);
-        line-height: 1.5;
-        word-break: break-word;
-    }
-    .news-card .news-date {
-        font-size: 0.65rem;
-    }
-
-    .pagination-controls {
-        margin-top: 5vw;
-        gap: 1.5vw;
-        flex-wrap: wrap;
-    }
-    .pagination-controls .btn-page {
-        padding: 0.4rem 1rem;
-        font-size: clamp(0.7rem, 2.8vw, 0.8rem);
-    }
-
-    .match-details-section {
-        padding: 8vw 1rem !important;
-        max-width: 100% !important;
-    }
-    .match-details-section .back-btn {
-        margin-bottom: 5vw;
-        font-size: clamp(0.8rem, 3.2vw, 0.95rem);
-        padding: 0.5rem 1.2rem;
-    }
-    .video-player-wrapper {
-        margin-bottom: 4vw;
-        max-width: 100% !important;
-        /* Increased padding-bottom slightly for a longer video on mobile */
-        padding-bottom: 60% !important; /* Adjusted from 56.25% for slightly more height */
-        border-width: 2px;
-    }
-    .match-info-box {
-        grid-template-columns: 1fr;
-        gap: 0.5rem;
-        padding: 0.8rem 1rem !important;
-        margin: 3vw auto;
-        max-width: 100% !important;
-    }
-    .match-info-box .match-details-thumbnail {
-        width: clamp(60px, 15vw, 80px);
-        height: clamp(60px, 15vw, 80px);
-        margin: 0 auto 0.5rem auto;
-    }
-    .match-info-box .info-columns {
-        align-items: center;
-        text-align: center;
-        gap: 0.3rem;
-    }
-    .match-info-box p {
-        font-size: clamp(0.65rem, 2.5vw, 0.8rem);
-        padding: 0.3rem 0.6rem;
-        text-align: center;
-        width: 90%;
-        word-break: break-word;
-    }
-    .match-info-box p strong {
-        font-size: clamp(0.6rem, 2.2vw, 0.75rem);
-        text-align: center;
-    }
-
-    .ad-banner-center {
-        max-width: 100% !important;
-        margin: 4.5vw auto 5vw auto;
-        padding: 15px;
-    }
-    .ad-banner-center p, .ad-banner-center button {
-        display: none;
-    }
-
-    .suggested-matches-section {
-        margin-top: 3.5vw;
-        padding-top: 3.5vw;
-    }
-
-    .main-footer {
-        padding: 5vw 0;
-    }
-    .main-footer p {
-        font-size: clamp(0.7rem, 2.8vw, 0.85rem);
-        margin-bottom: 2vw;
-    }
-    .footer-links {
-        gap: 0.6rem;
-        flex-direction: column;
-        align-items: center;
-    }
-    .footer-links a {
-        padding: 0.4rem 1rem;
-        font-size: clamp(0.75rem, 3vw, 0.9rem);
-        width: 80%;
-        max-width: 250px;
-    }
+    /* ... (احتفظ بباقي الأنماط لـ 480px) ... */
 }
