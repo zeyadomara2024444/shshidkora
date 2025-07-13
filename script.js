@@ -1,8 +1,9 @@
 // script.js - كود محسن وواضح لموقع بث مباشر لمباريات كرة القدم 'شاهد كورة'
-// تم التركيز على أفضل أداء ممكن من جانب العميل مع الحفاظ على الوظائف والإعلانات
+// تم التركيز على أفضل أداء ممكن من جانب العميل مع الحفاظ على الوظائف
 // والتأكد من إزالة أي عناصر قد تؤثر سلباً على الفهم من قبل محركات البحث
 // تم التعديل لاستخدام iframe لروابط البث المباشر والتكامل مع نظام القوالب
 // **تم التكييف ليتوافق مع هيكل ملف JSON الجديد وإصلاح جميع أخطاء الطباعة**
+// **تمت إضافة منطق الإعلانات بناءً على طلب المستخدم، مع التركيز على تقليل الإزعاج.**
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🏁 DOM Content Loaded. Shahid Kora script execution started.');
@@ -28,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const matchDetailsTemplate = document.getElementById('match-details-view-template');
 
     // Constants
-    const matchesPerPage = 20; 
+    const matchesPerPage = 20;    
     let currentActiveViewElement = null; // Holds the currently active view element (the cloned section)
 
     let matchesData = []; // All loaded match data
@@ -37,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentDetailedMatch = null; // The match currently displayed in details view
 
     // --- 1.1. Critical DOM Element Verification ---
-    // This ensures all required static elements and template containers are present on page load.
     const requiredElements = {
         '#content-display': mainContentDisplay,
         '#home-logo-link': document.getElementById('home-logo-link'),
@@ -49,7 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
         '#search-input': searchInput,
         '#search-button': searchButton,
         '#json-ld-schema': document.getElementById('json-ld-schema'),
-        // Dynamic SEO elements (they must exist as empty elements with these IDs in HTML)
         '#dynamic-title': document.getElementById('dynamic-title'),
         '#dynamic-description': document.getElementById('dynamic-description'),
         '#dynamic-keywords': document.getElementById('dynamic-keywords'),
@@ -65,7 +64,6 @@ document.addEventListener('DOMContentLoaded', () => {
         '#dynamic-twitter-title': document.getElementById('dynamic-twitter-title'),
         '#dynamic-twitter-description': document.getElementById('dynamic-twitter-description'),
         '#dynamic-twitter-image': document.getElementById('dynamic-twitter-image'),
-        // Templates themselves should also exist
         '#home-view-template': homeViewTemplate,
         '#live-matches-template': liveMatchesTemplate,
         '#upcoming-matches-template': upcomingMatchesTemplate,
@@ -84,67 +82,135 @@ document.addEventListener('DOMContentLoaded', () => {
     if (criticalError) {
         console.error('🛑 Script execution halted due to missing critical DOM elements. Please fix your HTML!');
         document.body.innerHTML = '<div style="text-align: center; margin-top: 100px; color: #f44336; font-size: 20px;">' +
-                                    'عذرًا، حدث خطأ فني. يرجاء تحديث الصفحة أو المحاولة لاحقًا.' +
-                                    '<p style="font-size: 14px; color: #ccc;">(عناصر الصفحة الرئيسية مفقودة)</p></div>';
+                                   'عذرًا، حدث خطأ فني. يرجاء تحديث الصفحة أو المحاولة لاحقًا.' +
+                                   '<p style="font-size: 14px; color: #ccc;">(عناصر الصفحة الرئيسية مفقودة)</p></div>';
         return; // Stop script execution
     } else {
         console.log('✅ All critical DOM elements found.');
     }
 
-    // --- 2. Adsterra Configuration ---
-    const ADSTERRA_DIRECT_LINK_URL = 'https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec'; // DirectLink_1
-    const DIRECT_LINK_COOLDOWN_MATCH_CARD = 3 * 60 * 1000; // 3 minutes cooldown for general clicks
-    const DIRECT_LINK_COOLDOWN_VIDEO_INTERACTION = 10 * 1000; // 10 seconds cooldown for video player interactions
+    // --- 2. Adsterra Configuration & Ad Logic ---
+    let lastAdInteractionTime = 0; // Timestamp of the last ad interaction
+    const AD_COOLDOWN_TIME = 10 * 1000; // 10 seconds in milliseconds, as requested
 
-    let lastDirectLinkClickTimeMatchCard = 0;
-    let lastDirectLinkClickTimeVideoInteraction = 0;
-    let videoOverlayInterval = null; // To store the interval ID for the video overlay
+    // Adsterra JS Sync codes
+    // These will be dynamically added as script tags
+    const adCodes = [
+        "//pl27154379.profitableratecpm.com/a3/0f/2d/a30f2d8b70097467fa7c1b724f6ef1f2.js",
+        "//pl27154400.profitableratecpm.com/1c/2a/d6/1c2ad63f897e5c1d4c27840dc634efd4.js"
+    ];
 
     /**
-     * Opens an Adsterra direct link if cooldown period has passed.
-     * @param {number} cooldownDuration - The cooldown duration in milliseconds.
-     * @param {string} type - The type of interaction ('matchCard', 'matchDetailsPoster', 'videoOverlay').
-     * @returns {boolean} True if ad link was opened, false otherwise.
+     * Attempts to open an Adsterra JS Sync ad in a new tab, respecting cooldown.
+     * This function now replaces the `openAdLink` from original script.
      */
-    function openAdLink(cooldownDuration, type) {
-        let lastClickTime;
-        let setLastClickTime;
-
-        // Determine which cooldown to use based on the interaction type
-        if (type === 'matchCard' || type === 'matchDetailsPoster') {
-            lastClickTime = lastDirectLinkClickTimeMatchCard;
-            setLastClickTime = (time) => lastDirectLinkClickTimeMatchCard = time;
-        } else if (type === 'videoOverlay') {
-            lastClickTime = lastDirectLinkClickTimeVideoInteraction;
-            setLastClickTime = (time) => lastDirectLinkClickTimeVideoInteraction = time;
-        } else {
-            console.error('Invalid ad type provided to openAdLink:', type);
-            return false;
+    function triggerAdsterraPopUnder() {
+        const currentTime = Date.now();
+        if (currentTime - lastAdInteractionTime < AD_COOLDOWN_TIME) {
+            console.log('🚫 Ad cooldown active. Skipping ad pop-under.');
+            return;
         }
 
-        const currentTime = Date.now();
-        if (currentTime - lastClickTime > cooldownDuration) {
-            // Cooldown has passed, open the ad link
-            // Using setTimeout with 0 delay to make window.open asynchronous, reducing potential main thread blocking
-            setTimeout(() => {
-                const newWindow = window.open(ADSTERRA_DIRECT_LINK_URL, '_blank');
-                if (newWindow) {
-                    newWindow.focus(); // Try to bring the new tab/window to front
-                    setLastClickTime(currentTime); // Update last click time
-                    console.log(`💰 [Ad Click - ${type}] Direct link opened successfully.`);
-                } else {
-                    // If newWindow is null, it means popup was blocked
-                    console.warn(`⚠️ [Ad Click - ${type}] Popup blocked or failed to open direct link. Ensure popups are allowed.`);
+        // Randomly pick one of the JS Sync ad scripts
+        const adScriptUrl = adCodes[Math.floor(Math.random() * adCodes.length)];
+
+        // Create a new script element
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = adScriptUrl;
+        script.async = true; // Use async to not block rendering
+
+        // Append the script to the body to trigger the ad
+        document.body.appendChild(script);
+
+        // Remove the script after a short delay to keep the DOM clean
+        setTimeout(() => {
+            if (document.body.contains(script)) {
+                document.body.removeChild(script);
+            }
+        }, 500); // Remove after 0.5 seconds
+
+        lastAdInteractionTime = currentTime;
+        console.log(`⚡ [Ad] Adsterra JS Sync triggered: ${adScriptUrl}`);
+    }
+
+    // Interval for the video overlay ad
+    let videoOverlayInterval = null;
+    let videoOverlayElement = null; // Reference to the overlay element
+
+
+    /**
+     * Manages the video overlay for ads.
+     * This function is called when a match details page is loaded.
+     */
+    function setupVideoOverlayAd(overlayElement, videoPlayerContainer) {
+        if (!overlayElement || !videoPlayerContainer) {
+            console.error('❌ Cannot set up video overlay ad: Missing overlayElement or videoPlayerContainer.');
+            return;
+        }
+
+        videoOverlayElement = overlayElement; // Store the reference
+        videoOverlayElement.classList.remove('hidden'); // Ensure it's visible initially
+        videoOverlayElement.style.pointerEvents = 'auto'; // Enable clicks
+        // Make the overlay actually transparent so it's not "visible" in a disturbing way
+        videoOverlayElement.style.backgroundColor = 'rgba(0, 0, 0, 0)'; // Fully transparent
+        videoOverlayElement.style.cursor = 'pointer'; // Show pointer to indicate clickable area
+        videoOverlayElement.innerHTML = ''; // Clear any "انقر هنا للتشغيل" text to make it truly invisible to the user
+
+        // Clear any existing interval to prevent multiple intervals running
+        if (videoOverlayInterval) {
+            clearInterval(videoOverlayInterval);
+            console.log('[Video Overlay] Previous interval cleared.');
+        }
+
+        // Click handler for the overlay
+        // We need to use a named function or bind it to remove correctly later
+        const handleOverlayClick = function() {
+            triggerAdsterraPopUnder(); // Trigger the ad
+            videoOverlayElement.classList.add('hidden'); // Hide the overlay immediately after click
+            videoOverlayElement.style.pointerEvents = 'none'; // Disable clicks on the overlay temporarily
+
+            // Set a timer to show the overlay again after AD_COOLDOWN_TIME
+            videoOverlayInterval = setTimeout(() => {
+                if (videoOverlayElement) { // Check if element still exists before showing
+                    videoOverlayElement.classList.remove('hidden');
+                    videoOverlayElement.style.pointerEvents = 'auto'; // Re-enable clicks
+                    console.log('[Video Overlay] Overlay re-appeared.');
                 }
-            }, 0);
-            return true; // Indicate that an attempt to open was made
-        } else {
-            // Cooldown is still active
-            const timeLeft = (cooldownDuration - (currentTime - lastClickTime)) / 1000;
-            console.log(`⏳ [Ad Click - ${type}] Direct link cooldown active. No new tab will be opened. Time left: ${timeLeft.toFixed(1)} seconds.`);
-            return false;
+            }, AD_COOLDOWN_TIME);
+        };
+        
+        // Remove existing listener to prevent duplicates.
+        // Important: If an anonymous function was used previously, this won't work.
+        // Ensure that `videoOverlayElement` is cleared properly when navigating away.
+        // For robustness, consider adding a custom property to store the current handler or check if exists.
+        // For now, let's assume `clearVideoOverlayAd` correctly handles removal.
+        videoOverlayElement.removeEventListener('click', handleOverlayClick); // Attempt to remove previous, might not work if it was anonymous
+        videoOverlayElement.addEventListener('click', handleOverlayClick);
+
+        console.log('[Video Overlay] Video overlay ad setup complete.');
+    }
+
+    /**
+     * Clears the video overlay ad interval and hides the overlay.
+     */
+    function clearVideoOverlayAd() {
+        if (videoOverlayInterval) {
+            clearInterval(videoOverlayInterval);
+            videoOverlayInterval = null;
+            console.log('[Video Overlay] Ad interval cleared.');
+        }
+        if (videoOverlayElement) {
+            videoOverlayElement.classList.add('hidden');
+            videoOverlayElement.style.pointerEvents = 'none';
+            // It's crucial to remove the *specific* event listener function
+            // If `handleOverlayClick` was defined inside `setupVideoOverlayAd`, it's recreated each time.
+            // A more robust solution might involve `cloneNode(true)` for the overlay or storing the handler.
+            // For simplicity, we'll just hide and disable pointer events.
+            videoOverlayElement = null; // Clear reference
         }
     }
+
 
     // --- 3. View Management (using Templates) ---
 
@@ -280,8 +346,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('❌ Failed to load match data:', error.message);
             // Display a user-friendly error message on the main content area
             mainContentDisplay.innerHTML = '<section class="view-section active-view container">' +
-                                            '<p style="text-align: center; color: var(--up-text-primary); margin-top: 50px;">عذرًا، لم نتمكن من تحميل بيانات المباريات. يرجى المحاولة مرة أخرى لاحقًا أو التحقق من ملف matches.json.</p>' +
-                                            '</section>';
+                                           '<p style="text-align: center; color: var(--up-text-primary); margin-top: 50px;">عذرًا، لم نتمكن من تحميل بيانات المباريات. يرجى المحاولة مرة أخرى لاحقًا أو التحقق من ملف matches.json.</p>' +
+                                           '</section>';
             // Attempt to update the section title if it exists on the initial page load
             const homeMatchesTitle = document.getElementById('home-matches-title');
             if (homeMatchesTitle) {
@@ -312,7 +378,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const statusText = match.status === 'live' ? 'مباشر الآن' : (match.status === 'finished' ? 'انتهت' : 'قادمة');
 
         // Generate HTML for team logos and names, handling cases where data might be missing
-        // Use match.home_team, match.away_team, match.home_team_logo, match.away_team_logo
         const teamsHtml = (match.home_team && match.away_team)
             ? `
                 <div class="teams-logos">
@@ -329,10 +394,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `
             : `<p class="match-teams">${match.title || 'الفرق غير متوفرة'}</p>`; // Fallback to title or generic text
 
-        // Determine if the thumbnail is the LCP image. This is a heuristic.
-        // For general match cards, the thumbnail is usually important, but not always the single LCP for the entire page.
-        // We'll apply `fetchpriority="high"` only for the very first few images on the homepage.
-        const isLCPCandidate = (matchCard.tabIndex === 0); // Placeholder: You'd need to determine this based on actual layout
+        const isLCPCandidate = (matchCard.tabIndex === 0); 
 
         // Construct the inner HTML of the match card
         matchCard.innerHTML = `
@@ -351,11 +413,17 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
         
-        // Add click event listener to the match card
-        matchCard.addEventListener('click', () => {
+        // Add click event listener to the match card for navigation AND ad
+        matchCard.addEventListener('click', (e) => {
+            e.preventDefault(); // Prevent default link behavior, we handle navigation manually
             console.log(`⚡ [Interaction] Match card clicked for ID: ${match.id}.`);
-            openAdLink(DIRECT_LINK_COOLDOWN_MATCH_CARD, 'matchCard'); // Trigger ad
-            showMatchDetails(match.id); // Navigate to match details
+            
+            triggerAdsterraPopUnder(); // Trigger the ad pop-under in a new tab
+
+            // Navigate to match details after a small delay to allow ad to load (optional, but good practice)
+            setTimeout(() => {
+                showMatchDetails(match.id); 
+            }, 100); // Small delay
         });
         return matchCard;
     }
@@ -390,13 +458,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             lazyLoadImages.forEach(function(element) {
-                // Ensure data-src or data-srcset is set for lazyload
                 if (element.dataset.src || element.dataset.srcset) {
-                    imageObserver.observe(element); // Start observing each lazyload image
+                    imageObserver.observe(element);
                 }
             });
         } else {
-            // Fallback for browsers that do not support IntersectionObserver (load all images immediately)
             let lazyLoadImages = container.querySelectorAll('img.lazyload, source.lazyload');
             lazyLoadImages.forEach(function(element) {
                 if (element.tagName === 'IMG') {
@@ -461,7 +527,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const prevPageBtn = document.getElementById(prevBtnId);
         const nextPageBtn = document.getElementById(nextBtnId);
         const emptyStateElement = document.getElementById(emptyStateId);
-        // Find the closest pagination controls container
         const paginationControlsElement = prevPageBtn ? prevPageBtn.closest('.pagination-controls') : null;
 
         if (!targetGridElement) {
@@ -471,7 +536,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!Array.isArray(matchesArray) || matchesArray.length === 0) {
             displayMatches([], targetGridElement, emptyStateElement, paginationControlsElement);
-            // Disable buttons if no matches
             if (prevPageBtn) prevPageBtn.disabled = true;
             if (nextPageBtn) nextPageBtn.disabled = true;
             return;
@@ -485,9 +549,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const totalPages = Math.ceil(matchesArray.length / matchesPerPage);
         if (paginationControlsElement) {
-            paginationControlsElement.style.display = 'flex'; // Show pagination controls if there are matches
+            paginationControlsElement.style.display = 'flex';
         }
-        // Update button disabled states
         if (prevPageBtn) prevPageBtn.disabled = (page === 1);
         if (nextPageBtn) nextPageBtn.disabled = (page * matchesPerPage >= matchesArray.length);
         
@@ -502,45 +565,41 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function handleHomeView() {
         showView('home', (section) => {
-            // Get references to elements within the newly cloned 'home-view-template' section
             const matchGridElement = section.querySelector('#main-match-grid');
             const prevPageBtn = section.querySelector('#home-prev-page-btn');
             const nextPageBtn = section.querySelector('#home-next-page-btn');
             const sectionTitle = section.querySelector('#home-matches-title');
-            const emptyStateElement = section.querySelector('#home-empty-state'); // Ensure this element exists in your template if you want an empty state here
+            const emptyStateElement = section.querySelector('#home-empty-state');
 
             if (sectionTitle) sectionTitle.textContent = 'أبرز المباريات والجديد';
 
-            // Filter for live, upcoming, and some recent finished matches for the homepage
             const homePageMatches = matchesData.filter(match => {
-                const matchDate = new Date(match.date_time); // Use date_time
+                const matchDate = new Date(match.date_time);
                 const now = new Date();
-                const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // Matches from last 7 days
+                const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-                return match.status === 'live' || // Always show live matches
-                       match.status === 'upcoming' || // Always show upcoming matches
-                       (match.status === 'finished' && matchDate >= oneWeekAgo); // Show finished matches from last week
+                return match.status === 'live' ||
+                                       match.status === 'upcoming' ||
+                                       (match.status === 'finished' && matchDate >= oneWeekAgo);
             });
 
-            // Re-sort for home page: live first, then upcoming (chronological), then recent finished (descending date)
             currentFilteredMatches = [...homePageMatches].sort((a, b) => {
                 const statusOrder = { 'live': 1, 'upcoming': 2, 'finished': 3 };
                 const statusDiff = statusOrder[a.status] - statusOrder[b.status];
                 if (statusDiff !== 0) return statusDiff;
 
-                const dateA = new Date(a.date_time); // Use date_time
-                const dateB = new Date(b.date_time); // Use date_time
+                const dateA = new Date(a.date_time);
+                const dateB = new Date(b.date_time);
 
                 if (a.status === 'finished') {
-                    return dateB.getTime() - dateA.getTime(); 
+                    return dateB.getTime() - dateA.getTime();    
                 }
-                return dateA.getTime() - dateB.getTime(); 
+                return dateA.getTime() - dateB.getTime();    
             });
 
             currentPage = 1;
             paginateMatches(currentFilteredMatches, currentPage, 'main-match-grid', 'home-prev-page-btn', 'home-next-page-btn', 'home-empty-state');
             
-            // Re-attach event listeners for home pagination buttons (as they are newly cloned)
             if (prevPageBtn) {
                 prevPageBtn.onclick = () => {
                     if (currentPage > 1) {
@@ -562,8 +621,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             console.log('🏠 [View] Home view initialized with latest matches.');
         });
-        updatePageMetadata(); // Update SEO for home page
-        generateAndInjectSchema(); // Generate general schema for home page
+        updatePageMetadata();
+        generateAndInjectSchema();
     }
 
     /**
@@ -572,7 +631,6 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function handleLiveMatchesView() {
         showView('live', (section) => {
-            // Get references to elements within the newly cloned 'live-matches-template' section
             const matchGridElement = section.querySelector('#live-match-grid');
             const emptyStateElement = section.querySelector('#live-empty-state');
             const prevPageBtn = section.querySelector('#live-prev-page-btn');
@@ -583,68 +641,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (sectionTitle) sectionTitle.textContent = 'مباريات كرة القدم مباشرة الآن';
 
-            // Populate dropdown with unique leagues from ALL matches that have a 'live' status.
-            // Using a Set to get unique league names, then filter out any empty/null values.
-            const uniqueLeagues = [...new Set(matchesData.filter(m => m.status === 'live').map(m => m.league_name))].filter(Boolean); // Use league_name
-            if (dropdown) { // Check if dropdown exists before populating
-                dropdown.innerHTML = '<option value="all">كل البطولات</option>' + 
-                                    uniqueLeagues.map(league => `<option value="${league}">${league}</option>`).join('');
+            const uniqueLeagues = [...new Set(matchesData.filter(m => m.status === 'live').map(m => m.league_name))].filter(Boolean);
+            if (dropdown) {
+                dropdown.innerHTML = '<option value="all">كل البطولات</option>' +    
+                                             uniqueLeagues.map(league => `<option value="${league}">${league}</option>`).join('');
             }
 
-            /**
-             * Applies filters (status, league) to the live matches.
-             */
             const applyLiveFilters = () => {
                 const activeFilterBtn = section.querySelector('.filter-btn.active');
-                // The data-filter-type and data-filter-value attributes are already set in HTML for these buttons
-                const filterType = activeFilterBtn ? activeFilterBtn.dataset.filterType : 'status'; 
-                const filterValue = activeFilterBtn ? activeFilterBtn.dataset.filterValue : 'live'; // Default to live status
-                const selectedLeague = dropdown ? dropdown.value : 'all'; // Get selected league from dropdown
+                const filterType = activeFilterBtn ? activeFilterBtn.dataset.filterType : 'status';    
+                const filterValue = activeFilterBtn ? activeFilterBtn.dataset.filterValue : 'live';
+                const selectedLeague = dropdown ? dropdown.value : 'all';
 
                 currentFilteredMatches = matchesData.filter(match => {
-                    let passesStatusFilter = false; // Assume false by default
+                    let passesStatusFilter = false;
 
-                    // Filter by status (always 'live' for this view)
                     if (filterType === 'status' && match.status === 'live') {
                         passesStatusFilter = true;
-                    } 
-                    // Add specific 'top-leagues-live' logic if you have specific top leagues defined in your data
-                    // For example:
-                    // else if (filterType === 'top-leagues-live') {
-                    //    const topLeagues = ['الدوري الإنجليزي الممتاز', 'الدوري الإسباني - الليجا', 'دوري أبطال أوروبا']; 
-                    //    passesStatusFilter = match.status === 'live' && topLeagues.includes(match.league_name);
-                    // }
-
-                    // Filter by selected league from dropdown
+                    }
+                    
                     let passesLeagueFilter = true;
-                    if (selectedLeague !== 'all' && match.league_name !== selectedLeague) { // Use league_name
+                    if (selectedLeague !== 'all' && match.league_name !== selectedLeague) {
                         passesLeagueFilter = false;
                     }
                     
                     return passesStatusFilter && passesLeagueFilter;
-                }).sort((a, b) => new Date(a.date_time).getTime() - new Date(b.date_time).getTime()); // Sort live matches chronologically (Use date_time)
+                }).sort((a, b) => new Date(a.date_time).getTime() - new Date(b.date_time).getTime());
 
                 currentPage = 1;
                 paginateMatches(currentFilteredMatches, currentPage, 'live-match-grid', 'live-prev-page-btn', 'live-next-page-btn', 'live-empty-state');
             };
 
-            // Attach event listeners to filter buttons
             filterButtons.forEach(btn => {
                 btn.onclick = () => {
-                    filterButtons.forEach(b => b.classList.remove('active')); // Deactivate all filter buttons
-                    btn.classList.add('active'); // Activate the clicked button
-                    applyLiveFilters(); // Re-apply filters
+                    filterButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    applyLiveFilters();
                 };
             });
-            // Attach event listener to the league dropdown
             if (dropdown) {
                 dropdown.onchange = applyLiveFilters;
             }
 
-            // Initial display of live matches when the view loads
             applyLiveFilters();
 
-            // Re-attach event listeners for pagination buttons
             if (prevPageBtn) {
                 prevPageBtn.onclick = () => {
                     if (currentPage > 1) {
@@ -666,9 +706,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             console.log('⚽ [View] Live matches view initialized.');
         });
-        // Update SEO for Live Matches page
         updatePageMetadata({ title: 'المباريات المباشرة', description: 'شاهد بث مباشر لأهم مباريات كرة القدم الآن. لا تفوت أي لحظة من الإثارة!', keywords: 'مباريات مباشرة, بث مباشر, كورة لايف' });
-        generateAndInjectSchema(); // No specific match, so general schema for the view
+        generateAndInjectSchema();
     }
 
     /**
@@ -677,7 +716,6 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function handleUpcomingMatchesView() {
         showView('upcoming', (section) => {
-            // Get references to elements within the newly cloned 'upcoming-matches-template' section
             const matchGridElement = section.querySelector('#upcoming-match-grid');
             const emptyStateElement = section.querySelector('#upcoming-empty-state');
             const prevPageBtn = section.querySelector('#upcoming-prev-page-btn');
@@ -688,60 +726,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (sectionTitle) sectionTitle.textContent = 'مواعيد مباريات كرة القدم القادمة';
 
-            // Populate dropdown with unique leagues from ALL matches that have an 'upcoming' status.
-            const uniqueLeagues = [...new Set(matchesData.filter(m => m.status === 'upcoming').map(m => m.league_name))].filter(Boolean); // Use league_name
-            if (dropdown) { // Check if dropdown exists before populating
-                dropdown.innerHTML = '<option value="all">كل البطولات</option>' + 
-                                    uniqueLeagues.map(league => `<option value="${league}">${league}</option>`).join('');
+            const uniqueLeagues = [...new Set(matchesData.filter(m => m.status === 'upcoming').map(m => m.league_name))].filter(Boolean);
+            if (dropdown) {
+                dropdown.innerHTML = '<option value="all">كل البطولات</option>' +    
+                                             uniqueLeagues.map(league => `<option value="${league}">${league}</option>`).join('');
             }
 
-            /**
-             * Applies filters (date, league) to the upcoming matches.
-             */
             const applyUpcomingFilters = () => {
                 const activeFilterBtn = section.querySelector('.filter-btn.active');
-                const filterType = activeFilterBtn ? activeFilterBtn.dataset.filterType : 'status'; 
-                const filterValue = activeFilterBtn ? activeFilterBtn.dataset.filterValue : 'upcoming'; 
+                const filterType = activeFilterBtn ? activeFilterBtn.dataset.filterType : 'status';    
+                const filterValue = activeFilterBtn ? activeFilterBtn.dataset.filterValue : 'upcoming';    
                 const selectedLeague = dropdown ? dropdown.value : 'all';
                 
                 const now = new Date();
-                // Normalize dates to the start of the day for accurate comparison
                 const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                 const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
 
                 currentFilteredMatches = matchesData.filter(match => {
-                    let passesDateFilter = false; 
-                    const matchDateObj = new Date(match.date_time); // Use date_time
+                    let passesDateFilter = false;    
+                    const matchDateObj = new Date(match.date_time);
                     const matchDay = new Date(matchDateObj.getFullYear(), matchDateObj.getMonth(), matchDateObj.getDate());
 
-                    // First, ensure the match is actually upcoming
                     if (match.status !== 'upcoming') return false;
 
-                    // Apply date-specific filters
                     if (filterType === 'status' && filterValue === 'upcoming') {
-                        passesDateFilter = true; // All upcoming matches
+                        passesDateFilter = true;
                     } else if (filterType === 'date') {
                         if (filterValue === 'today') {
                             passesDateFilter = matchDay.getTime() === today.getTime();
                         } else if (filterValue === 'tomorrow') {
-                            passesDateFilter = matchDay.getTime() === tomorrow.getTime(); 
+                            passesDateFilter = matchDay.getTime() === tomorrow.getTime();    
                         }
                     }
                     
-                    // Apply league filter
                     let passesLeagueFilter = true;
-                    if (selectedLeague !== 'all' && match.league_name !== selectedLeague) { // Use league_name
+                    if (selectedLeague !== 'all' && match.league_name !== selectedLeague) {
                         passesLeagueFilter = false;
                     }
 
                     return passesDateFilter && passesLeagueFilter;
-                }).sort((a, b) => new Date(a.date_time).getTime() - new Date(b.date_time).getTime()); // Always sort upcoming matches chronologically (Use date_time)
+                }).sort((a, b) => new Date(a.date_time).getTime() - new Date(b.date_time).getTime());
 
                 currentPage = 1;
                 paginateMatches(currentFilteredMatches, currentPage, 'upcoming-match-grid', 'upcoming-prev-page-btn', 'upcoming-next-page-btn', 'upcoming-empty-state');
             };
 
-            // Attach event listeners to filter buttons
             filterButtons.forEach(btn => {
                 btn.onclick = () => {
                     filterButtons.forEach(b => b.classList.remove('active'));
@@ -749,15 +778,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     applyUpcomingFilters();
                 };
             });
-            // Attach event listener to the league dropdown
             if (dropdown) {
                 dropdown.onchange = applyUpcomingFilters;
             }
 
-            // Initial display of upcoming matches when the view loads
             applyUpcomingFilters();
 
-            // Re-attach event listeners for pagination buttons
             if (prevPageBtn) {
                 prevPageBtn.onclick = () => {
                     if (currentPage > 1) {
@@ -779,7 +805,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             console.log('📅 [View] Upcoming matches view initialized.');
         });
-        // Update SEO for Upcoming Matches page
         updatePageMetadata({ title: 'مواعيد المباريات', description: 'اكتشف جدول مباريات كرة القدم القادمة والبطولات الكبرى.', keywords: 'مواعيد مباريات, جدول مباريات, مباريات اليوم, مباريات الغد' });
         generateAndInjectSchema();
     }
@@ -790,7 +815,6 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function handleHighlightsView() {
         showView('highlights', (section) => {
-            // Get references to elements within the newly cloned 'highlights-template' section
             const matchGridElement = section.querySelector('#highlights-grid');
             const emptyStateElement = section.querySelector('#highlights-empty-state');
             const prevPageBtn = section.querySelector('#highlights-prev-page-btn');
@@ -799,14 +823,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (sectionTitle) sectionTitle.textContent = 'أهداف وملخصات المباريات';
 
-            // Filter for matches that are of type 'highlight' and have an embed_url (for video)
             currentFilteredMatches = matchesData.filter(m => m.type === 'highlight' && m.embed_url)
-                                             .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime()); // Sort by newest first (Use date_time)
+                                                     .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime());
 
             currentPage = 1;
             paginateMatches(currentFilteredMatches, currentPage, 'highlights-grid', 'highlights-prev-page-btn', 'highlights-next-page-btn', 'highlights-empty-state');
 
-            // Re-attach event listeners for pagination buttons
             if (prevPageBtn) {
                 prevPageBtn.onclick = () => {
                     if (currentPage > 1) {
@@ -828,7 +850,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             console.log('🏆 [View] Highlights view initialized.');
         });
-        // Update SEO for Highlights page
         updatePageMetadata({ title: 'أهداف وملخصات', description: 'شاهد أحدث أهداف وملخصات مباريات كرة القدم بجودة عالية. استمتع بأجمل اللقطات والأهداف الحاسمة.', keywords: 'أهداف, ملخصات, فيديو كرة قدم, أهداف اليوم, ملخصات المباريات, أجمل الأهداف' });
         generateAndInjectSchema();
     }
@@ -845,16 +866,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (sectionTitle) sectionTitle.textContent = 'آخر أخبار كرة القدم';
 
-            // Filter for items with type 'news'
             currentFilteredMatches = matchesData.filter(m => m.type === 'news')
-                                                .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime()); // Newest news first (Use date_time)
+                                                         .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime());
 
-            // For news, we might not always paginate, or use a simpler display logic
-            displayMatches(currentFilteredMatches, newsGridElement, emptyStateElement, null); // Pass null for pagination controls
+            displayMatches(currentFilteredMatches, newsGridElement, emptyStateElement, null);
             
             console.log('📰 [View] News view initialized.');
         });
-        // Update SEO for News page
         updatePageMetadata({ title: 'آخر أخبار كرة القدم', description: 'تابع أحدث أخبار كرة القدم المحلية والعالمية لحظة بلحظة. كل ما يخص الأندية واللاعبين والبطولات.', keywords: 'أخبار كرة قدم, آخر الأخبار, أخبار الرياضة, كرة القدم اليوم' });
         generateAndInjectSchema();
     }
@@ -866,14 +884,12 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     async function showMatchDetails(matchId) {
         console.log(`🔍 [Navigation] Attempting to display match details for ID: ${matchId}`);
-        const match = matchesData.find(m => m.id === matchId); // Find the match object by ID
+        const match = matchesData.find(m => m.id === matchId);
 
         if (match) {
-            currentDetailedMatch = match; // Store the currently viewed detailed match
+            currentDetailedMatch = match;
 
-            // Load the match details view from its template
             showView('details', (sectionElement) => {
-                // Get references to all relevant elements within the cloned details section
                 const backToHomeBtn = sectionElement.querySelector('#back-to-home-btn');
                 const matchDetailsTitleElement = sectionElement.querySelector('#match-details-title-element');
                 const matchDetailsDescriptionElement = sectionElement.querySelector('#match-details-description');
@@ -891,26 +907,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 const videoContainer = sectionElement.querySelector('#match-player-container');
                 const videoLoadingSpinner = sectionElement.querySelector('#video-loading-spinner');
                 const videoOverlay = sectionElement.querySelector('#video-overlay');
-                const matchInfoBox = sectionElement.querySelector('.match-info-box'); // Reference to the info box to hide it
 
                 // Populate text content for match details
                 matchDetailsTitleElement.textContent = match.title || 'عنوان غير متوفر';
-                matchDetailsDescriptionElement.textContent = match.short_description || 'لا يوجد وصف متاح لهذه المباراة.'; // Use short_description
-                matchDetailsDateTimeElement.textContent = match.date_time ? new Date(match.date_time).toLocaleString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'غير متوفر'; // Use date_time
-                matchDetailsLeagueElement.textContent = match.league_name || 'غير محدد'; // Use league_name
+                matchDetailsDescriptionElement.textContent = match.short_description || 'لا يوجد وصف متاح لهذه المباراة.';
+                matchDetailsDateTimeElement.textContent = match.date_time ? new Date(match.date_time).toLocaleString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'غير متوفر';
+                matchDetailsLeagueElement.textContent = match.league_name || 'غير محدد';
                 matchDetailsCommentatorsElement.textContent = Array.isArray(match.commentators) ? match.commentators.join(', ') : match.commentators || 'غير متوفر';
-                matchDetailsTeamsElement.textContent = `${match.home_team || 'فريق غير معروف'} vs ${match.away_team || 'فريق غير معروف'}`; // Combine home_team/away_team
+                matchDetailsTeamsElement.textContent = `${match.home_team || 'فريق غير معروف'} vs ${match.away_team || 'فريق غير معروف'}`;
                 matchDetailsStadiumElement.textContent = match.stadium || 'غير متوفر';
                 
-                // Update status text and class for styling
                 if (matchDetailsStatusElement) {
                     const statusText = match.status === 'live' ? 'مباشر الآن' : (match.status === 'finished' ? 'انتهت' : 'قادمة');
-                    // Reset class and add appropriate one
-                    matchDetailsStatusElement.className = ''; 
+                    matchDetailsStatusElement.className = '';    
                     matchDetailsStatusElement.classList.add(match.status === 'live' ? 'live-status' : (match.status === 'finished' ? 'finished-status' : 'upcoming-status'));
                 }
 
-                // Show score and highlights sections only if data is available
                 if (match.status === 'finished' && match.score) {
                     if (matchDetailsScoreContainer) matchDetailsScoreContainer.classList.remove('hidden');
                     if (matchDetailsScoreElement) matchDetailsScoreElement.textContent = match.score;
@@ -918,167 +930,111 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (matchDetailsScoreContainer) matchDetailsScoreContainer.classList.add('hidden');
                 }
 
-                if (match.highlight_url && match.type === 'highlight') { // Ensure type is 'highlight' for highlights
+                if (match.highlight_url && match.type === 'highlight') {
                     if (matchDetailsHighlightsContainer) matchDetailsHighlightsContainer.classList.remove('hidden');
                     if (matchDetailsHighlightsLink) matchDetailsHighlightsLink.href = match.highlight_url;
                 } else {
                     if (matchDetailsHighlightsContainer) matchDetailsHighlightsContainer.classList.add('hidden');
                 }
 
-                // Set match poster (thumbnail)
                 if (matchDetailsPoster) {
                     matchDetailsPoster.src = match.thumbnail || 'images/thumbnails/default.jpg';
                     matchDetailsPoster.alt = match.title;
                     matchDetailsPoster.setAttribute('width', '250');
                     matchDetailsPoster.setAttribute('height', '180');
-                    // Add `fetchpriority="high"` to the poster image for LCP optimization on details page
                     matchDetailsPoster.setAttribute('fetchpriority', 'high');
-                    matchDetailsPoster.setAttribute('loading', 'eager'); // Ensure it loads immediately
+                    matchDetailsPoster.setAttribute('loading', 'eager');
                     console.log(`[Details] Match poster set for ${match.title}`);
                 }
                 
-                // Hide the match info box as per CSS rule
-                if (matchInfoBox) {
-                    matchInfoBox.style.display = 'none'; // This is defined in your CSS to hide it
-                }
-
                 // --- iframe Player Setup ---
-                const iframeUrl = match.embed_url; // Use embed_url from the new JSON structure
+                const iframeUrl = match.embed_url;
 
                 if (!iframeUrl) {
                     console.error(`❌ Failed to get stream URL for match ID: ${matchId}. Cannot initialize player. (embed_url is null/empty)`);
                     if (videoContainer) {
                         videoContainer.innerHTML = '<p style="text-align: center; color: var(--up-text-primary); margin-top: 20px;">عذرًا، لا يمكن تشغيل البث حاليًا (الرابط غير صالح أو غير متوفر).</p>';
                     }
-                    // Ensure loading spinner and overlay are hidden if no stream
                     if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
                     if (videoOverlay) {
-                        videoOverlay.style.pointerEvents = 'none'; // Disable interaction
-                        videoOverlay.classList.add('hidden'); // Hide overlay
+                        videoOverlay.style.pointerEvents = 'none';
+                        videoOverlay.classList.add('hidden');
                     }
-                    return; // Stop here if no stream URL
+                    return;
                 }
 
                 if (videoContainer) {
                     videoContainer.innerHTML = ''; // Clear any previous video player content
 
                     const iframeElement = document.createElement('iframe');
-                    iframeElement.id = 'match-iframe-player'; // Assign ID for CSS targeting
+                    iframeElement.id = 'match-iframe-player';
                     iframeElement.setAttribute('src', iframeUrl);
                     iframeElement.setAttribute('frameborder', '0');
                     iframeElement.setAttribute('allowfullscreen', 'true');
                     iframeElement.setAttribute('scrolling', 'no');
-                    // Add sandbox attribute for enhanced security, restricting what the iframe can do
                     iframeElement.setAttribute('sandbox', 'allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
                     
-                    // Apply inline styles for aspect ratio container to fill 100%
                     iframeElement.style.width = '100%';
                     iframeElement.style.height = '100%';
                     iframeElement.style.position = 'absolute';
                     iframeElement.style.top = '0';
                     iframeElement.style.left = '0';
                     
-                    // Set a descriptive title for the iframe for accessibility
                     iframeElement.setAttribute('title', `مشغل بث مباشر لمباراة ${match.title}`);
 
-
-                    // Show spinner while iframe loads (can be for a few seconds if content is heavy)
                     if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'block';
-                    if (videoOverlay) {
-                        videoOverlay.style.pointerEvents = 'auto'; // Enable interaction for initial ad click
-                        videoOverlay.classList.remove('hidden'); // Ensure overlay is visible
-                        videoOverlay.innerHTML = '<p>انقر هنا للتشغيل</p>'; // Ensure text is visible for user instruction
-                    }
 
-                    // Add load and error listeners for the iframe
                     iframeElement.onload = () => {
                         console.log(`[iframe] iframe loaded successfully from: ${iframeUrl}`);
-                        if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none'; // Hide spinner once iframe content is loaded
-                        // Keep overlay active; it will be hidden by user click event
+                        if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
+                        // Keep overlay active for ad interaction
+                        if (videoOverlay) {
+                            // Initial setup for the transparent overlay and its ad logic
+                            setupVideoOverlayAd(videoOverlay, videoContainer);
+                        }
                     };
                     iframeElement.onerror = () => {
                         console.error(`❌ [iframe] Failed to load iframe from: ${iframeUrl}. This might be due to security restrictions (X-Frame-Options) or an invalid URL.`);
                         if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
-                        // Display error message inside the container if iframe fails to load
                         if (videoContainer) {
                             videoContainer.innerHTML = '<p style="text-align: center; color: var(--up-text-primary); margin-top: 20px;">عذرًا، لا يمكن تشغيل البث حاليًا (قد يكون الرابط غير صالح أو محظور). يرجى المحاولة لاحقاً.</p>';
                         }
-                        if (videoOverlay) { // Hide overlay if iframe loading fails completely
-                            videoOverlay.style.pointerEvents = 'none';
-                            videoOverlay.classList.add('hidden');
-                        }
+                        clearVideoOverlayAd(); // Clear overlay ad if iframe fails
                     };
-                    videoContainer.appendChild(iframeElement); // Append the iframe to the container
+                    videoContainer.appendChild(iframeElement);
                     console.log('[Stream Player] iframe element created and appended.');
                 } else {
                     console.error('❌ Critical error: "match-player-container" not found in details view. Cannot create stream player.');
                     return;
                 }
 
-                // Add event listener for the "Back to Home" button (inside details template)
-                const backToHomeBtnInDetails = sectionElement.querySelector('#back-to-home-btn'); // Get local reference
+                const backToHomeBtnInDetails = sectionElement.querySelector('#back-to-home-btn');
                 if (backToHomeBtnInDetails) {
                     backToHomeBtnInDetails.onclick = () => {
                         console.log('🔙 [Interaction] "Back to Matches" button clicked from details view.');
-                        showHomePage(); // Navigate back to the home page
+                        showHomePage();
                     };
-                }
-
-                // Re-attach event listener for the video overlay (critical for ad interaction before playback)
-                if (videoOverlay) {
-                    videoOverlay.onclick = async (e) => {
-                        console.log('⏯️ [Ad Interaction] Video overlay clicked. Attempting to open direct link.');
-                        const adOpened = openAdLink(DIRECT_LINK_COOLDOWN_VIDEO_INTERACTION, 'videoOverlay');
-
-                        if (adOpened) {
-                            // Give a short delay for the ad tab to open/load before hiding the overlay
-                            await new Promise(resolve => setTimeout(resolve, 500)); 
-                            if (videoOverlay) {
-                                videoOverlay.style.pointerEvents = 'none'; // Disable further clicks on overlay
-                                videoOverlay.classList.add('hidden'); // Hide the overlay
-                            }
-                            if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none'; // Ensure spinner is hidden
-                        } else {
-                            console.log('[Video Overlay] Ad not opened due to cooldown. Overlay remains active.');
-                        }
-                        e.stopPropagation(); // Prevent the click event from bubbling up and potentially interacting with the iframe directly
-                    };
-                }
-                
-                // Add logic for video overlay re-appearance
-                if (videoOverlay) {
-                    // Clear any existing interval to prevent multiple intervals running
-                    if (videoOverlayInterval) {
-                        clearInterval(videoOverlayInterval);
-                    }
-                    // Set an interval to show the overlay every 10 seconds
-                    videoOverlayInterval = setInterval(() => {
-                        console.log('[Video Overlay] Showing overlay for ad interaction.');
-                        videoOverlay.classList.remove('hidden'); // Show the overlay
-                        videoOverlay.style.pointerEvents = 'auto'; // Enable clicks on the overlay
-                    }, 10000); // 10 seconds
                 }
             });
             
-            // Update browser URL (for direct linking and refresh)
-            const matchSlug = match.title.toLowerCase().replace(/[^a-z0-9\u0600-\u06FF\s-]/g, '').replace(/\s+/g, '-'); // Create a URL-friendly slug
+            const matchSlug = match.title.toLowerCase().replace(/[^a-z0-9\u0600-\u06FF\s-]/g, '').replace(/\s+/g, '-');
             const newUrl = new URL(window.location.origin);
             newUrl.searchParams.set('view', 'details');
             newUrl.searchParams.set('id', match.id);
-            newUrl.searchParams.set('title', matchSlug); // Add slug for better readability/SEO
-            history.pushState({ view: 'details', id: match.id }, match.title, newUrl.toString()); // Update browser history without full page reload
+            newUrl.searchParams.set('title', matchSlug);
+            history.pushState({ view: 'details', id: match.id }, match.title, newUrl.toString());
             console.log(`🔗 [URL] Browser URL updated to ${newUrl.toString()}`);
 
-            updatePageMetadata(match); // Update SEO meta tags for this specific match
-            generateAndInjectSchema(match); // Generate JSON-LD schema for this specific match
+            updatePageMetadata(match);
+            generateAndInjectSchema(match);
 
-            displaySuggestedMatches(matchId); // Display suggested matches for the current detailed match
+            displaySuggestedMatches(matchId);
             console.log(`✨ [Suggestions] displaySuggestedMatches called for ID: ${matchId}.`);
 
-            window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to the top of the page
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
             console.error('❌ [Navigation] Match not found for the given ID:', matchId, '. Redirecting to home page.');
-            showHomePage(); // If match ID is invalid, return to home page
+            showHomePage();
         }
     }
 
@@ -1091,9 +1047,8 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {object|null} match - The current match object if viewing details, or null for general views/homepage.
      */
     function updatePageMetadata(match = null) {
-        // Get references to all dynamic meta tags and title elements
         const canonicalLink = document.getElementById('dynamic-canonical');
-        const dynamicTitleElement = document.getElementById('dynamic-title'); // The <title> element has an ID now
+        const dynamicTitleElement = document.getElementById('dynamic-title');
         const dynamicDescription = document.getElementById('dynamic-description');
         const dynamicKeywords = document.getElementById('dynamic-keywords');
         const dynamicOgType = document.getElementById('dynamic-og-type');
@@ -1118,33 +1073,30 @@ document.addEventListener('DOMContentLoaded', () => {
             
             pageTitle = `${match.title} - بث مباشر أونلاين على شاهد كورة | Ultimate Pitch`;
             const shortDescriptionContent = (match.short_description || `شاهد بث مباشر لمباراة ${match.home_team || 'فريق'} ضد ${match.away_team || 'فريق'} في ${match.league_name || 'بطولة كرة القدم'} بجودة عالية على شاهد كورة. تابع جميع مباريات كرة القدم مباشرة.`).substring(0, 155);
-            pageDescription = shortDescriptionContent + (match.short_description && match.short_description.length > 155 ? '...' : ''); // Use short_description
+            pageDescription = shortDescriptionContent + (match.short_description && match.short_description.length > 155 ? '...' : '');
             
-            // Combine home and away teams for keywords
-            const matchTeams = `${match.home_team}, ${match.away_team}`.split(',').map(s => s.trim()).filter(Boolean).join(', '); 
-            const matchLeague = String(match.league_name || '').trim(); // Use league_name
+            const matchTeams = `${match.home_team}, ${match.away_team}`.split(',').map(s => s.trim()).filter(Boolean).join(', ');    
+            const matchLeague = String(match.league_name || '').trim();
             const commentators = Array.isArray(match.commentators) ? match.commentators.join(', ') : String(match.commentators || '').trim();
             pageKeywords = [
-                match.title, matchTeams, matchLeague, commentators, 'شاهد كورة', 'بث مباشر', 'مشاهدة أونلاين', 
-                'مباريات اليوم', 'كرة القدم', 'جودة عالية', 'الدوري المصري', 'الدوري الإنجليزي', 
+                match.title, matchTeams, matchLeague, commentators, 'شاهد كورة', 'بث مباشر', 'مشاهدة أونلاين',    
+                'مباريات اليوم', 'كرة القدم', 'جودة عالية', 'الدوري المصري', 'الدوري الإنجليزي',    
                 'الدوري الإسباني', 'دوري أبطال أوروبا', 'بث مباشر مجاني', 'Ultimate Pitch'
-            ].filter(Boolean).join(', '); // Filter out any empty strings
+            ].filter(Boolean).join(', ');
 
             ogUrl = matchUrl;
             ogTitle = `${match.title} - بث مباشر على شاهد كورة | Ultimate Pitch`;
             ogDescription = pageDescription;
-            ogImage = match.thumbnail || 'https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png'; // Fallback image
-            ogType = "video.other"; // Best type for live sports streams according to Open Graph protocol
+            ogImage = match.thumbnail || 'https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png';
+            ogType = "video.other";
 
             twitterTitle = ogTitle;
             twitterDescription = ogDescription;
             twitterImage = ogImage;
-            twitterCard = "summary_large_image"; // Recommended for images
+            twitterCard = "summary_large_image";
 
         } else {
-            // Case: General View / Home Page
             const currentPath = window.location.pathname;
-            // Determine default metadata based on the current logical view (e.g., /live-matches)
             if (currentPath.includes('/live-matches') || currentPath.includes('/live')) {
                 pageTitle = 'شاهد كورة - المباريات المباشرة الآن | بث مباشر كرة القدم';
                 pageDescription = 'شاهد بث مباشر لأهم مباريات كرة القدم الجارية حالياً بجودة عالية ومجاناً على شاهد كورة. لا تفوت أي هدف!';
@@ -1167,21 +1119,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 pageKeywords = 'شاهد كورة، بث مباشر، مباريات اليوم، أهداف، ملخصات، أخبار كرة قدم، دوريات عالمية، كرة القدم، مشاهدة مجانية، تحليل كروي، Ultimate Pitch';
             }
 
-            ogUrl = window.location.origin; // Canonical URL for homepage
-            ogTitle = pageTitle; // OG title matches page title for homepage
+            ogUrl = window.location.origin;
+            ogTitle = pageTitle;
             ogDescription = pageDescription;
-            ogImage = 'https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png'; // Site's main OG image
-            ogType = 'website'; // Standard type for a general website
+            ogImage = 'https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png';
+            ogType = 'website';
 
             twitterTitle = ogTitle;
             twitterDescription = ogDescription;
-            twitterImage = 'https://shahidkora.online/images/shahidkora-ultimate-pitch-twitter.png'; // Site's main Twitter image
+            twitterImage = 'https://shahidkora.online/images/shahidkora-ultimate-pitch-twitter.png';
             twitterCard = "summary_large_image";
         }
 
-        // Apply updates to the actual DOM elements
         if (dynamicTitleElement) dynamicTitleElement.textContent = pageTitle;
-        document.title = pageTitle; // Also update the browser tab title
+        document.title = pageTitle;
         if (dynamicDescription) dynamicDescription.setAttribute('content', pageDescription);
         if (dynamicKeywords) dynamicKeywords.setAttribute('content', pageKeywords);
 
@@ -1190,10 +1141,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dynamicOgTitle) dynamicOgTitle.setAttribute('content', ogTitle);
         if (dynamicOgDescription) dynamicOgDescription.setAttribute('content', ogDescription);
         if (dynamicOgImage) dynamicOgImage.setAttribute('content', ogImage);
-        if (dynamicOgImageAlt) dynamicOgImageAlt.setAttribute('content', ogTitle); 
+        if (dynamicOgImageAlt) dynamicOgImageAlt.setAttribute('content', ogTitle);    
         
         if (dynamicTwitterCard) dynamicTwitterCard.setAttribute('content', twitterCard);
-        if (dynamicTwitterUrl) dynamicTwitterUrl.setAttribute('content', ogUrl); 
+        if (dynamicTwitterUrl) dynamicTwitterUrl.setAttribute('content', ogUrl);    
         if (dynamicTwitterTitle) dynamicTwitterTitle.setAttribute('content', twitterTitle);
         if (dynamicTwitterDescription) dynamicTwitterDescription.setAttribute('content', twitterDescription);
         if (dynamicTwitterImage) dynamicTwitterImage.setAttribute('content', twitterImage);
@@ -1216,91 +1167,81 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (!match) {
-            // Clear schema for homepage or general views as it's not specific to one event
             schemaScriptElement.textContent = '';
             console.log('📄 [SEO] No specific JSON-LD schema for this general view (cleared).');
             return;
         }
 
-        // Generate URL for the match details page
         const matchSlug = match.title.toLowerCase().replace(/[^a-z0-9\u0600-\u06FF\s-]/g, '').replace(/\s+/g, '-');
         const matchUrl = `${window.location.origin}/view/?details&id=${match.id}&title=${matchSlug}`;
 
-        // Format date/time to ISOString for schema
         let formattedDate;
-        if (match.date_time) { // Use date_time from the new JSON structure
+        if (match.date_time) {
             try {
                 const date = new Date(match.date_time);
                 if (!isNaN(date.getTime())) {
                     formattedDate = date.toISOString();
                 } else {
-                    formattedDate = new Date().toISOString(); // Fallback to current date if invalid
+                    formattedDate = new Date().toISOString();
                 }
             } catch (e) {
-                formattedDate = new Date().toISOString(); // Fallback if date parsing fails
+                formattedDate = new Date().toISOString();
             }
         } else {
-            formattedDate = new Date().toISOString(); // Fallback if no date provided
+            formattedDate = new Date().toISOString();
         }
 
-        // Prepare arrays for teams and commentators, ensuring they are arrays of strings
-        // Use home_team, away_team directly
-        const teamsArray = [match.home_team, match.away_team].filter(Boolean); 
+        const teamsArray = [match.home_team, match.away_team].filter(Boolean);    
         const commentatorsArray = Array.isArray(match.commentators) ? match.commentators : (match.commentators ? String(match.commentators).split(',').map(s => s.trim()).filter(s => s !== '') : []);
         
-        // The actual stream URL or the iframe embed URL
-        const streamSourceUrl = match.embed_url; // Use embed_url from the new JSON structure
+        const streamSourceUrl = match.embed_url;
 
-        // Define the Schema.org object for SportsEvent
         const schema = {
             "@context": "https://schema.org",
-            "@type": "SportsEvent", 
+            "@type": "SportsEvent",    
             "name": match.title,
-            "description": match.short_description || `مشاهدة بث مباشر لمباراة ${teamsArray.join(' و ')} في ${match.league_name || 'بطولة كرة القدم'} على شاهد كورة.`, // Use short_description and league_name
-            "image": match.thumbnail || 'https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png', // Fallback image
+            "description": match.short_description || `مشاهدة بث مباشر لمباراة ${teamsArray.join(' و ')} في ${match.league_name || 'بطولة كرة القدم'} على شاهد كورة.`,
+            "image": match.thumbnail || 'https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png',
             "url": matchUrl,
-            "startDate": formattedDate, 
+            "startDate": formattedDate,    
             "location": {
                 "@type": "Place",
                 "name": match.stadium || "ملعب غير معروف"
-                // Add more location details like addressLocality, addressCountry if available in your data
             },
-            "performer": teamsArray.map(teamName => ({ "@type": "SportsTeam", "name": teamName })), 
-            "sport": "Football", // Specific sport
-            "eventStatus": `https://schema.org/EventStatusType/${ // Set event status based on match.status (ensure lowercase for comparison)
-                match.status.toLowerCase() === 'live' ? 'EventScheduled' : // 'EventScheduled' implies it's happening or will happen
-                (match.status.toLowerCase() === 'finished' ? 'EventCompleted' : 'EventScheduled') // Use EventCompleted for finished games
-            }`, 
+            "performer": teamsArray.map(teamName => ({ "@type": "SportsTeam", "name": teamName })),    
+            "sport": "Football",
+            "eventStatus": `https://schema.org/EventStatusType/${
+                match.status.toLowerCase() === 'live' ? 'EventScheduled' :
+                (match.status.toLowerCase() === 'finished' ? 'EventCompleted' : 'EventScheduled')
+            }`,    
             
-            // Add VideoObject to indicate the presence of a live stream or video content
             "video": {
                 "@type": "VideoObject",
                 "name": `بث مباشر لمباراة ${match.title}`,
                 "description": `بث مباشر بجودة عالية لمباراة ${match.title} بين ${teamsArray.join(' و ')}.`,
-                "thumbnailUrl": match.thumbnail || 'https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png', // Video thumbnail
-                "uploadDate": formattedDate, // Date when the stream starts (or match date)
-                "contentUrl": streamSourceUrl, // The URL of the actual video/stream
-                "embedUrl": streamSourceUrl, // The URL to embed the video/stream (same as contentUrl for iframes)
-                "interactionCount": "100000", // Placeholder, ideally use actual view counts
-                "liveBroadcast": { // Indicate if it's a live broadcast
+                "thumbnailUrl": match.thumbnail || 'https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png',
+                "uploadDate": formattedDate,
+                "contentUrl": streamSourceUrl,
+                "embedUrl": streamSourceUrl,
+                "interactionCount": "100000",
+                "liveBroadcast": {
                     "@type": "BroadcastEvent",
-                    "isLiveBroadcast": match.status.toLowerCase() === 'live', // True if current status is 'live'
+                    "isLiveBroadcast": match.status.toLowerCase() === 'live',
                     "startDate": formattedDate,
-                    "endDate": new Date(new Date(match.date_time).getTime() + 105 * 60 * 1000).toISOString() // Assuming avg 105 mins for a match + extra time (Use date_time)
+                    "endDate": new Date(new Date(match.date_time).getTime() + 105 * 60 * 1000).toISOString()
                 },
                 "publisher": {
                     "@type": "Organization",
                     "name": "شاهد كورة - Ultimate Pitch",
                     "logo": {
                         "@type": "ImageObject",
-                        "url": "https://shahidkora.online/images/shahed-plus-logo.png", // Ensure this path is correct for your site's logo
+                        "url": "https://shahidkora.online/images/shahed-plus-logo.png",
                         "width": 200,
                         "height": 50
                     }
                 }
             },
             
-            // PotentialAction for "Watch" to guide search engines
             "potentialAction": {
                 "@type": "WatchAction",
                 "target": {
@@ -1315,29 +1256,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 "expectsAcceptanceOf": {
                     "@type": "Offer",
                     "name": "مشاهدة البث المباشر",
-                    "price": "0", // Assuming it's free
+                    "price": "0",
                     "priceCurrency": "USD",
-                    "availability": "http://schema.org/InStock", // Available
+                    "availability": "http://schema.org/InStock",
                     "url": matchUrl
                 }
             }
         };
 
-        // Add commentator info if available
         if (commentatorsArray.length > 0) {
             schema.commentator = commentatorsArray.map(name => ({ "@type": "Person", "name": name }));
         }
-        // Add aggregate rating if available from a rating system
-        // if (match.rating && !isNaN(parseFloat(match.rating))) {
-        //    schema.aggregateRating = {
-        //        "@type": "AggregateRating",
-        //        "ratingValue": parseFloat(match.rating).toFixed(1),
-        //        "bestRating": "5", // Or 10, depending on your rating scale
-        //        "ratingCount": "1000" // Example count
-        //    };
-        // }
 
-        schemaScriptElement.textContent = JSON.stringify(schema, null, 2); // Pretty print JSON for readability
+        schemaScriptElement.textContent = JSON.stringify(schema, null, 2);
         console.log('📄 [SEO] New JSON-LD schema added/updated.');
     }
 
@@ -1346,60 +1277,54 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {number} currentMatchId - The ID of the match currently being viewed in detail.
      */
     function displaySuggestedMatches(currentMatchId) {
-        // Get the suggested match grid element from the current active view (which should be the details view)
         const suggestedMatchGrid = currentActiveViewElement ? currentActiveViewElement.querySelector('#suggested-match-grid') : null;
         if (!suggestedMatchGrid || !currentDetailedMatch) {
             console.error('❌ displaySuggestedMatches: "suggestedMatchGrid" or "currentDetailedMatch" not found. Cannot display suggested matches.');
             return;
         }
 
-        const currentMatchLeague = currentDetailedMatch.league_name; // Use league_name
-        // Ensure teams are an array for consistent filtering
-        const currentMatchTeams = [currentDetailedMatch.home_team, currentDetailedMatch.away_team].filter(Boolean); // Use home_team, away_team
-        let suggested = []; // Array to hold suggested matches
+        const currentMatchLeague = currentDetailedMatch.league_name;
+        const currentMatchTeams = [currentDetailedMatch.home_team, currentDetailedMatch.away_team].filter(Boolean);
+        let suggested = [];
 
-        // 1. Prioritize matches from the same league, excluding the current match
         if (currentMatchLeague) {
             suggested = matchesData.filter(match =>
                 match.id !== currentMatchId &&
-                match.league_name === currentMatchLeague && // Use league_name
-                match.status !== 'finished' // Prefer live or upcoming suggestions
+                match.league_name === currentMatchLeague &&
+                match.status !== 'finished'
             );
         }
 
-        // 2. If not enough, add matches involving the same teams or other popular teams, if not already included
         if (suggested.length < 12) {
             const teamRelated = matchesData.filter(match =>
                 match.id !== currentMatchId &&
-                match.status !== 'finished' && // Prefer live or upcoming suggestions
-                ([match.home_team, match.away_team].filter(Boolean).some(team => currentMatchTeams.includes(team))) && // Check if any team matches (Use home_team, away_team)
-                !suggested.some(s => s.id === match.id) // Avoid adding duplicates
+                match.status !== 'finished' &&
+                ([match.home_team, match.away_team].filter(Boolean).some(team => currentMatchTeams.includes(team))) &&
+                !suggested.some(s => s.id === match.id)
             );
-            suggested = [...new Set([...suggested, ...teamRelated])]; // Use Set to ensure uniqueness
+            suggested = [...new Set([...suggested, ...teamRelated])];
         }
 
-        // 3. Fill up with other live/upcoming matches randomly if still not enough
         if (suggested.length < 12) {
-            const otherRelevantMatches = matchesData.filter(match => 
-                match.id !== currentMatchId && 
-                match.status !== 'finished' && // Only live or upcoming matches
-                !suggested.some(s => s.id === match.id) // Exclude already suggested
-            ).sort(() => 0.5 - Math.random()); // Randomize selection for variety
+            const otherRelevantMatches = matchesData.filter(match =>    
+                match.id !== currentMatchId &&    
+                match.status !== 'finished' &&
+                !suggested.some(s => s.id === match.id)
+            ).sort(() => 0.5 - Math.random());
             const needed = 12 - suggested.length;
             suggested = [...suggested, ...otherRelevantMatches.slice(0, needed)];
         }
         
-        // 4. Finally, add some recent finished matches if still not enough (as a last resort)
         if (suggested.length < 12) {
-            const finishedMatches = matchesData.filter(match => 
-                match.id !== currentMatchId && 
+            const finishedMatches = matchesData.filter(match =>    
+                match.id !== currentMatchId &&    
                 !suggested.some(s => s.id === match.id)
-            ).sort((a,b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime()); // Newest finished first (Use date_time)
+            ).sort((a,b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime());
             const needed = 12 - suggested.length;
             suggested = [...suggested, ...finishedMatches.slice(0, needed)];
         }
 
-        const finalSuggested = suggested.slice(0, 12); // Limit to a maximum of 12 suggestions
+        const finalSuggested = suggested.slice(0, 12);
 
         if (finalSuggested.length === 0) {
             suggestedMatchGrid.innerHTML = '<p style="text-align: center; color: var(--up-text-muted);">لا توجد مباريات مقترحة حالياً.</p>';
@@ -1407,8 +1332,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Display the final suggested matches (no empty state or pagination for this grid)
-        displayMatches(finalSuggested, suggestedMatchGrid); 
+        displayMatches(finalSuggested, suggestedMatchGrid);    
         console.log(`✨ [Suggestions] Displayed ${finalSuggested.length} suggested matches in ${suggestedMatchGrid.id}.`);
     }
 
@@ -1418,42 +1342,28 @@ document.addEventListener('DOMContentLoaded', () => {
     function showHomePage() {
         console.log('🏠 [Navigation] Displaying home page.');
         
-        if (searchInput) searchInput.value = ''; // Clear search input text
+        if (searchInput) searchInput.value = '';
         
-        // Reset navigation active link
         navLinks.forEach(link => {
             link.classList.remove('active');
             if (link.dataset.targetView === 'home') {
-                link.classList.add('active'); // Activate the home link
+                link.classList.add('active');
             }
         });
 
-        handleHomeView(); // Call the specific handler for the home view to re-render its content
+        handleHomeView();
         
         // Ensure the video overlay and spinner are hidden when navigating away from a match detail page
-        const videoOverlay = document.getElementById('video-overlay'); // Get from global scope as it might be detached
-        const videoLoadingSpinner = document.getElementById('video-loading-spinner');
-        if (videoOverlay) {
-            videoOverlay.style.pointerEvents = 'none'; // Disable interactions
-            videoOverlay.classList.add('hidden'); // Hide the overlay
-            if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none'; // Hide spinner
-        }
-        // Clear the video overlay interval when leaving the details page
-        if (videoOverlayInterval) {
-            clearInterval(videoOverlayInterval);
-            videoOverlayInterval = null;
-            console.log('[Video Overlay] Interval cleared.');
-        }
+        clearVideoOverlayAd(); // Call the specific clear function for ads
 
-        currentDetailedMatch = null; // Clear the reference to any previously detailed match
+        currentDetailedMatch = null;
 
-        // Update browser URL to the root for the home page
         const newUrl = new URL(window.location.origin);
         history.pushState({ view: 'home' }, 'شاهد كورة - الصفحة الرئيسية', newUrl.toString());
         console.log(`🔗 [URL] Browser URL updated to ${newUrl.toString()}`);
 
-        updatePageMetadata(); // Reset SEO meta tags to home page defaults
-        generateAndInjectSchema(); // Clear any specific JSON-LD schema
+        updatePageMetadata();
+        generateAndInjectSchema();
     }
 
 
@@ -1471,11 +1381,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const homeLogoLink = document.getElementById('home-logo-link');
     if (homeLogoLink) {
         homeLogoLink.addEventListener('click', (e) => {
-            e.preventDefault(); // Prevent default link behavior
+            e.preventDefault();
             console.log('🏠 [Interaction] Home logo link clicked.');
             showHomePage();
             if (mainNav && mainNav.classList.contains('nav-open')) {
-                mainNav.classList.remove('nav-open'); // Close mobile menu if open
+                mainNav.classList.remove('nav-open');
             }
         });
     }
@@ -1484,9 +1394,8 @@ document.addEventListener('DOMContentLoaded', () => {
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            const targetView = link.dataset.targetView; // Get the view ID from data-target-view attribute
+            const targetView = link.dataset.targetView;
             
-            // Call the appropriate handler function based on the targetView
             if (targetView === 'home') {
                 showHomePage();
             } else if (targetView === 'live') {
@@ -1500,7 +1409,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             console.log(`➡️ [Navigation] Navigation link clicked: "${targetView}".`);
             
-            // Close mobile menu after navigation
             if (mainNav && mainNav.classList.contains('nav-open')) {
                 mainNav.classList.remove('nav-open');
             }
@@ -1512,9 +1420,8 @@ document.addEventListener('DOMContentLoaded', () => {
         watchNowBtn.addEventListener('click', (e) => {
             e.preventDefault();
             console.log('🎬 [Interaction] "Watch Matches Now" button clicked.');
-            // This button typically scrolls to the main match listing or directly shows live matches
-            handleLiveMatchesView(); // Direct to live matches view
-            window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top of the new view
+            handleLiveMatchesView();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
     
@@ -1526,18 +1433,16 @@ document.addEventListener('DOMContentLoaded', () => {
             
             let searchResults = [];
             if (query) {
-                // Filter matches based on title, league_name, home_team, or away_team
                 searchResults = matchesData.filter(match =>
                     match.title.toLowerCase().includes(query) ||
-                    (match.league_name && match.league_name.toLowerCase().includes(query)) || // Use league_name
-                    (match.home_team && match.home_team.toLowerCase().includes(query)) || // Use home_team
-                    (match.away_team && match.away_team.toLowerCase().includes(query)) // Use away_team
+                    (match.league_name && match.league_name.toLowerCase().includes(query)) ||
+                    (match.home_team && match.home_team.toLowerCase().includes(query)) ||
+                    (match.away_team && match.away_team.toLowerCase().includes(query))
                 );
             } else {
-                searchResults = matchesData; // If search query is empty, show all matches
+                searchResults = matchesData;
             }
 
-            // Always display search results in the home view template, adjusting its title
             showView('home', (section) => {
                 const matchGridElement = section.querySelector('#main-match-grid');
                 const prevPageBtn = section.querySelector('#home-prev-page-btn');
@@ -1548,10 +1453,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     sectionTitle.textContent = query ? `نتائج البحث عن "${query}"` : 'أبرز المباريات والجديد';
                 }
 
-                currentFilteredMatches = searchResults; // Set the filtered results for pagination
-                currentPage = 1; // Reset to first page
+                currentFilteredMatches = searchResults;
+                currentPage = 1;
                 paginateMatches(currentFilteredMatches, currentPage, 'main-match-grid', 'home-prev-page-btn', 'home-next-page-btn', 'home-empty-state');
-                window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             });
         });
         console.log('🔍 [Event] Search button listener attached.');
@@ -1559,8 +1464,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (searchInput) {
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                searchButton.click(); // Simulate a click on the search button when Enter is pressed
-                searchInput.blur(); // Hide the keyboard on mobile devices
+                searchButton.click();
+                searchInput.blur();
             }
         });
         console.log('🔍 [Event] Search input keypress listener attached.');
@@ -1568,30 +1473,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // General Security Measures (Right-click and DevTools blocking)
     document.addEventListener('contextmenu', e => {
-        e.preventDefault(); // Prevent default right-click context menu
+        e.preventDefault();
         console.warn('🚫 [Security] Right-click context menu disabled.');
     });
 
     document.addEventListener('keydown', e => {
-        // Block common developer tool shortcuts
         if (
             e.key === 'F12' ||
-            (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) || // Ctrl+Shift+I/J
-            (e.ctrlKey && e.key === 'u') || // Ctrl+U for view source
-            (e.metaKey && e.altKey && e.key === 'I') // Cmd+Option+I for Mac DevTools
+            (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
+            (e.ctrlKey && e.key === 'u') ||
+            (e.metaKey && e.altKey && e.key === 'I')
         ) {
-            e.preventDefault(); // Prevent default action for these key combinations
+            e.preventDefault();
             console.warn(`🚫 [Security] Developer tools/source shortcut blocked: ${e.key}.`);
         }
     });
 
     // DevTools Detector (attempts to detect if developer tools are open)
     const devtoolsDetector = (() => {
-        const threshold = 160; // A common heuristic for devtools panel width/height
-        let isOpen = false; // Flag to track current state of devtools
+        const threshold = 160;
+        let isOpen = false;
 
         const checkDevTools = () => {
-            // Check if inner window dimensions are significantly smaller than outer window dimensions
             const widthThreshold = window.outerWidth - window.innerWidth > threshold;
             const heightThreshold = window.outerHeight - window.innerHeight > threshold;
 
@@ -1608,10 +1511,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        window.addEventListener('resize', checkDevTools); // Check on window resize
-        // Reduced frequency for performance impact
-        setInterval(checkDevTools, 5000); // Periodically check every 5 seconds instead of 1 second
-        checkDevTools(); // Initial check on load
+        window.addEventListener('resize', checkDevTools);
+        setInterval(checkDevTools, 5000);
+        checkDevTools();
     })();
 
     // --- 8. Initial Page Load and History Management ---
@@ -1628,18 +1530,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (viewParam === 'details' && idParam) {
             const matchId = parseInt(idParam);
-            const match = matchesData.find(m => m.id === matchId); // Find the match in the loaded data
+            const match = matchesData.find(m => m.id === matchId);
 
             if (!isNaN(matchId) && match) {
                 console.log(`🚀 [Initial Load] Attempting to load match details from URL: ID ${matchId}.`);
-                showMatchDetails(matchId); // Show match details if valid ID and match found
+                showMatchDetails(matchId);
             } else {
                 console.warn('⚠️ [Initial Load] Invalid match ID in URL or match not found in data. Displaying home page as fallback.');
-                showHomePage(); // Fallback to home page if ID is invalid or match doesn't exist
+                showHomePage();
             }
         } else {
             console.log('🚀 [Initial Load] No specific view parameters in URL. Displaying home page.');
-            showHomePage(); // Default to showing the home page
+            showHomePage();
         }
     }
 
@@ -1650,12 +1552,9 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('popstate', (event) => {
         console.log('↩️ [Popstate] Browser history navigation detected.', event.state);
         
-        // If match data hasn't been loaded yet (e.g., initial load failed or very fast popstate),
-        // try to fetch it first, then re-evaluate the state.
         if (matchesData.length === 0) {
             console.warn('[Popstate] Match data not loaded yet, attempting to fetch data and render view based on popstate event.');
             fetchMatchesData().then(() => {
-                // After data is fetched, re-evaluate the state
                 if (event.state && event.state.view === 'details' && event.state.id) {
                     const match = matchesData.find(m => m.id === event.state.id);
                     if (match) {
@@ -1669,12 +1568,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }).catch(err => {
                 console.error('[Popstate] Failed to fetch match data on popstate during fallback:', err);
-                showHomePage(); // Fallback to home page if data fetch still fails
+                showHomePage();
             });
             return;
         }
 
-        // If data is already loaded, proceed directly based on the state
         if (event.state && event.state.view === 'details' && event.state.id) {
             const match = matchesData.find(m => m.id === event.state.id);
             if (match) {
