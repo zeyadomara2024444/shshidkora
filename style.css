@@ -8,7 +8,7 @@
     
     --up-accent-blue: #00CFFF;
     --up-accent-green: #3CE090;
-    --up-accent-red: #FF3B3B; 
+    --up-accent-red: #FF3B3B;  
     --up-accent-purple: #9D4EDD;
 
     --up-text-primary: #E9EEF4;
@@ -516,7 +516,7 @@ a:hover {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 0.8vw;
-    padding: 0 1vw; 
+    padding: 0 1vw;  
     position: relative;
     z-index: 1;
 }
@@ -549,7 +549,7 @@ a:hover {
 .match-card {
     background: var(--up-bg-medium);
     border-radius: var(--border-radius-card);
-    overflow: hidden; 
+    overflow: hidden;  
     box-shadow: var(--up-shadow-soft);
     transition: all var(--transition-medium);
     cursor: pointer;
@@ -568,11 +568,11 @@ a:hover {
     z-index: 10;
 }
 
-/* Card image */
+/* Card image - ADJUSTED */
 .match-card img {
     width: 100%;
-    height: clamp(150px, 15vw, 200px);
-    object-fit: contain; /* تم التعديل لضمان ظهور الصورة بالكامل */
+    height: clamp(180px, 18vw, 250px); /* Increased min and max height for desktop */
+    object-fit: cover; /* Changed to cover to fill the area */
     background-color: var(--up-bg-medium); /* لون خلفية للفراغات */
     display: block;
     border-bottom: 1px solid rgba(0, 207, 255, 0.1);
@@ -586,16 +586,16 @@ a:hover {
 
 /* Card content area */
 .match-card .match-card-content {
-    padding: 0.8rem; 
+    padding: 0.8rem;  
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     flex-grow: 1;
-    gap: 0.4rem; 
+    gap: 0.4rem;  
     background-color: var(--up-bg-dark);
     border-radius: 0 0 var(--border-radius-card) var(--border-radius-card);
-    min-height: clamp(90px, 7vw, 110px); 
+    min-height: clamp(90px, 7vw, 110px);  
     text-align: center;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -604,64 +604,64 @@ a:hover {
 .match-card .teams-logos {
     display: flex;
     align-items: center;
-    justify-content: space-between; 
-    gap: 0.3rem; 
+    justify-content: space-between;  
+    gap: 0.3rem;  
     font-family: var(--font-body);
     font-size: clamp(0.9rem, 1vw, 1rem);
     font-weight: 700;
     color: var(--up-text-primary);
     text-shadow: 0 0 4px rgba(0,0,0,0.7);
-    flex-wrap: nowrap; 
+    flex-wrap: nowrap;  
     width: 100%;
     position: relative;
-    padding: 0 0.2rem; 
-    box-sizing: border-box; 
+    padding: 0 0.2rem;  
+    box-sizing: border-box;  
 }
 
 .match-card .teams-logos .vs-text {
-    order: 0; 
-    flex-shrink: 0; 
-    white-space: nowrap; 
+    order: 0;  
+    flex-shrink: 0;  
+    white-space: nowrap;  
     font-family: var(--font-heading);
-    font-size: clamp(1.1rem, 1.3vw, 1.5rem); 
-    color: var(--up-accent-red); 
+    font-size: clamp(1.1rem, 1.3vw, 1.5rem);  
+    color: var(--up-accent-red);  
     font-weight: 800;
-    margin: 0 0.2rem; 
-    text-shadow: 0 0 3px rgba(255, 59, 59, 0.6); 
+    margin: 0 0.2rem;  
+    text-shadow: 0 0 3px rgba(255, 59, 59, 0.6);  
     text-align: center;
-    line-height: 1; 
+    line-height: 1;  
 }
 
 .match-card .teams-logos > div {
     display: flex;
     align-items: center;
-    flex-grow: 1; 
-    flex-shrink: 1; 
-    gap: 0.2rem; 
-    min-width: 0; 
+    flex-grow: 1;  
+    flex-shrink: 1;  
+    gap: 0.2rem;  
+    min-width: 0;  
 }
 
 .match-card .teams-logos > div:first-of-type {
-    justify-content: flex-end; 
+    justify-content: flex-end;  
     text-align: right;
 }
 
 .match-card .teams-logos > div:nth-of-type(2) {
-    justify-content: flex-start; 
+    justify-content: flex-start;  
     text-align: left;
 }
 
 .match-card .teams-logos span {
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    flex-grow: 1; 
-    flex-shrink: 1; 
-    min-width: 0; 
+    white-space: nowrap;  
+    overflow: hidden;  
+    text-overflow: ellipsis;  
+    flex-grow: 1;  
+    flex-shrink: 1;  
+    min-width: 0;  
 }
 
 .match-card .team-logo {
-    width: clamp(40px, 4vw, 55px); 
+    width: clamp(40px, 4vw, 55px);  
     height: clamp(40px, 4vw, 55px);
     object-fit: contain;
     border-radius: 50%;
@@ -670,8 +670,8 @@ a:hover {
     box-shadow: inset 0 0 3px rgba(0,0,0,0.2);
     transition: transform var(--transition-fast), box-shadow var(--transition-fast);
     padding: 2px;
-    flex-shrink: 0; 
-    margin: 0; 
+    flex-shrink: 0;  
+    margin: 0;  
 }
 
 /* Hover effect for team logo */
@@ -688,8 +688,8 @@ a:hover {
     font-weight: 800;
     line-height: 1.2;
     white-space: normal;
-    overflow: hidden; 
-    text-overflow: ellipsis; 
+    overflow: hidden;  
+    text-overflow: ellipsis;  
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -770,7 +770,7 @@ a:hover {
 .news-card img {
     width: 100%;
     height: clamp(110px, 10vw, 150px);
-    object-fit: contain; /* تم التعديل لضمان ظهور الصورة بالكامل */
+    object-fit: cover; /* Changed to cover to fill the area */
     background-color: var(--up-bg-medium); /* لون خلفية للفراغات */
     display: block;
     border-bottom: 1px solid rgba(0, 207, 255, 0.1);
@@ -781,19 +781,19 @@ a:hover {
     filter: brightness(1.1) saturate(1.1);
 }
 .news-card .news-card-content {
-    padding: 0.9rem 1.1rem; 
+    padding: 0.9rem 1.1rem;  
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    gap: 0.5rem; 
+    gap: 0.5rem;  
 }
 .news-card h4 {
     font-family: var(--font-heading);
-    font-size: clamp(0.95rem, 1vw, 1.15rem); 
+    font-size: clamp(0.95rem, 1vw, 1.15rem);  
     font-weight: 700;
     line-height: 1.3;
     color: var(--up-text-primary);
-    margin-bottom: 0.3rem; 
+    margin-bottom: 0.3rem;  
     text-shadow: 0 0 5px rgba(0,0,0,0.7);
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -803,10 +803,10 @@ a:hover {
 }
 .news-card p {
     font-family: var(--font-body);
-    font-size: clamp(0.8rem, 0.85vw, 0.9rem); 
+    font-size: clamp(0.8rem, 0.85vw, 0.9rem);  
     color: var(--up-text-secondary);
     line-height: 1.5;
-    margin-bottom: 0.7rem; 
+    margin-bottom: 0.7rem;  
     flex-grow: 1;
     display: -webkit-box;
     -webkit-line-clamp: 3;
@@ -815,7 +815,7 @@ a:hover {
     text-overflow: ellipsis;
 }
 .news-card .news-date {
-    font-size: 0.75rem; 
+    font-size: 0.75rem;  
     color: var(--up-text-muted);
     opacity: 0.9;
     text-align: left;
@@ -825,8 +825,8 @@ a:hover {
 .pagination-controls {
     display: none; /* Controlled by JS */
     justify-content: center;
-    margin-top: 4vw; 
-    gap: 1.2vw; 
+    margin-top: 4vw;  
+    gap: 1.2vw;  
     position: relative;
     z-index: 1;
 }
@@ -834,12 +834,12 @@ a:hover {
     background: var(--up-bg-medium);
     color: var(--up-text-primary);
     border: 1px solid var(--up-accent-blue);
-    padding: 0.7rem 1.6rem; 
+    padding: 0.7rem 1.6rem;  
     border-radius: var(--border-radius-button);
     cursor: pointer;
     transition: all var(--transition-fast);
     font-family: var(--font-body);
-    font-size: clamp(0.85rem, 0.9vw, 0.95rem); 
+    font-size: clamp(0.85rem, 0.9vw, 0.95rem);  
     box-shadow: var(--up-shadow-soft);
     font-weight: 700;
     text-transform: uppercase;
@@ -866,7 +866,7 @@ a:hover {
 
 /* --- Match Details Section --- */
 .match-details-section {
-    padding: 6vw 3vw; 
+    padding: 6vw 3vw;  
     background-color: var(--up-bg-dark);
     border-top: 2px solid var(--up-accent-green);
     box-shadow: 0 0 20px rgba(0,0,0,0.6) inset;
@@ -876,12 +876,12 @@ a:hover {
 }
 
 .match-details-section .back-btn {
-    margin-bottom: clamp(1.8rem, 2.5vw, 2.2rem); 
-    font-size: clamp(1rem, 1vw, 1.1rem); 
-    padding: 0.7rem 1.6rem; 
+    margin-bottom: clamp(1.8rem, 2.5vw, 2.2rem);  
+    font-size: clamp(1rem, 1vw, 1.1rem);  
+    padding: 0.7rem 1.6rem;  
 }
 .match-details-section .back-btn i {
-    margin-left: 0.4rem; 
+    margin-left: 0.4rem;  
     margin-right: 0;
     transform: rotate(180deg);
 }
@@ -890,10 +890,10 @@ a:hover {
 .video-player-wrapper {
     position: relative;
     width: 100%;
-    max-width: 900px; 
+    max-width: 900px;  
     height: 0;
-    padding-bottom: 40%; 
-    margin: 0 auto 2vw auto; 
+    padding-bottom: 40%;  
+    margin: 0 auto 2vw auto;  
     background-color: #000;
     border-radius: var(--border-radius-card);
     overflow: hidden;
@@ -925,19 +925,19 @@ a:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(10, 17, 31, 0); 
-    opacity: 1; 
-    display: flex; 
+    background-color: rgba(10, 17, 31, 0);  
+    opacity: 1;  
+    display: flex;  
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    z-index: 50; 
-    visibility: visible; 
+    z-index: 50;  
+    visibility: visible;  
     transition: opacity var(--transition-medium), background-color var(--transition-medium);
 }
 .video-overlay.hidden {
     opacity: 0;
-    pointer-events: none; 
+    pointer-events: none;  
 }
 
 /* إخفاء زر "شاهد الآن" (أو أي محتوى آخر) داخل الـ overlay */
@@ -958,9 +958,9 @@ a:hover {
 /* Ad Banner Center (under video) */
 .ad-banner-center {
     width: 100%;
-    max-width: 900px; 
-    margin: 3vw auto 3.5vw auto; 
-    padding: 12px; 
+    max-width: 900px;  
+    margin: 3vw auto 3.5vw auto;  
+    padding: 12px;  
     background-color: var(--up-bg-medium);
     border: 1px solid var(--up-accent-blue);
     border-radius: var(--border-radius-card);
@@ -994,8 +994,8 @@ a:hover {
 
 /* Suggested Matches Section */
 .suggested-matches-section {
-    margin-top: 3vw; 
-    padding-top: 3vw; 
+    margin-top: 3vw;  
+    padding-top: 3vw;  
     border-top: 2px solid var(--up-accent-blue);
 }
 
@@ -1003,7 +1003,7 @@ a:hover {
 .main-footer {
     background-color: var(--up-bg-medium);
     color: var(--up-text-secondary);
-    padding: 3vw 0; 
+    padding: 3vw 0;  
     text-align: center;
     font-family: var(--font-body);
     border-top: 2px solid var(--up-accent-blue);
@@ -1031,17 +1031,17 @@ a:hover {
 }
 
 .main-footer .footer-content {
-    max-width: 750px; 
+    max-width: 750px;  
     margin: 0 auto;
-    padding: 0 1.2rem; 
+    padding: 0 1.2rem;  
     position: relative;
     z-index: 1;
 }
 
 .main-footer p {
-    margin-bottom: 1.2vw; 
-    font-size: clamp(0.8rem, 0.85vw, 0.9rem); 
-    line-height: 1.6; 
+    margin-bottom: 1.2vw;  
+    font-size: clamp(0.8rem, 0.85vw, 0.9rem);  
+    line-height: 1.6;  
     opacity: 0.95;
     text-shadow: 0 0 2px rgba(0,0,0,0.4);
 }
@@ -1050,17 +1050,17 @@ a:hover {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 1rem; 
-    margin-top: 1vw; 
+    gap: 1rem;  
+    margin-top: 1vw;  
 }
 
 .footer-links a {
     color: var(--up-accent-blue);
     text-decoration: none;
     font-family: var(--font-body);
-    font-size: clamp(0.8rem, 0.85vw, 0.9rem); 
+    font-size: clamp(0.8rem, 0.85vw, 0.9rem);  
     font-weight: 600;
-    padding: 0.6rem 1.4rem; 
+    padding: 0.6rem 1.4rem;  
     border: 1px solid var(--up-accent-blue);
     border-radius: var(--border-radius-button);
     transition: all var(--transition-fast);
@@ -1126,8 +1126,8 @@ a:hover {
     }
     .container {
         width: 95vw;
-        padding: 0 0.8rem; 
-        max-width: 1000px; 
+        padding: 0 0.8rem;  
+        max-width: 1000px;  
     }
     .main-header {
         padding: 0.6rem 0;
@@ -1140,7 +1140,7 @@ a:hover {
         font-size: clamp(1.8rem, 3.8vw, 2.2rem);
     }
     .site-logo .logo-icon {
-        font-size: 0.6em; 
+        font-size: 0.6em;  
     }
     .search-bar {
         padding: 0.3rem 0.6rem;
@@ -1163,7 +1163,7 @@ a:hover {
         padding: 0.5rem 1.1rem;
     }
     .menu-toggle {
-        display: none !important; 
+        display: none !important;  
         font-size: 1.6rem;
         padding: 0.25rem 0.5rem;
     }
@@ -1193,14 +1193,15 @@ a:hover {
     }
 
     .match-grid, .news-grid {
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-        gap: 1.2vw; 
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));  
+        gap: 1.2vw;  
         padding: 0 1.5vw;
     }
 
+    /* Match Card Image Adjustment for Tablet */
     .match-card img {
-        height: clamp(130px, 16vw, 180px);
-        object-fit: contain; /* تم التعديل لضمان ظهور الصورة بالكامل */
+        height: clamp(150px, 18vw, 220px); /* Adjusted for tablet */
+        object-fit: cover; 
         background-color: var(--up-bg-medium);
     }
     .match-card .match-card-content {
@@ -1212,27 +1213,27 @@ a:hover {
         font-size: clamp(0.9rem, 1.5vw, 1.1rem);
     }
     
-    .match-card .teams-logos { 
-        font-size: clamp(0.85rem, 1.2vw, 1rem); 
-        gap: 0.25rem; 
-        padding: 0 0.2rem; 
+    .match-card .teams-logos {  
+        font-size: clamp(0.85rem, 1.2vw, 1rem);  
+        gap: 0.25rem;  
+        padding: 0 0.2rem;  
         flex-wrap: nowrap;
     }
     .match-card .teams-logos span {
-        white-space: nowrap; 
-        overflow: hidden; 
-        text-overflow: ellipsis; 
-        min-width: 0; 
+        white-space: nowrap;  
+        overflow: hidden;  
+        text-overflow: ellipsis;  
+        min-width: 0;  
     }
     .match-card .teams-logos .vs-text {
-        font-size: clamp(1rem, 1.3vw, 1.4rem); 
-        margin: 0 0.15rem; 
+        font-size: clamp(1rem, 1.3vw, 1.4rem);  
+        margin: 0 0.15rem;  
     }
     .match-card .teams-logos > div {
-        min-width: 0; 
+        min-width: 0;  
     }
     .match-card .team-logo {
-        width: clamp(35px, 4.5vw, 50px); 
+        width: clamp(35px, 4.5vw, 50px);  
         height: clamp(35px, 4.5vw, 50px);
     }
 
@@ -1246,7 +1247,7 @@ a:hover {
 
     .news-card img {
         height: clamp(90px, 12vw, 130px);
-        object-fit: contain; /* تم التعديل لضمان ظهور الصورة بالكامل */
+        object-fit: cover; /* Changed to cover to fill the area */
         background-color: var(--up-bg-medium);
     }
     .news-card .news-card-content {
@@ -1283,7 +1284,7 @@ a:hover {
     .video-player-wrapper {
         margin-bottom: 2.5vw;
         max-width: 800px;
-        padding-bottom: 45%; 
+        padding-bottom: 45%;  
     }
     .ad-banner-center {
         max-width: 800px;
@@ -1346,7 +1347,7 @@ a:hover {
 
     .container {
         width: 100% !important;
-        padding: 0 0.6rem !important; 
+        padding: 0 0.6rem !important;  
         max-width: 100vw !important;
         margin: auto !important;
     }
@@ -1355,10 +1356,10 @@ a:hover {
         padding: 0.4rem 0;
     }
     .main-header .header-content {
-        padding: 0 0.6rem !important; 
+        padding: 0 0.6rem !important;  
         flex-wrap: wrap;
         justify-content: space-between;
-        gap: 0.6rem; 
+        gap: 0.6rem;  
         max-width: 100% !important;
     }
     
@@ -1369,11 +1370,11 @@ a:hover {
     .site-logo {
         order: 0 !important;
         margin-left: auto;
-        margin-right: 0.4rem; 
+        margin-right: 0.4rem;  
         font-size: clamp(1.4rem, 4.5vw, 1.8rem) !important;
     }
     .site-logo .logo-icon {
-        font-size: 0.55em; 
+        font-size: 0.55em;  
     }
     .telegram-btn {
         display: none !important;
@@ -1399,8 +1400,8 @@ a:hover {
         flex-direction: row !important;
         justify-content: flex-start !important;
         width: auto !important;
-        gap: 0.6rem !important; 
-        padding: 0 0.4rem !important; 
+        gap: 0.6rem !important;  
+        padding: 0 0.4rem !important;  
     }
 
     .main-nav ul li {
@@ -1410,7 +1411,7 @@ a:hover {
 
     .main-nav ul li a {
         font-size: clamp(0.7rem, 2.5vw, 0.85rem) !important;
-        padding: 0.4rem 0.7rem !important; 
+        padding: 0.4rem 0.7rem !important;  
         max-width: none !important;
         display: inline-flex !important;
         align-items: center;
@@ -1423,8 +1424,8 @@ a:hover {
         order: 2 !important;
         display: flex;
         flex-basis: 100% !important;
-        margin: 0.6rem auto 0.4rem auto; 
-        padding: 0.3rem 0.6rem; 
+        margin: 0.6rem auto 0.4rem auto;  
+        padding: 0.3rem 0.6rem;  
         max-width: 95% !important;
     }
 
@@ -1477,9 +1478,10 @@ a:hover {
     }
 
 
+    /* Match Card Image Adjustment for Smaller Mobile */
     .match-card img {
-        height: clamp(80px, 25vw, 120px) !important;
-        object-fit: contain !important; /* تم التعديل لضمان ظهور الصورة بالكامل */
+        height: clamp(120px, 35vw, 180px) !important; /* Increased height for mobile */
+        object-fit: cover !important; /* Changed to cover */
         background-color: var(--up-bg-medium) !important;
         display: block !important;
     }
@@ -1488,90 +1490,90 @@ a:hover {
         min-height: clamp(60px, 10vw, 80px);
     }
     .match-card h3 {
-        font-size: clamp(0.85rem, 3.5vw, 1.05rem) !important; 
-        line-height: 1.3 !important; 
-        -webkit-line-clamp: 2 !important; 
-        max-width: 98% !important; 
+        font-size: clamp(0.85rem, 3.5vw, 1.05rem) !important;  
+        line-height: 1.3 !important;  
+        -webkit-line-clamp: 2 !important;  
+        max-width: 98% !important;  
         margin-left: auto !important;
         margin-right: auto !important;
     }
     
     .match-card .teams-logos {
-        flex-direction: row !important; 
-        flex-wrap: nowrap !important; 
-        justify-content: space-between !important; 
+        flex-direction: row !important;  
+        flex-wrap: nowrap !important;  
+        justify-content: space-between !important;  
         align-items: center !important;
-        gap: 0.05rem !important; 
+        gap: 0.05rem !important;  
         margin-top: 0.1rem !important;
         margin-bottom: 0.1rem !important;
-        padding: 0 0.1rem !important; 
+        padding: 0 0.1rem !important;  
         box-sizing: border-box;
     }
 
-    .match-card .teams-logos > div { 
+    .match-card .teams-logos > div {  
         display: flex;
         align-items: center;
         flex-grow: 1;
-        flex-shrink: 1; 
-        gap: 0.1rem !important; 
-        min-width: 0; 
-        max-width: none; 
+        flex-shrink: 1;  
+        gap: 0.1rem !important;  
+        min-width: 0;  
+        max-width: none;  
         padding: 0;
     }
 
     .match-card .teams-logos > div:first-of-type {
-        justify-content: flex-end; 
+        justify-content: flex-end;  
     }
 
     .match-card .teams-logos > div:nth-of-type(2) {
-        justify-content: flex-start; 
+        justify-content: flex-start;  
     }
 
-    .match-card .teams-logos span { 
-        font-size: clamp(0.7rem, 3.5vw, 0.85rem) !important; 
-        white-space: nowrap; 
-        overflow: hidden; 
-        text-overflow: ellipsis; 
-        flex-grow: 1; 
-        flex-shrink: 1; 
-        min-width: 0; 
+    .match-card .teams-logos span {  
+        font-size: clamp(0.7rem, 3.5vw, 0.85rem) !important;  
+        white-space: nowrap;  
+        overflow: hidden;  
+        text-overflow: ellipsis;  
+        flex-grow: 1;  
+        flex-shrink: 1;  
+        min-width: 0;  
     }
     
-    .match-card .team-logo { 
-        width: clamp(20px, 6vw, 30px) !important; 
+    .match-card .team-logo {  
+        width: clamp(20px, 6vw, 30px) !important;  
         height: clamp(20px, 6vw, 30px) !important;
         flex-shrink: 0 !important;
         padding: 0 !important;
         border: none !important;
         box-shadow: none !important;
-        margin: 0 !important; 
+        margin: 0 !important;  
     }
 
     .match-card .teams-logos > div:nth-of-type(2) .team-logo {
-        margin-left: 0 !important; 
-        margin-right: 0.05rem !important; 
+        margin-left: 0 !important;  
+        margin-right: 0.05rem !important;  
     }
     .match-card .teams-logos > div:nth-of-type(2) span {
-        text-align: left !important; 
+        text-align: left !important;  
     }
 
-    .match-card .teams-logos .vs-text { 
-        font-size: clamp(0.7rem, 3vw, 1rem) !important; 
+    .match-card .teams-logos .vs-text {  
+        font-size: clamp(0.7rem, 3vw, 1rem) !important;  
         font-weight: 900 !important;
         color: var(--up-accent-red) !important;
-        margin: 0 0.05rem !important; 
+        margin: 0 0.05rem !important;  
         padding: 0 !important;
         flex-shrink: 0 !important;
         line-height: 1;
-        width: auto; 
+        width: auto;  
         text-align: center;
-        order: 0; 
+        order: 0;  
     }
     
     .pagination-controls {
         margin-top: 5vw;
         gap: 0.8rem;
-        flex-wrap: wrap; 
+        flex-wrap: wrap;  
     }
     .pagination-controls .btn-page {
         padding: 0.5rem 1rem;
@@ -1588,7 +1590,7 @@ a:hover {
     }
     .video-player-wrapper {
         margin-bottom: 3vw;
-        max-width: 100% !important; 
+        max-width: 100% !important;  
         padding-bottom: 70% !important;
         border-width: 1px !important;
     }
@@ -1596,6 +1598,14 @@ a:hover {
         max-width: 100% !important;
         margin: 4vw auto 4.5vw auto;
         padding: 8px;
+    }
+
+    /* Suggested Matches Grid for Smaller Mobile - Changed to show 2 posters */
+    .suggested-matches-section .match-grid {
+        grid-template-columns: repeat(auto-fit, minmax(45%, 1fr)) !important; /* Adjust to show 2 columns */
+        gap: 2vw !important; /* Adjust gap */
+        padding: 0 1vw !important; /* Adjust padding if needed */
+        justify-content: center; /* Center items if less than 2 full columns */
     }
 
     .suggested-matches-section {
@@ -1612,13 +1622,13 @@ a:hover {
     }
     .footer-links {
         gap: 0.6rem;
-        flex-direction: column; 
+        flex-direction: column;  
         align-items: center;
     }
     .footer-links a {
         padding: 0.5rem 1rem;
         font-size: clamp(0.7rem, 2.8vw, 0.8rem);
-        width: 80%; 
+        width: 80%;  
         max-width: 200px;
     }
 }
