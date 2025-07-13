@@ -514,8 +514,8 @@ a:hover {
 /* Grids for content cards */
 .match-grid, .news-grid {
     display: grid;
-    /* Adjusted minmax for better responsiveness on larger screens before tablet breakpoint */
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Increased min-width for larger cards on desktop */
+    /* Increased min-width for larger cards on desktop for better image fit */
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Increased from 300px */
     gap: 0.8vw;
     padding: 0 1vw;
     position: relative;
@@ -569,13 +569,11 @@ a:hover {
     z-index: 10;
 }
 
-/* Card image - FINAL ADJUSTMENTS */
+/* Card image - FINAL ADJUSTMENTS FOR DESKTOP/LARGE SCREENS */
 .match-card img {
     width: 100%;
-    /* Key adjustment: Fixed aspect ratio for consistent image display */
-    /* Using padding-top for aspect ratio, will make height relative to width */
-    /* You might need to set a min-height if images are very short, but object-fit: cover is primary */
-    height: 170px; /* Base height for all sizes */
+    /* Fixed height for more consistent display on desktop */
+    height: 190px; /* Increased fixed height for desktop */
     object-fit: cover; /* Ensures image fills the space, cropping as needed */
     background-color: var(--up-bg-medium); /* Fallback background color */
     display: block;
@@ -771,10 +769,11 @@ a:hover {
     box-shadow: var(--up-shadow-medium), 0 0 20px var(--up-accent-green);
     border-color: var(--up-accent-blue);
 }
+
+/* Final adjustment for news card images: Fixed height for consistency on desktop */
 .news-card img {
     width: 100%;
-    /* Final adjustment for news card images: Fixed height for consistency */
-    height: 120px; /* Adjust this value if needed for your specific images */
+    height: 140px; /* Increased fixed height for desktop */
     object-fit: cover; /* Ensures image fills the space, cropping as needed */
     background-color: var(--up-bg-medium);
     display: block;
@@ -1197,15 +1196,16 @@ a:hover {
         background-position: left 0.7rem center;
     }
 
+    /* Adjusted min-width for larger cards on tablet to better accommodate images */
     .match-grid, .news-grid {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Keeping this for tablets */
+        grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); /* Increased from 280px */
         gap: 1.2vw;
         padding: 0 1.5vw;
     }
 
     /* Match Card Image Adjustment for Tablet */
     .match-card img {
-        height: 160px; /* Consistent height for tablets */
+        height: 170px; /* Consistent height for tablets, adjusted for better fit */
         object-fit: cover;
         background-color: var(--up-bg-medium);
     }
@@ -1251,7 +1251,7 @@ a:hover {
     }
 
     .news-card img {
-        height: 110px; /* Consistent height for news cards on tablets */
+        height: 120px; /* Consistent height for news cards on tablets, adjusted for better fit */
         object-fit: cover;
         background-color: var(--up-bg-medium);
     }
@@ -1472,22 +1472,22 @@ a:hover {
     }
 
     .match-grid {
-        /* On small mobiles, ensuring 2 columns if possible without squishing too much */
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Adjusted for mobile */
+        /* Increased min-width for mobile match cards for better appearance */
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); /* Adjusted to allow 2 columns to fit better */
         gap: 2vw; /* Adjusted gap */
         padding: 0 0.8rem !important; /* Adjusted padding */
     }
     .news-grid {
-        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); /* Consistent for news cards on mobile */
+        /* Increased min-width for mobile news cards for better appearance */
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Adjusted to allow 2 columns to fit better */
         gap: 3vw;
         padding: 0 0.8rem !important;
     }
 
 
-    /* Match Card Image Adjustment for Smaller Mobile - Final Version */
+    /* Match Card Image Adjustment for Smaller Mobile - FINAL VERSION */
     .match-card img {
-        /* Fixed height for more predictable layout on small screens */
-        height: 180px !important; /* Increased fixed height */
+        height: 190px !important; /* Fixed height for mobile, match desktop for consistency */
         object-fit: cover !important; /* Essential for filling space */
         background-color: var(--up-bg-medium) !important;
         display: block !important;
