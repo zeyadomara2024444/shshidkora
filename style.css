@@ -514,7 +514,7 @@ a:hover {
 /* Grids for content cards */
 .match-grid, .news-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Increased min-width for larger cards on desktop */
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 0.8vw;
     padding: 0 1vw;
     position: relative;
@@ -560,7 +560,6 @@ a:hover {
     flex-direction: column;
     z-index: 1;
     backdrop-filter: blur(5px);
-    /* Removed padding-top for aspect ratio on card level for desktop */
 }
 .match-card:hover {
     transform: translateY(-5px) scale(1.01);
@@ -569,13 +568,12 @@ a:hover {
     z-index: 10;
 }
 
-/* Card image - FINAL ADJUSTMENTS FOR DESKTOP/LARGE SCREENS */
+/* Card image - ADJUSTED */
 .match-card img {
     width: 100%;
-    /* Fixed height for more consistent display on desktop */
-    height: 190px; /* Increased fixed height for desktop */
-    object-fit: cover; /* Ensures image fills the space, cropping as needed */
-    background-color: var(--up-bg-medium); /* Fallback background color */
+    height: clamp(180px, 18vw, 250px); /* Increased min and max height for desktop */
+    object-fit: cover; /* Changed to cover to fill the area */
+    background-color: var(--up-bg-medium); /* لون خلفية للفراغات */
     display: block;
     border-bottom: 1px solid rgba(0, 207, 255, 0.1);
     transition: transform var(--transition-fast), filter var(--transition-fast);
@@ -763,20 +761,17 @@ a:hover {
     display: flex;
     flex-direction: column;
     backdrop-filter: blur(5px);
-    /* Removed padding-top for aspect ratio on card level for desktop */
 }
 .news-card:hover {
     transform: translateY(-3px) scale(1.005);
     box-shadow: var(--up-shadow-medium), 0 0 20px var(--up-accent-green);
     border-color: var(--up-accent-blue);
 }
-
-/* Final adjustment for news card images: Fixed height for consistency on desktop */
 .news-card img {
     width: 100%;
-    height: 140px; /* Increased fixed height for desktop */
-    object-fit: cover; /* Ensures image fills the space, cropping as needed */
-    background-color: var(--up-bg-medium);
+    height: clamp(110px, 10vw, 150px);
+    object-fit: cover; /* Changed to cover to fill the area */
+    background-color: var(--up-bg-medium); /* لون خلفية للفراغات */
     display: block;
     border-bottom: 1px solid rgba(0, 207, 255, 0.1);
     transition: transform var(--transition-fast), filter var(--transition-fast);
@@ -897,7 +892,7 @@ a:hover {
     width: 100%;
     max-width: 900px;
     height: 0;
-    padding-bottom: 56.25%; /* Standard 16:9 aspect ratio */
+    padding-bottom: 40%; /* هذا هو العرض إلى الارتفاع الافتراضي (مثال: 16:9 هو 56.25%) */
     margin: 0 auto 2vw auto;
     background-color: #000;
     border-radius: var(--border-radius-card);
@@ -1197,16 +1192,15 @@ a:hover {
         background-position: left 0.7rem center;
     }
 
-    /* Adjusted min-width for larger cards on tablet to better accommodate images */
     .match-grid, .news-grid {
-        grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); /* Increased from 280px */
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: 1.2vw;
         padding: 0 1.5vw;
     }
 
     /* Match Card Image Adjustment for Tablet */
     .match-card img {
-        height: 170px; /* Consistent height for tablets, adjusted for better fit */
+        height: clamp(150px, 18vw, 220px); /* Adjusted for tablet */
         object-fit: cover;
         background-color: var(--up-bg-medium);
     }
@@ -1252,8 +1246,8 @@ a:hover {
     }
 
     .news-card img {
-        height: 120px; /* Consistent height for news cards on tablets, adjusted for better fit */
-        object-fit: cover;
+        height: clamp(90px, 12vw, 130px);
+        object-fit: cover; /* Changed to cover to fill the area */
         background-color: var(--up-bg-medium);
     }
     .news-card .news-card-content {
@@ -1290,7 +1284,7 @@ a:hover {
     .video-player-wrapper {
         margin-bottom: 2.5vw;
         max-width: 800px;
-        padding-bottom: 56.25%; /* Standard 16:9 for tablets */
+        padding-bottom: 45%;
     }
     .ad-banner-center {
         max-width: 800px;
@@ -1326,7 +1320,7 @@ a:hover {
     }
 
     html {
-        font-size: 12px !important;
+        font-size: 12px !important; /* Adjusted for overall larger mobile scale */
         width: 100vw !important;
         overflow-x: hidden !important;
         margin: 0 !important;
@@ -1473,78 +1467,24 @@ a:hover {
     }
 
     .match-grid {
-        /* On small mobiles, forcing 2 columns by making minwidth of each card 48% of container */
-        /* This will be 2 columns almost always, with 2% gap */
-        grid-template-columns: repeat(auto-fit, minmax(48%, 1fr)); /* Force 2 columns */
-        gap: 4% !important; /* Adjusted gap to fill the 100% width with 2 columns */
-        padding: 0 0.8rem !important;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 1.5vw;
+        padding: 0 0.6rem !important;
     }
     .news-grid {
-        /* Similarly for news grid */
-        grid-template-columns: repeat(auto-fit, minmax(48%, 1fr)); /* Force 2 columns */
-        gap: 4% !important;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 3vw;
         padding: 0 0.8rem !important;
     }
 
 
-    /* Match Card Image Adjustment for Smaller Mobile - CRUCIAL */
+    /* Match Card Image Adjustment for Smaller Mobile - Increased height and `object-fit: cover` */
     .match-card img {
-        display: none !important; /* Hide the img element directly */
+        height: clamp(180px, 50vw, 250px) !important; /* زاد الارتفاع لمشغل الفيديو */
+        object-fit: cover !important; /* Ensures image fills the space */
+        background-color: var(--up-bg-medium) !important;
+        display: block !important;
     }
-
-    /* Create an element inside match-card to hold the background image with aspect ratio */
-    .match-card .image-placeholder {
-        position: relative;
-        width: 100%;
-        height: 0;
-        /* Aspect ratio: 16:9 for widescreen, 4:3 for more square. Test different values */
-        /* For the image you provided, a ratio like 16:10 or 16:11 might be better */
-        /* Let's try 65% for something between 16:9 (56.25%) and 4:3 (75%) */
-        padding-bottom: 65%; /* Adjusted for a better visual aspect ratio on mobile */
-        background-size: cover; /* Ensure image covers the placeholder */
-        background-position: center center; /* Center the image */
-        border-bottom: 1px solid rgba(0, 207, 255, 0.1);
-        background-color: var(--up-bg-medium); /* Fallback */
-        transition: transform var(--transition-fast), filter var(--transition-fast);
-        overflow: hidden; /* Hide overflow of background image if needed */
-    }
-    .match-card:hover .image-placeholder {
-        transform: scale(1.02);
-        filter: brightness(1.1) saturate(1.1);
-    }
-    /* You would need to add this 'image-placeholder' div in your HTML structure
-       and set its background-image via JavaScript or inline style */
-    /* Example HTML change:
-    <div class="match-card">
-        <div class="image-placeholder" style="background-image: url('path/to/your/image.jpg');"></div>
-        <div class="match-card-content">
-            ... rest of your content ...
-        </div>
-    </div>
-    */
-
-    /* News Card Image Adjustment for Smaller Mobile - CRUCIAL */
-    .news-card img {
-        display: none !important; /* Hide the img element directly */
-    }
-    .news-card .image-placeholder {
-        position: relative;
-        width: 100%;
-        height: 0;
-        padding-bottom: 50%; /* Aspect ratio for news cards (e.g., 2:1 or similar) */
-        background-size: cover;
-        background-position: center center;
-        border-bottom: 1px solid rgba(0, 207, 255, 0.1);
-        background-color: var(--up-bg-medium);
-        transition: transform var(--transition-fast), filter var(--transition-fast);
-        overflow: hidden;
-    }
-    .news-card:hover .image-placeholder {
-        transform: scale(1.02);
-        filter: brightness(1.1) saturate(1.1);
-    }
-
-
     .match-card .match-card-content {
         padding: 0.6rem;
         min-height: clamp(60px, 10vw, 80px);
@@ -1651,7 +1591,7 @@ a:hover {
     .video-player-wrapper {
         margin-bottom: 3vw;
         max-width: 100% !important;
-        padding-bottom: 70% !important; /* Adjusted for a better mobile video player aspect ratio */
+        padding-bottom: 80% !important; /* تم زيادة هذه القيمة لتكبير المشغل */
         border-width: 1px !important;
     }
     .ad-banner-center {
@@ -1660,9 +1600,9 @@ a:hover {
         padding: 8px;
     }
 
-    /* Suggested Matches Grid for Smaller Mobile - Adjusted to show 2 posters */
+    /* Suggested Matches Grid for Smaller Mobile - Changed to show 2 posters */
     .suggested-matches-section .match-grid {
-        grid-template-columns: repeat(auto-fit, minmax(45%, 1fr)) !important; /* Ensure 2 columns */
+        grid-template-columns: repeat(auto-fit, minmax(45%, 1fr)) !important; /* Adjust to show 2 columns */
         gap: 2vw !important; /* Adjust gap */
         padding: 0 1vw !important; /* Adjust padding if needed */
         justify-content: center; /* Center items if less than 2 full columns */
