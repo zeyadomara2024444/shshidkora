@@ -1481,8 +1481,8 @@ a:hover {
 
     /* **التعديلات الهامة هنا لصور البوستر للموبايل** */
     .match-card img {
-        /* زيادة الارتفاع الأدنى لجعل البوستر أكبر */
-        height: clamp(200px, 50vw, 280px) !important;
+        /* زيادة الارتفاع الأدنى لجعل البوستر أكبر بشكل واضح */
+        height: clamp(220px, 55vw, 300px) !important; /* زيادة min-height وربطها بـ vw بشكل أكبر */
         object-fit: cover !important;
         background-color: var(--up-bg-medium) !important;
         display: block !important;
