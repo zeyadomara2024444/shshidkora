@@ -1,10 +1,11 @@
 // script.js - كود "شاهد كورة" الاحترافي الفائق لـ "Ultimate Pitch UI"
 // مع تحسينات الأداء، SEO، وتجربة الموبايل (بدون صفحات تفاصيل المباريات الفردية)
 // **تمت إزالة كل المنطق المتعلق بصفحات تفاصيل المباريات (match-details).**
+// **تم إصلاح خطأ SyntaxError على السطر 855 بإزالة إجراءات الأمان العالمية غير الضرورية.**
 // **التركيز على ضمان سلاسة التحديث والتحميل لصفحات القوائم الرئيسية.**
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🏁 DOM Content Loaded. Ultimate Pitch script execution started. (No Match Details Page)');
+    console.log('🏁 DOM Content Loaded. Ultimate Pitch script execution started. (No Match Details Page, Security Measures Removed).');
 
     // --- 1. DOM Element References & Critical Verification ---
     const mainNav = document.getElementById('main-nav');
@@ -53,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 2. Adsterra Configuration (Simplified as no match details page) ---
-    // Direct link functions are kept but interaction will need to be re-assigned or removed
     const ADSTERRA_DIRECT_LINK_URL = 'https://www.profitableratecpm.com/spqbhmyax?key=2469b039d4e7c471764bd04c57824cf2';
     const DIRECT_LINK_COOLDOWN_GENERAL = 60 * 1000; // 1 minute cooldown for general ad clicks
 
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let statusClass = '';
             let scoreDisplay = '';
             let actionText = '';
-            let actionLink = '#'; // Default action for match cards without details page
+            let actionLink = '#'; 
 
             const matchDateObj = new Date(item.date_time);
             const now = new Date();
@@ -144,13 +144,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (item.status === 'Live' && now >= matchDateObj && now < matchEndTime) {
                 statusText = 'مباشر الآن';
                 statusClass = 'live-status';
-                actionText = 'مشاهدة البث (إعلان)'; // Changed text as no details page
-                actionLink = ADSTERRA_DIRECT_LINK_URL; // Link directly to ad
+                actionText = 'مشاهدة البث'; 
+                actionLink = item.embed_url || ADSTERRA_DIRECT_LINK_URL; // Link to embed_url if available, else ad
             } else if (item.status === 'Upcoming' && now < matchDateObj) {
                 statusText = `تبدأ في: ${matchDateObj.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}`;
                 statusClass = 'upcoming-status';
-                actionText = 'تنبيه للمشاهدة'; // No details page, just a notification/ad
-                actionLink = ADSTERRA_DIRECT_LINK_URL; // Link directly to ad
+                actionText = 'عرض المعلومات'; 
+                actionLink = ADSTERRA_DIRECT_LINK_URL; // Direct to ad or informational link
             } else if (item.status === 'Finished' || now >= matchEndTime) {
                 statusText = 'اكتملت';
                 statusClass = 'finished-status';
@@ -160,8 +160,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 statusText = 'غير متاح';
                 statusClass = 'finished-status';
-                actionText = 'عرض المعلومات (إعلان)'; // No details page, just ad
-                actionLink = ADSTERRA_DIRECT_LINK_URL; // Link directly to ad
+                actionText = 'عرض المعلومات'; 
+                actionLink = ADSTERRA_DIRECT_LINK_URL;
             }
 
             innerContent = `
@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
             `;
-            // If there's no match details page, the whole card can open an ad
+            // Clicks on the card body will open the ad link
             card.addEventListener('click', (e) => {
                 if (e.target.tagName === 'A' || e.target.closest('a')) {
                     // If clicking the button/link inside, let it handle the navigation
@@ -194,9 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 console.log(`⚡ [Interaction] Match card clicked (general ad/link): ${item.id}`);
                 openAdLink(DIRECT_LINK_COOLDOWN_GENERAL, 'matchCard_general');
-                // You could also redirect to a general ad link if the whole card is clicked,
-                // or just let the button handle it. Current setup opens ad on card click.
-                window.open(actionLink, '_blank');
+                window.open(actionLink, '_blank'); // Open the specific action link
             });
         } else if (item.type === 'news') {
             card.classList.remove('match-card');
@@ -287,8 +285,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function renderView(viewName, params = {}, pushState = true) {
         console.log(`🔄 [View Render] Attempting to render view: "${viewName}" with params:`, params);
-
-        // No need to remove old iframe player or reset video overlay, as match-details page is removed.
 
         const currentActiveView = contentDisplay.querySelector('.view-section.active-view');
         if (currentActiveView) {
@@ -463,8 +459,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 newUrl.pathname = urlPath;
                 break;
 
-            // Removed 'case match-details' section entirely
-
             default:
                 console.warn(`⚠️ [View Render] Unknown view "${viewName}". Falling back to home.`);
                 renderView('home', {}, true);
@@ -479,14 +473,11 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(`🔗 [URL] URL replaced with ${newUrl.toString()}`);
         }
 
-        // Updated meta tags and schema.org to reflect changes (no match details)
-        updateMetaTags(null, viewName, params); // Pass null for item as no specific item page now
-        addJsonLdSchema(null, viewName, params); // Pass null for item as no specific item page now
+        updateMetaTags(null, viewName, params);
+        addJsonLdSchema(null, viewName, params);
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-
-    // Removed displaySuggestedMatches function entirely
 
     // --- 4. SEO & Schema.org Management (Adjusted for no match details page) ---
     function updateMetaTags(item = null, viewName = 'home', params = {}) {
@@ -517,7 +508,6 @@ document.addEventListener('DOMContentLoaded', () => {
         twitterImage = defaultTwitterImage;
         twitterCreatorHandle = '@ShahidKoraUP';
 
-        // Simplified logic since no match details or news details pages are generated dynamically
         const currentURL = new URL(window.location.href);
         let canonicalPath = currentURL.pathname;
         if (viewName === 'search' && params.query) {
@@ -551,8 +541,6 @@ document.addEventListener('DOMContentLoaded', () => {
             pageKeywords = `بحث ${params.query}, نتائج البحث كورة, شاهد كورة بحث`;
             ogUrl = `${baseUrl}search?q=${encodeURIComponent(params.query)}`;
         }
-        // For 'news' type, the article_url handles the direct link, so its meta data will be used.
-        // If an article_url is NOT present for a news item, it falls back to generic news page metadata.
         if (item && item.type === 'news' && item.article_url) {
             pageTitle = `${item.title} - أخبار شاهد كورة`;
             const shortDesc = (item.short_description || `اقرأ أحدث الأخبار الرياضية عن ${item.title} على شاهد كورة.`).substring(0, 155);
@@ -619,7 +607,6 @@ document.addEventListener('DOMContentLoaded', () => {
             ]
         };
 
-        // Removed SportsEvent Schema
         if (viewName === 'news' && item && item.type === 'news' && item.article_url) {
             const newsSchema = {
                 "@context": "http://schema.org",
@@ -839,48 +826,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, { passive: true });
 
-    // --- Global Security Measures (Still Recommended to REMOVE) ---
-    // These are commented out by default for better user experience.
-    document.addEventListener('contextmenu', e => {
-        // e.preventDefault(); 
-        // console.warn('🚫 [Security] Right-click disabled.');
-    }, { passive: false });
-
-    document.addEventListener('keydown', e => {
-        if (
-            // e.key === 'F12' ||
-            // (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
-            // (e.ctrlKey && e.key === 'u') ||
-            // (e.altKey && e.metaKey && e.key === 'I')
-        ) {
-            // e.preventDefault(); 
-            // console.warn(`🚫 [Security] Developer tools/source hotkey prevented: ${e.key}`);
-        }
-    }, { passive: false });
-
-    const devtoolsDetector = (() => {
-        const threshold = 160;
-        let isOpen = false;
-        const checkDevTools = () => {
-            const widthThreshold = window.outerWidth - window.innerWidth > threshold;
-            const heightThreshold = window.outerHeight - window.innerHeight > threshold;
-
-            if (widthThreshold || heightThreshold) {
-                if (!isOpen) {
-                    isOpen = true;
-                    // console.warn('🚨 [Security] Developer tools detected! This action is discouraged.'); 
-                }
-            } else {
-                if (isOpen) {
-                    isOpen = false;
-                    // console.log('✅ [Security] Developer tools closed.');
-                }
-            }
-        };
-        // animateDevToolsCheck(); 
-    })();
-    // --- End Security Measures ---
-
 
     /**
      * @description Determines the initial view to render based on the current URL.
@@ -939,7 +884,6 @@ document.addEventListener('DOMContentLoaded', () => {
             fetchAllContentData().then(() => {
                 if (event.state && event.state.view) {
                     const params = {};
-                    // No match-details specific params needed anymore
                     if (event.state.view === 'upcoming') {
                         params.category = event.state.category || 'all';
                         params.league = event.state.league || 'all';
@@ -963,7 +907,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (event.state && event.state.view) {
             const params = {};
-            // No match-details specific params needed anymore
             if (event.state.view === 'upcoming') {
                 params.category = event.state.category || 'all';
                 params.league = event.state.league || 'all';
