@@ -514,7 +514,8 @@ a:hover {
 /* Grids for content cards */
 .match-grid, .news-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    /* Adjusted minmax for better responsiveness on larger screens before tablet breakpoint */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Increased min-width for larger cards on desktop */
     gap: 0.8vw;
     padding: 0 1vw;
     position: relative;
@@ -568,12 +569,15 @@ a:hover {
     z-index: 10;
 }
 
-/* Card image - ADJUSTED */
+/* Card image - FINAL ADJUSTMENTS */
 .match-card img {
     width: 100%;
-    height: clamp(180px, 18vw, 250px); /* Increased min and max height for desktop */
-    object-fit: cover; /* Changed to cover to fill the area */
-    background-color: var(--up-bg-medium); /* لون خلفية للفراغات */
+    /* Key adjustment: Fixed aspect ratio for consistent image display */
+    /* Using padding-top for aspect ratio, will make height relative to width */
+    /* You might need to set a min-height if images are very short, but object-fit: cover is primary */
+    height: 170px; /* Base height for all sizes */
+    object-fit: cover; /* Ensures image fills the space, cropping as needed */
+    background-color: var(--up-bg-medium); /* Fallback background color */
     display: block;
     border-bottom: 1px solid rgba(0, 207, 255, 0.1);
     transition: transform var(--transition-fast), filter var(--transition-fast);
@@ -769,9 +773,10 @@ a:hover {
 }
 .news-card img {
     width: 100%;
-    height: clamp(110px, 10vw, 150px);
-    object-fit: cover; /* Changed to cover to fill the area */
-    background-color: var(--up-bg-medium); /* لون خلفية للفراغات */
+    /* Final adjustment for news card images: Fixed height for consistency */
+    height: 120px; /* Adjust this value if needed for your specific images */
+    object-fit: cover; /* Ensures image fills the space, cropping as needed */
+    background-color: var(--up-bg-medium);
     display: block;
     border-bottom: 1px solid rgba(0, 207, 255, 0.1);
     transition: transform var(--transition-fast), filter var(--transition-fast);
@@ -892,7 +897,7 @@ a:hover {
     width: 100%;
     max-width: 900px;
     height: 0;
-    padding-bottom: 40%; /* هذا هو العرض إلى الارتفاع الافتراضي (مثال: 16:9 هو 56.25%) */
+    padding-bottom: 56.25%; /* Standard 16:9 aspect ratio */
     margin: 0 auto 2vw auto;
     background-color: #000;
     border-radius: var(--border-radius-card);
@@ -1193,14 +1198,14 @@ a:hover {
     }
 
     .match-grid, .news-grid {
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Keeping this for tablets */
         gap: 1.2vw;
         padding: 0 1.5vw;
     }
 
     /* Match Card Image Adjustment for Tablet */
     .match-card img {
-        height: clamp(150px, 18vw, 220px); /* Adjusted for tablet */
+        height: 160px; /* Consistent height for tablets */
         object-fit: cover;
         background-color: var(--up-bg-medium);
     }
@@ -1246,8 +1251,8 @@ a:hover {
     }
 
     .news-card img {
-        height: clamp(90px, 12vw, 130px);
-        object-fit: cover; /* Changed to cover to fill the area */
+        height: 110px; /* Consistent height for news cards on tablets */
+        object-fit: cover;
         background-color: var(--up-bg-medium);
     }
     .news-card .news-card-content {
@@ -1284,7 +1289,7 @@ a:hover {
     .video-player-wrapper {
         margin-bottom: 2.5vw;
         max-width: 800px;
-        padding-bottom: 45%;
+        padding-bottom: 56.25%; /* Standard 16:9 for tablets */
     }
     .ad-banner-center {
         max-width: 800px;
@@ -1320,7 +1325,7 @@ a:hover {
     }
 
     html {
-        font-size: 12px !important; /* Adjusted for overall larger mobile scale */
+        font-size: 12px !important;
         width: 100vw !important;
         overflow-x: hidden !important;
         margin: 0 !important;
@@ -1467,21 +1472,23 @@ a:hover {
     }
 
     .match-grid {
-        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-        gap: 1.5vw;
-        padding: 0 0.6rem !important;
+        /* On small mobiles, ensuring 2 columns if possible without squishing too much */
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Adjusted for mobile */
+        gap: 2vw; /* Adjusted gap */
+        padding: 0 0.8rem !important; /* Adjusted padding */
     }
     .news-grid {
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); /* Consistent for news cards on mobile */
         gap: 3vw;
         padding: 0 0.8rem !important;
     }
 
 
-    /* Match Card Image Adjustment for Smaller Mobile - Increased height and `object-fit: cover` */
+    /* Match Card Image Adjustment for Smaller Mobile - Final Version */
     .match-card img {
-        height: clamp(180px, 50vw, 250px) !important; /* زاد الارتفاع لمشغل الفيديو */
-        object-fit: cover !important; /* Ensures image fills the space */
+        /* Fixed height for more predictable layout on small screens */
+        height: 180px !important; /* Increased fixed height */
+        object-fit: cover !important; /* Essential for filling space */
         background-color: var(--up-bg-medium) !important;
         display: block !important;
     }
@@ -1591,7 +1598,7 @@ a:hover {
     .video-player-wrapper {
         margin-bottom: 3vw;
         max-width: 100% !important;
-        padding-bottom: 80% !important; /* تم زيادة هذه القيمة لتكبير المشغل */
+        padding-bottom: 70% !important; /* Adjusted for a better mobile video player aspect ratio */
         border-width: 1px !important;
     }
     .ad-banner-center {
@@ -1600,9 +1607,9 @@ a:hover {
         padding: 8px;
     }
 
-    /* Suggested Matches Grid for Smaller Mobile - Changed to show 2 posters */
+    /* Suggested Matches Grid for Smaller Mobile - Adjusted to show 2 posters */
     .suggested-matches-section .match-grid {
-        grid-template-columns: repeat(auto-fit, minmax(45%, 1fr)) !important; /* Adjust to show 2 columns */
+        grid-template-columns: repeat(auto-fit, minmax(45%, 1fr)) !important; /* Ensure 2 columns */
         gap: 2vw !important; /* Adjust gap */
         padding: 0 1vw !important; /* Adjust padding if needed */
         justify-content: center; /* Center items if less than 2 full columns */
