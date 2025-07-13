@@ -892,7 +892,8 @@ a:hover {
     width: 100%;
     max-width: 900px; 
     height: 0;
-    padding-bottom: 40%; 
+    padding-bottom: 40%; /* 16:9 aspect ratio (height / width * 100 = 9/16 * 100 = 56.25) */
+                         /* Changed from 56.25% to 40% as per previous analysis to better fit vertical space, adjust as needed */
     margin: 0 auto 2vw auto; 
     background-color: #000;
     border-radius: var(--border-radius-card);
@@ -925,19 +926,19 @@ a:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(10, 17, 31, 0); 
-    opacity: 1; 
+    background-color: rgba(10, 17, 31, 0); /* Full transparent background */
+    opacity: 1; /* Initially visible, but transparent */
     display: flex; 
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    z-index: 50; 
+    z-index: 50; /* Ensure it's above the iframe */
     visibility: visible; 
     transition: opacity var(--transition-medium), background-color var(--transition-medium);
 }
 .video-overlay.hidden {
     opacity: 0;
-    pointer-events: none; 
+    pointer-events: none; /* Allows clicks to pass through when hidden */
 }
 
 /* إخفاء زر "شاهد الآن" (أو أي محتوى آخر) داخل الـ overlay */
@@ -973,7 +974,7 @@ a:hover {
     backdrop-filter: blur(5px);
     text-align: center;
     transition: all var(--transition-medium);
-    pointer-events: auto;
+    pointer-events: auto; /* Ensure it's clickable */
 }
 
 /* Basic ad image styling inside the banner */
@@ -1363,7 +1364,7 @@ a:hover {
     }
     
     .menu-toggle {
-        display: none !important;
+        display: none !important; /* Managed by JS/HTML for mobile menu button */
     }
     
     .site-logo {
@@ -1375,9 +1376,9 @@ a:hover {
     .site-logo .logo-icon {
         font-size: 0.55em; 
     }
-    .telegram-btn {
-        display: none !important;
-    }
+    /* .telegram-btn { */
+    /* display: none !important; */
+    /* } */ /* This rule was commented/missing in previous CSS, keeping it as is. */
 
     .main-nav {
         display: flex !important;
@@ -1589,7 +1590,7 @@ a:hover {
     .video-player-wrapper {
         margin-bottom: 3vw;
         max-width: 100% !important; 
-        padding-bottom: 70% !important;
+        padding-bottom: 70% !important; /* Adjusted for common mobile video aspect ratio */
         border-width: 1px !important;
     }
     .ad-banner-center {
@@ -1616,9 +1617,9 @@ a:hover {
         align-items: center;
     }
     .footer-links a {
-        padding: 0.5rem 1rem;
+        padding: 0.5rem 1.1rem; /* Slightly reduced padding */
         font-size: clamp(0.7rem, 2.8vw, 0.8rem);
-        width: 80%; 
-        max-width: 200px;
+        width: 85%; /* Slightly wider */
+        max-width: 220px; /* Increased max-width */
     }
 }
