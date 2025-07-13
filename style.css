@@ -1467,9 +1467,9 @@ a:hover {
     }
 
     .match-grid {
-        /* تم ضبطها لعرض عمودين على الأجهزة الصغيرة جداً لضمان مساحة كافية للبوسترات */
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important; 
-        gap: 2vw !important; /* زيادة المسافة بين البطاقات */
+        /* تم زيادة قيمة minmax لزيادة عرض البوستر مع الحفاظ على عمودين */
+        grid-template-columns: repeat(auto-fit, minmax(45%, 1fr)) !important;
+        gap: 1vw !important; /* تقليل المسافة قليلًا */
         padding: 0 0.6rem !important;
     }
     .news-grid {
@@ -1481,15 +1481,14 @@ a:hover {
 
     /* **التعديلات الهامة هنا لصور البوستر للموبايل** */
     .match-card img {
-        /* زيادة الارتفاع الأدنى والارتفاع الأقصى لضمان أن الصورة ليست صغيرة جدًا ومناسبة كبوستر */
-        height: clamp(170px, 48vw, 250px) !important; /* زيادة أكبر لـ min-height وربطها بـ vw */
+        /* زيادة الارتفاع الأدنى لجعل البوستر أكبر */
+        height: clamp(200px, 50vw, 280px) !important;
         object-fit: cover !important;
         background-color: var(--up-bg-medium) !important;
         display: block !important;
     }
 
     .news-card img {
-        /* زيادة الارتفاع الأدنى والارتفاع الأقصى لضمان أن الصورة ليست صغيرة جدًا ومناسبة كبوستر */
         height: clamp(100px, 35vw, 150px) !important;
         object-fit: cover !important;
         background-color: var(--up-bg-medium) !important;
@@ -1498,9 +1497,9 @@ a:hover {
     /* نهاية التعديلات الهامة لصور البوستر للموبايل */
 
     .match-card .match-card-content {
-        padding: 0.5rem; /* تقليل البادينج لتوفير مساحة */
-        min-height: clamp(65px, 12vw, 85px); /* زيادة طفيفة لـ min-height لضمان عدم اختفاء المحتوى */
-        gap: 0.3rem; /* تقليل المسافة بين العناصر */
+        padding: 0.5rem;
+        min-height: clamp(70px, 13vw, 90px); /* زيادة طفيفة للارتفاع الأدنى */
+        gap: 0.3rem;
     }
     .match-card h3 {
         font-size: clamp(0.85rem, 3.5vw, 1.05rem) !important;
