@@ -1320,7 +1320,7 @@ a:hover {
     }
 
     html {
-        font-size: 11px !important;
+        font-size: 12px !important; /* Adjusted for overall larger mobile scale */
         width: 100vw !important;
         overflow-x: hidden !important;
         margin: 0 !important;
@@ -1478,10 +1478,10 @@ a:hover {
     }
 
 
-    /* Match Card Image Adjustment for Smaller Mobile */
+    /* Match Card Image Adjustment for Smaller Mobile - Increased height and `object-fit: cover` */
     .match-card img {
-        height: clamp(120px, 35vw, 180px) !important; /* Increased height for mobile */
-        object-fit: cover !important; /* Changed to cover */
+        height: clamp(160px, 45vw, 220px) !important; /* Increased height for mobile for larger poster */
+        object-fit: cover !important; /* Ensures image fills the space */
         background-color: var(--up-bg-medium) !important;
         display: block !important;
     }
