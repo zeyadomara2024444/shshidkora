@@ -514,8 +514,7 @@ a:hover {
 /* Grids for content cards */
 .match-grid, .news-grid {
     display: grid;
-    /* Increased min-width for larger cards on desktop for better image fit */
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Increased from 300px */
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Increased min-width for larger cards on desktop */
     gap: 0.8vw;
     padding: 0 1vw;
     position: relative;
@@ -561,6 +560,7 @@ a:hover {
     flex-direction: column;
     z-index: 1;
     backdrop-filter: blur(5px);
+    /* Removed padding-top for aspect ratio on card level for desktop */
 }
 .match-card:hover {
     transform: translateY(-5px) scale(1.01);
@@ -763,6 +763,7 @@ a:hover {
     display: flex;
     flex-direction: column;
     backdrop-filter: blur(5px);
+    /* Removed padding-top for aspect ratio on card level for desktop */
 }
 .news-card:hover {
     transform: translateY(-3px) scale(1.005);
@@ -1472,26 +1473,78 @@ a:hover {
     }
 
     .match-grid {
-        /* Increased min-width for mobile match cards for better appearance */
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); /* Adjusted to allow 2 columns to fit better */
-        gap: 2vw; /* Adjusted gap */
-        padding: 0 0.8rem !important; /* Adjusted padding */
+        /* On small mobiles, forcing 2 columns by making minwidth of each card 48% of container */
+        /* This will be 2 columns almost always, with 2% gap */
+        grid-template-columns: repeat(auto-fit, minmax(48%, 1fr)); /* Force 2 columns */
+        gap: 4% !important; /* Adjusted gap to fill the 100% width with 2 columns */
+        padding: 0 0.8rem !important;
     }
     .news-grid {
-        /* Increased min-width for mobile news cards for better appearance */
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Adjusted to allow 2 columns to fit better */
-        gap: 3vw;
+        /* Similarly for news grid */
+        grid-template-columns: repeat(auto-fit, minmax(48%, 1fr)); /* Force 2 columns */
+        gap: 4% !important;
         padding: 0 0.8rem !important;
     }
 
 
-    /* Match Card Image Adjustment for Smaller Mobile - FINAL VERSION */
+    /* Match Card Image Adjustment for Smaller Mobile - CRUCIAL */
     .match-card img {
-        height: 190px !important; /* Fixed height for mobile, match desktop for consistency */
-        object-fit: cover !important; /* Essential for filling space */
-        background-color: var(--up-bg-medium) !important;
-        display: block !important;
+        display: none !important; /* Hide the img element directly */
     }
+
+    /* Create an element inside match-card to hold the background image with aspect ratio */
+    .match-card .image-placeholder {
+        position: relative;
+        width: 100%;
+        height: 0;
+        /* Aspect ratio: 16:9 for widescreen, 4:3 for more square. Test different values */
+        /* For the image you provided, a ratio like 16:10 or 16:11 might be better */
+        /* Let's try 65% for something between 16:9 (56.25%) and 4:3 (75%) */
+        padding-bottom: 65%; /* Adjusted for a better visual aspect ratio on mobile */
+        background-size: cover; /* Ensure image covers the placeholder */
+        background-position: center center; /* Center the image */
+        border-bottom: 1px solid rgba(0, 207, 255, 0.1);
+        background-color: var(--up-bg-medium); /* Fallback */
+        transition: transform var(--transition-fast), filter var(--transition-fast);
+        overflow: hidden; /* Hide overflow of background image if needed */
+    }
+    .match-card:hover .image-placeholder {
+        transform: scale(1.02);
+        filter: brightness(1.1) saturate(1.1);
+    }
+    /* You would need to add this 'image-placeholder' div in your HTML structure
+       and set its background-image via JavaScript or inline style */
+    /* Example HTML change:
+    <div class="match-card">
+        <div class="image-placeholder" style="background-image: url('path/to/your/image.jpg');"></div>
+        <div class="match-card-content">
+            ... rest of your content ...
+        </div>
+    </div>
+    */
+
+    /* News Card Image Adjustment for Smaller Mobile - CRUCIAL */
+    .news-card img {
+        display: none !important; /* Hide the img element directly */
+    }
+    .news-card .image-placeholder {
+        position: relative;
+        width: 100%;
+        height: 0;
+        padding-bottom: 50%; /* Aspect ratio for news cards (e.g., 2:1 or similar) */
+        background-size: cover;
+        background-position: center center;
+        border-bottom: 1px solid rgba(0, 207, 255, 0.1);
+        background-color: var(--up-bg-medium);
+        transition: transform var(--transition-fast), filter var(--transition-fast);
+        overflow: hidden;
+    }
+    .news-card:hover .image-placeholder {
+        transform: scale(1.02);
+        filter: brightness(1.1) saturate(1.1);
+    }
+
+
     .match-card .match-card-content {
         padding: 0.6rem;
         min-height: clamp(60px, 10vw, 80px);
