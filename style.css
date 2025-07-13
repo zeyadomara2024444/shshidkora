@@ -1478,13 +1478,26 @@ a:hover {
     }
 
 
-    /* Match Card Image Adjustment for Smaller Mobile - Increased height and `object-fit: cover` */
+    /* **التعديلات الهامة هنا لصور البوستر للموبايل** */
     .match-card img {
-        height: clamp(180px, 50vw, 250px) !important; /* زاد الارتفاع لمشغل الفيديو */
-        object-fit: cover !important; /* Ensures image fills the space */
+        /* تم زيادة الارتفاع الأدنى (min) والارتفاع الأقصى (max) لضمان أن الصورة ليست صغيرة جدًا */
+        /* وتم الإبقاء على object-fit: cover لملء المساحة المتاحة */
+        height: clamp(150px, 45vw, 250px) !important; /* زيادة min-height وربطها بـ vw */
+        object-fit: cover !important;
         background-color: var(--up-bg-medium) !important;
         display: block !important;
     }
+
+    .news-card img {
+        /* تم زيادة الارتفاع الأدنى (min) والارتفاع الأقصى (max) لضمان أن الصورة ليست صغيرة جدًا */
+        height: clamp(100px, 35vw, 150px) !important; /* زيادة min-height وربطها بـ vw */
+        object-fit: cover !important;
+        background-color: var(--up-bg-medium) !important;
+        display: block !important;
+    }
+    /* نهاية التعديلات الهامة لصور البوستر للموبايل */
+
+
     .match-card .match-card-content {
         padding: 0.6rem;
         min-height: clamp(60px, 10vw, 80px);
