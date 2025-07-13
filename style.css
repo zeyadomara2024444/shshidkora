@@ -571,9 +571,10 @@ a:hover {
 /* Card image - ADJUSTED */
 .match-card img {
     width: 100%;
-    height: clamp(180px, 18vw, 250px); /* Increased min and max height for desktop */
-    object-fit: cover; /* Changed to cover to fill the area */
-    background-color: var(--up-bg-medium); /* لون خلفية للفراغات */
+    /* تم تعديل ارتفاع الصورة لكي تتناسب مع أحجام الشاشات المختلفة */
+    height: clamp(180px, 18vw, 250px); /* للدسكتوب والأجهزة اللوحية الكبيرة */
+    object-fit: cover;
+    background-color: var(--up-bg-medium);
     display: block;
     border-bottom: 1px solid rgba(0, 207, 255, 0.1);
     transition: transform var(--transition-fast), filter var(--transition-fast);
@@ -770,8 +771,8 @@ a:hover {
 .news-card img {
     width: 100%;
     height: clamp(110px, 10vw, 150px);
-    object-fit: cover; /* Changed to cover to fill the area */
-    background-color: var(--up-bg-medium); /* لون خلفية للفراغات */
+    object-fit: cover;
+    background-color: var(--up-bg-medium);
     display: block;
     border-bottom: 1px solid rgba(0, 207, 255, 0.1);
     transition: transform var(--transition-fast), filter var(--transition-fast);
@@ -925,7 +926,7 @@ a:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(10, 17, 31, 0);
+    background-color: rgba(0, 0, 0, 0); /* تم جعلها شفافة بالكامل */
     opacity: 1;
     display: flex;
     justify-content: center;
@@ -949,48 +950,21 @@ a:hover {
     display: none;
 }
 
-/* NEW: Hide Match Info Box (Description Section) as requested */
+/* NEW: Hide Match Info Box (Description Section) */
 .match-info-box {
-    display: none !important;
+    display: none !important; /* إخفاء هذا القسم بالكامل كما طلبت */
 }
 
 
 /* Ad Banner Center (under video) */
 .ad-banner-center {
-    width: 100%;
-    max-width: 900px;
-    margin: 3vw auto 3.5vw auto;
-    padding: 12px;
-    background-color: var(--up-bg-medium);
-    border: 1px solid var(--up-accent-blue);
-    border-radius: var(--border-radius-card);
-    box-shadow: var(--up-shadow-medium);
+    /* تم إزالة display: none !important; للسماح بظهور هذا القسم */
+    text-align: center; /* لتوسيط البانر */
+    margin-top: 20px; /* مسافة أعلى البانر */
+    margin-bottom: 20px; /* مسافة أسفل البانر */
+    position: relative;
     z-index: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(5px);
-    text-align: center;
-    transition: all var(--transition-medium);
-    pointer-events: auto;
 }
-
-/* Basic ad image styling inside the banner */
-.ad-banner-center img {
-    max-width: 100%;
-    height: auto;
-    border-radius: var(--border-radius-button);
-    box-shadow: var(--up-shadow-soft);
-}
-/* No text inside ad-banner-center unless needed for specific ad content */
-.ad-banner-center p {
-    display: none;
-}
-.ad-banner-center button {
-    display: none;
-}
-
 
 /* Suggested Matches Section */
 .suggested-matches-section {
@@ -1200,7 +1174,7 @@ a:hover {
 
     /* Match Card Image Adjustment for Tablet */
     .match-card img {
-        height: clamp(150px, 18vw, 220px); /* Adjusted for tablet */
+        height: clamp(150px, 25vw, 220px); /* تم ضبط الارتفاع ليتناسب مع أحجام التابلت */
         object-fit: cover;
         background-color: var(--up-bg-medium);
     }
@@ -1247,7 +1221,7 @@ a:hover {
 
     .news-card img {
         height: clamp(90px, 12vw, 130px);
-        object-fit: cover; /* Changed to cover to fill the area */
+        object-fit: cover;
         background-color: var(--up-bg-medium);
     }
     .news-card .news-card-content {
@@ -1286,11 +1260,7 @@ a:hover {
         max-width: 800px;
         padding-bottom: 45%;
     }
-    .ad-banner-center {
-        max-width: 800px;
-        margin: 3.5vw auto 4vw auto;
-        padding: 12px;
-    }
+    /* .ad-banner-center specific styles here, not hidden */
 
     .suggested-matches-section {
         margin-top: 3.5vw;
@@ -1320,7 +1290,7 @@ a:hover {
     }
 
     html {
-        font-size: 12px !important; /* Adjusted for overall larger mobile scale */
+        font-size: 12px !important;
         width: 100vw !important;
         overflow-x: hidden !important;
         margin: 0 !important;
@@ -1467,9 +1437,8 @@ a:hover {
     }
 
     .match-grid {
-        /* تم زيادة قيمة minmax لزيادة عرض البوستر مع الحفاظ على عمودين */
-        grid-template-columns: repeat(auto-fit, minmax(45%, 1fr)) !important;
-        gap: 1vw !important; /* تقليل المسافة قليلًا */
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 1.5vw;
         padding: 0 0.6rem !important;
     }
     .news-grid {
@@ -1479,27 +1448,17 @@ a:hover {
     }
 
 
-    /* **التعديلات الهامة هنا لصور البوستر للموبايل** */
+    /* Match Card Image Adjustment for Smaller Mobile */
     .match-card img {
-        /* زيادة الارتفاع الأدنى لجعل البوستر أكبر بشكل واضح */
-        height: clamp(220px, 55vw, 300px) !important; /* زيادة min-height وربطها بـ vw بشكل أكبر */
+        /* تم ضبط الارتفاع لكي يتناسب بشكل أفضل مع شاشات الموبايل الأصغر */
+        height: clamp(180px, 50vw, 250px) !important; /* للحفاظ على نسبة عرض إلى ارتفاع جيدة */
         object-fit: cover !important;
         background-color: var(--up-bg-medium) !important;
         display: block !important;
     }
-
-    .news-card img {
-        height: clamp(100px, 35vw, 150px) !important;
-        object-fit: cover !important;
-        background-color: var(--up-bg-medium) !important;
-        display: block !important;
-    }
-    /* نهاية التعديلات الهامة لصور البوستر للموبايل */
-
     .match-card .match-card-content {
-        padding: 0.5rem;
-        min-height: clamp(70px, 13vw, 90px); /* زيادة طفيفة للارتفاع الأدنى */
-        gap: 0.3rem;
+        padding: 0.6rem;
+        min-height: clamp(60px, 10vw, 80px);
     }
     .match-card h3 {
         font-size: clamp(0.85rem, 3.5vw, 1.05rem) !important;
@@ -1507,6 +1466,9 @@ a:hover {
         -webkit-line-clamp: 2 !important;
         max-width: 98% !important;
         margin-left: auto !important;
+        -webkit-box-orient: vertical;
+        text-overflow: ellipsis;
+        overflow: hidden;
         margin-right: auto !important;
     }
 
@@ -1606,11 +1568,7 @@ a:hover {
         padding-bottom: 80% !important; /* تم زيادة هذه القيمة لتكبير المشغل */
         border-width: 1px !important;
     }
-    .ad-banner-center {
-        max-width: 100% !important;
-        margin: 4vw auto 4.5vw auto;
-        padding: 8px;
-    }
+    /* .ad-banner-center specific styles here, not hidden */
 
     /* Suggested Matches Grid for Smaller Mobile - Changed to show 2 posters */
     .suggested-matches-section .match-grid {
