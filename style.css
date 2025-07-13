@@ -1,3 +1,4 @@
+
 /* style.css - تصميم "شاهد كورة" - Ultimate Pitch UI - الإصدار النهائي جدًا */
 
 /* --- Root Variables for Theme Customization --- */
@@ -1201,7 +1202,7 @@ a:hover {
     /* Match Card Image Adjustment for Tablet */
     .match-card img {
         height: clamp(150px, 18vw, 220px); /* Adjusted for tablet */
-        object-fit: cover; 
+        object-fit: cover;  
         background-color: var(--up-bg-medium);
     }
     .match-card .match-card-content {
@@ -1320,7 +1321,7 @@ a:hover {
     }
 
     html {
-        font-size: 12px !important; /* Adjusted for overall larger mobile scale */
+        font-size: 14px !important; /* تم زيادة حجم الخط الأساسي لتكبير المظهر العام للموقع على الجوال */
         width: 100vw !important;
         overflow-x: hidden !important;
         margin: 0 !important;
@@ -1347,37 +1348,37 @@ a:hover {
 
     .container {
         width: 100% !important;
-        padding: 0 0.6rem !important;  
+        padding: 0 0.8rem !important; /* زيادة طفيفة في المسافة الداخلية */
         max-width: 100vw !important;
         margin: auto !important;
     }
 
     .main-header {
-        padding: 0.4rem 0;
+        padding: 0.6rem 0; /* زيادة طفيفة في المسافة الداخلية للرأس */
     }
     .main-header .header-content {
-        padding: 0 0.6rem !important;  
+        padding: 0 0.8rem !important; /* زيادة طفيفة في المسافة الداخلية */
         flex-wrap: wrap;
         justify-content: space-between;
-        gap: 0.6rem;  
+        gap: 0.8rem; /* زيادة طفيفة في المسافة بين العناصر */
         max-width: 100% !important;
     }
     
     .menu-toggle {
-        display: none !important;
+        display: none !important; /* إخفاء زر القائمة (الثلاث شرط) كما هو مطلوب أصلاً في الأكواد السابقة */
     }
     
     .site-logo {
         order: 0 !important;
         margin-left: auto;
-        margin-right: 0.4rem;  
-        font-size: clamp(1.4rem, 4.5vw, 1.8rem) !important;
+        margin-right: 0.6rem; /* زيادة طفيفة في الهامش الأيمن */
+        font-size: clamp(1.6rem, 5vw, 2rem) !important; /* تعديل حجم الخط */
     }
     .site-logo .logo-icon {
-        font-size: 0.55em;  
+        font-size: 0.6em; /* تعديل حجم الأيقونة */
     }
     .telegram-btn {
-        display: none !important;
+        display: none !important; /* إخفاء زر التليجرام */
     }
 
     .main-nav {
@@ -1400,8 +1401,8 @@ a:hover {
         flex-direction: row !important;
         justify-content: flex-start !important;
         width: auto !important;
-        gap: 0.6rem !important;  
-        padding: 0 0.4rem !important;  
+        gap: 0.8rem !important; /* زيادة طفيفة في المسافة بين عناصر القائمة */
+        padding: 0 0.6rem !important; /* زيادة طفيفة في المسافة الداخلية */
     }
 
     .main-nav ul li {
@@ -1410,8 +1411,8 @@ a:hover {
     }
 
     .main-nav ul li a {
-        font-size: clamp(0.7rem, 2.5vw, 0.85rem) !important;
-        padding: 0.4rem 0.7rem !important;  
+        font-size: clamp(0.8rem, 3vw, 0.9rem) !important; /* تعديل حجم الخط */
+        padding: 0.5rem 0.9rem !important; /* زيادة طفيفة في المسافة الداخلية */
         max-width: none !important;
         display: inline-flex !important;
         align-items: center;
@@ -1424,211 +1425,213 @@ a:hover {
         order: 2 !important;
         display: flex;
         flex-basis: 100% !important;
-        margin: 0.6rem auto 0.4rem auto;  
-        padding: 0.3rem 0.6rem;  
+        margin: 0.8rem auto 0.6rem auto; /* زيادة طفيفة في الهوامش */
+        padding: 0.4rem 0.8rem; /* زيادة طفيفة في المسافة الداخلية */
         max-width: 95% !important;
     }
 
     .search-bar input {
         width: 100% !important;
-        font-size: clamp(0.7rem, 3vw, 0.85rem) !important;
-        margin-right: 0.2rem !important;
+        font-size: clamp(0.8rem, 3.5vw, 0.9rem) !important; /* تعديل حجم الخط */
+        margin-right: 0.3rem !important; /* زيادة طفيفة في الهامش الأيمن */
     }
     .search-bar button {
-        font-size: 1rem !important;
+        font-size: 1.1rem !important; /* زيادة طفيفة في حجم الأيقونة */
     }
 
 
     .view-section {
-        padding: 7vw 0;
+        padding: 8vw 0; /* زيادة المسافة الداخلية للقسم */
     }
     .section-title {
-        font-size: clamp(1.6rem, 5vw, 2rem);
-        margin-bottom: 4vw;
-        padding-bottom: 0.35rem;
+        font-size: clamp(1.8rem, 5.5vw, 2.2rem); /* تعديل حجم الخط */
+        margin-bottom: 5vw; /* زيادة الهامش السفلي */
+        padding-bottom: 0.4rem; /* تعديل المسافة السفلية */
     }
 
     .filter-controls {
-        gap: 0.4rem;
-        margin-bottom: 4vw;
-        padding: 0.4rem 0.8rem !important;
+        gap: 0.6rem; /* زيادة طفيفة في المسافة بين عناصر الفلتر */
+        margin-bottom: 5vw; /* زيادة الهامش السفلي */
+        padding: 0.5rem 1rem !important; /* زيادة طفيفة في المسافة الداخلية */
         flex-direction: column;
         max-width: 100% !important;
     }
     .filter-btn, .filter-dropdown {
-        padding: 0.4rem 0.9rem;
-        font-size: clamp(0.7rem, 2.8vw, 0.8rem);
+        padding: 0.5rem 1.1rem; /* زيادة طفيفة في المسافة الداخلية */
+        font-size: clamp(0.8rem, 3.2vw, 0.9rem); /* تعديل حجم الخط */
         width: 100%;
     }
     .filter-dropdown {
-        padding-left: 1.4rem;
-        background-position: left 0.5rem center;
-        background-size: 0.75em;
+        padding-left: 1.6rem; /* تعديل المسافة الداخلية اليسرى */
+        background-position: left 0.6rem center; /* تعديل موضع خلفية الأيقونة */
+        background-size: 0.8em; /* تعديل حجم أيقونة الخلفية */
     }
 
     .match-grid {
-        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-        gap: 1.5vw;
-        padding: 0 0.6rem !important;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* زيادة الحد الأدنى لعرض بطاقات المباريات */
+        gap: 2vw; /* تعديل المسافة بين البطاقات */
+        padding: 0 0.8rem !important; /* زيادة طفيفة في المسافة الداخلية */
     }
     .news-grid {
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 3vw;
-        padding: 0 0.8rem !important;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* زيادة الحد الأدنى لعرض بطاقات الأخبار */
+        gap: 4vw; /* تعديل المسافة بين البطاقات */
+        padding: 0 1rem !important; /* زيادة طفيفة في المسافة الداخلية */
     }
 
 
-    /* Match Card Image Adjustment for Smaller Mobile - Increased height and `object-fit: cover` */
+    /* --- تعديلات صورة بوستر المباراة للجوال الأصغر --- */
     .match-card img {
-        height: clamp(160px, 45vw, 220px) !important; /* Increased height for mobile for larger poster */
-        object-fit: cover !important; /* Ensures image fills the space */
+        height: clamp(180px, 50vw, 250px) !important; /* تم زيادة ارتفاع الصورة بشكل كبير لبوستر أكبر */
+        object-fit: cover !important; /* التأكد من أن الصورة تملأ المساحة دون تشوه */
         background-color: var(--up-bg-medium) !important;
         display: block !important;
     }
     .match-card .match-card-content {
-        padding: 0.6rem;
-        min-height: clamp(60px, 10vw, 80px);
+        padding: 0.8rem; /* زيادة المسافة الداخلية */
+        min-height: clamp(70px, 12vw, 90px); /* تعديل الحد الأدنى للارتفاع */
     }
     .match-card h3 {
-        font-size: clamp(0.85rem, 3.5vw, 1.05rem) !important;  
-        line-height: 1.3 !important;  
-        -webkit-line-clamp: 2 !important;  
-        max-width: 98% !important;  
+        font-size: clamp(0.9rem, 4vw, 1.1rem) !important; /* تعديل حجم الخط */
+        line-height: 1.4 !important; /* تعديل ارتفاع السطر */
+        -webkit-line-clamp: 2 !important;
+        max-width: 98% !important;
         margin-left: auto !important;
         margin-right: auto !important;
     }
     
     .match-card .teams-logos {
-        flex-direction: row !important;  
-        flex-wrap: nowrap !important;  
-        justify-content: space-between !important;  
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: space-between !important;
         align-items: center !important;
-        gap: 0.05rem !important;  
-        margin-top: 0.1rem !important;
-        margin-bottom: 0.1rem !important;
-        padding: 0 0.1rem !important;  
+        gap: 0.1rem !important; /* تعديل المسافة بين عناصر الشعارات */
+        margin-top: 0.2rem !important; /* تعديل الهامش العلوي */
+        margin-bottom: 0.2rem !important; /* تعديل الهامش السفلي */
+        padding: 0 0.2rem !important; /* تعديل المسافة الداخلية */
         box-sizing: border-box;
     }
 
-    .match-card .teams-logos > div {  
+    .match-card .teams-logos > div {
         display: flex;
         align-items: center;
         flex-grow: 1;
-        flex-shrink: 1;  
-        gap: 0.1rem !important;  
-        min-width: 0;  
-        max-width: none;  
+        flex-shrink: 1;
+        gap: 0.15rem !important; /* تعديل المسافة بين الشعار والاسم */
+        min-width: 0;
+        max-width: none;
         padding: 0;
     }
 
     .match-card .teams-logos > div:first-of-type {
-        justify-content: flex-end;  
+        justify-content: flex-end;
     }
 
     .match-card .teams-logos > div:nth-of-type(2) {
-        justify-content: flex-start;  
+        justify-content: flex-start;
     }
 
-    .match-card .teams-logos span {  
-        font-size: clamp(0.7rem, 3.5vw, 0.85rem) !important;  
-        white-space: nowrap;  
-        overflow: hidden;  
-        text-overflow: ellipsis;  
-        flex-grow: 1;  
-        flex-shrink: 1;  
-        min-width: 0;  
+    .match-card .teams-logos span {
+        font-size: clamp(0.8rem, 4vw, 0.9rem) !important; /* تعديل حجم الخط */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex-grow: 1;
+        flex-shrink: 1;
+        min-width: 0;
     }
     
-    .match-card .team-logo {  
-        width: clamp(20px, 6vw, 30px) !important;  
-        height: clamp(20px, 6vw, 30px) !important;
+    .match-card .team-logo {
+        width: clamp(25px, 7vw, 35px) !important; /* تعديل حجم شعار الفريق */
+        height: clamp(25px, 7vw, 35px) !important;
         flex-shrink: 0 !important;
         padding: 0 !important;
         border: none !important;
         box-shadow: none !important;
-        margin: 0 !important;  
+        margin: 0 !important;
     }
 
     .match-card .teams-logos > div:nth-of-type(2) .team-logo {
-        margin-left: 0 !important;  
-        margin-right: 0.05rem !important;  
+        margin-left: 0 !important;
+        margin-right: 0.1rem !important; /* تعديل الهامش الأيمن */
     }
     .match-card .teams-logos > div:nth-of-type(2) span {
-        text-align: left !important;  
+        text-align: left !important;
     }
 
-    .match-card .teams-logos .vs-text {  
-        font-size: clamp(0.7rem, 3vw, 1rem) !important;  
+    .match-card .teams-logos .vs-text {
+        font-size: clamp(0.8rem, 3.5vw, 1.1rem) !important; /* تعديل حجم خط "VS" */
         font-weight: 900 !important;
         color: var(--up-accent-red) !important;
-        margin: 0 0.05rem !important;  
+        margin: 0 0.1rem !important; /* تعديل الهامش */
         padding: 0 !important;
         flex-shrink: 0 !important;
         line-height: 1;
-        width: auto;  
+        width: auto;
         text-align: center;
-        order: 0;  
+        order: 0;
     }
     
     .pagination-controls {
-        margin-top: 5vw;
-        gap: 0.8rem;
-        flex-wrap: wrap;  
+        margin-top: 6vw; /* زيادة الهامش العلوي */
+        gap: 1rem; /* زيادة طفيفة في المسافة بين أزرار التصفح */
+        flex-wrap: wrap;
     }
     .pagination-controls .btn-page {
-        padding: 0.5rem 1rem;
-        font-size: clamp(0.75rem, 2.8vw, 0.85rem);
+        padding: 0.6rem 1.2rem; /* زيادة طفيفة في المسافة الداخلية */
+        font-size: clamp(0.8rem, 3.2vw, 0.9rem); /* تعديل حجم الخط */
     }
 
     .match-details-section {
-        padding: 7vw 4vw;
+        padding: 8vw 5vw; /* زيادة المسافة الداخلية للقسم */
     }
     .match-details-section .back-btn {
-        margin-bottom: 4vw;
-        font-size: clamp(0.85rem, 2.5vw, 1rem);
-        padding: 0.5rem 1.2rem;
+        margin-bottom: 5vw; /* زيادة الهامش السفلي */
+        font-size: clamp(0.9rem, 3vw, 1.05rem); /* تعديل حجم الخط */
+        padding: 0.6rem 1.4rem; /* زيادة طفيفة في المسافة الداخلية */
     }
+
+    /* --- تعديل حجم مشغل الفيديو للجوال الأصغر --- */
     .video-player-wrapper {
-        margin-bottom: 3vw;
-        max-width: 100% !important;  
-        padding-bottom: 70% !important;
+        margin-bottom: 4vw; /* تعديل الهامش السفلي */
+        max-width: 100% !important;
+        padding-bottom: 56.25% !important; /* تم ضبط نسبة العرض إلى الارتفاع على 16:9 للحفاظ على جودة الفيديو */
         border-width: 1px !important;
     }
     .ad-banner-center {
         max-width: 100% !important;
-        margin: 4vw auto 4.5vw auto;
-        padding: 8px;
+        margin: 5vw auto 5.5vw auto; /* زيادة الهوامش */
+        padding: 10px; /* تعديل المسافة الداخلية */
     }
 
-    /* Suggested Matches Grid for Smaller Mobile - Changed to show 2 posters */
+    /* Suggested Matches Grid for Smaller Mobile - تم تعديلها لعرض بوسترين */
     .suggested-matches-section .match-grid {
-        grid-template-columns: repeat(auto-fit, minmax(45%, 1fr)) !important; /* Adjust to show 2 columns */
-        gap: 2vw !important; /* Adjust gap */
-        padding: 0 1vw !important; /* Adjust padding if needed */
-        justify-content: center; /* Center items if less than 2 full columns */
+        grid-template-columns: repeat(auto-fit, minmax(48%, 1fr)) !important; /* تعديل لعرض عمودين، أعرض قليلاً */
+        gap: 3vw !important; /* تعديل المسافة بين البطاقات */
+        padding: 0 2vw !important; /* تعديل المسافة الداخلية إذا لزم الأمر */
+        justify-content: center;
     }
 
     .suggested-matches-section {
-        margin-top: 4vw;
-        padding-top: 4vw;
+        margin-top: 5vw; /* زيادة الهامش العلوي */
+        padding-top: 5vw; /* زيادة المسافة الداخلية العلوية */
     }
 
     .main-footer {
-        padding: 5vw 0;
+        padding: 6vw 0; /* زيادة المسافة الداخلية */
     }
     .main-footer p {
-        font-size: clamp(0.7rem, 2.8vw, 0.8rem);
-        margin-bottom: 2vw;
+        font-size: clamp(0.8rem, 3.2vw, 0.9rem); /* تعديل حجم الخط */
+        margin-bottom: 3vw; /* زيادة الهامش السفلي */
     }
     .footer-links {
-        gap: 0.6rem;
-        flex-direction: column;  
+        gap: 0.8rem; /* زيادة طفيفة في المسافة بين الروابط */
+        flex-direction: column;
         align-items: center;
     }
     .footer-links a {
-        padding: 0.5rem 1rem;
-        font-size: clamp(0.7rem, 2.8vw, 0.8rem);
-        width: 80%;  
-        max-width: 200px;
+        padding: 0.6rem 1.2rem; /* زيادة طفيفة في المسافة الداخلية */
+        font-size: clamp(0.8rem, 3.2vw, 0.9rem); /* تعديل حجم الخط */
+        width: 90%; /* زيادة العرض */
+        max-width: 250px; /* زيادة الحد الأقصى للعرض */
     }
 }
