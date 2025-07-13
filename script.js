@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // إذا كان Status 404 أو أي خطأ آخر، ارمِ خطأ
                 throw new Error(`HTTP error! Status: ${response.status} - Could not load matches.json. Check file path and server configuration.`);
             }
-            const data = await response.json();
+            const data = await response.json(); // هذا السطر هو الذي يرمي "Unexpected token <" إذا لم يكن استجابة JSON
             if (!Array.isArray(data)) {
                 console.error('❌ Fetched data is not an array. Please check matches.json format. Expected an array of objects.');
                 allContentData = [];
@@ -307,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (videoOverlayElement) {
             videoOverlayElement.style.pointerEvents = 'auto'; // Re-enable clicks
             videoOverlayElement.classList.remove('hidden'); // Show it again
-            videoOverlayElement.style.cursor = 'pointer'; // Reset cursor
+            videoOverlayElement.style.cursor = 'pointer';      // Reset cursor
             videoOverlayElement.onclick = null; // Remove old onclick handler
             console.log('[Video Overlay] Resetting overlay state.');
         }
@@ -506,7 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const detailsContainer = newViewElement;
 
                 const videoPlayerContainer = detailsContainer.querySelector('.video-player-container');
-                const videoOverlayElement = detailsContainer.querySelector('.video-overlay'); // Changed name to avoid conflict with outer 'videoOverlay'
+                const videoOverlayElement = detailsContainer.querySelector('.video-overlay'); // Select dynamically as it's part of a template
 
 
                 // 🚀 **بداية التعديلات الهامة لحل مشكلة التعليق عند التحديث** 🚀
@@ -578,23 +578,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 🚀 **نهاية التعديلات الهامة لحل مشكلة التعليق عند التحديث** 🚀
 
                 detailsContainer.querySelector('.match-details-title').textContent = item.title || 'غير متوفر';
-                detailsContainer.querySelector('.match-details-description').textContent = item.short_description || 'لا يوجد وصف متاح.';
-
+                // 💡 هذه العناصر تم تبسيطها في HTML وأصبحنا نعتمد على JavaScript لتكوينها بشكل كامل أو جزئي
+                detailsContainer.querySelector('#match-details-description-js').textContent = item.short_description || 'لا يوجد وصف متاح.';
                 const matchDateTime = item.date_time ? new Date(item.date_time) : null;
-                const formattedDateTime = matchDateTime ?
+                detailsContainer.querySelector('#match-details-date-time-js').textContent = matchDateTime ?
                     matchDateTime.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }) + ' - ' +
                     matchDateTime.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) : 'غير متوفر';
-                detailsContainer.querySelector('.match-details-date-time').textContent = formattedDateTime;
+                detailsContainer.querySelector('#match-details-league-js').textContent = item.league_name || 'غير محدد';
+                detailsContainer.querySelector('#match-details-commentators-js').textContent = Array.isArray(item.commentators) ? item.commentators.join(', ') : item.commentators || 'غير متوفر';
+                detailsContainer.querySelector('#match-details-teams-js').innerHTML = `${item.home_team} <span class="vs-text">vs</span> ${item.away_team}` || 'غير متوفر';
+                detailsContainer.querySelector('#match-details-stadium-js').textContent = item.stadium || 'غير متوفر';
+                detailsContainer.querySelector('#match-details-status-js').textContent = item.status || 'N/A';
 
-                detailsContainer.querySelector('.match-details-league').textContent = item.league_name || 'غير محدد';
-                detailsContainer.querySelector('.match-details-commentators').textContent = Array.isArray(item.commentators) ? item.commentators.join(', ') : item.commentators || 'غير متوفر';
-                detailsContainer.querySelector('.match-details-teams').innerHTML = `${item.home_team} <span class="vs-text">vs</span> ${item.away_team}` || 'غير متوفر';
-                detailsContainer.querySelector('.match-details-stadium').textContent = item.stadium || 'غير متوفر';
-                detailsContainer.querySelector('.match-details-status').textContent = item.status || 'N/A';
 
                 if (item.status === 'Finished') {
                     detailsContainer.querySelector('.match-details-score-container').classList.remove('hidden');
-                    detailsContainer.querySelector('.match-details-score').textContent = item.score || 'N/A';
+                    detailsContainer.querySelector('#match-details-score-js').textContent = item.score || 'N/A';
                     if (item.highlights_url) {
                         detailsContainer.querySelector('.match-details-highlights-container').classList.remove('hidden');
                         detailsContainer.querySelector('.match-details-highlights-link').href = item.highlights_url;
