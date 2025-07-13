@@ -153,6 +153,59 @@
             </section>
         </template>
 
+        <template id="match-details-template">
+            <section class="view-section match-details-section"> 
+                <div class="container">
+                    <button class="btn btn-secondary back-btn" aria-label="العودة للمباريات"><i class="fas fa-arrow-right"></i> العودة للمباريات</button>
+                    <h1 class="match-details-title"></h1> 
+                    
+                    <div class="video-player-wrapper">
+                        <div class="video-player-container"> 
+                            </div>
+                        <div class="video-overlay" aria-label="انقر للتشغيل وفتح الإعلان">
+                            <i class="fas fa-play-circle video-play-icon"></i>
+                        </div>
+                    </div>
+
+                    <div class="ad-banner-center banner-ad-container">
+                        <script type="text/javascript">
+                            atOptions = {
+                                'key' : 'YOUR_ADSTERRA_KEY', // تأكد من استبدال هذا بمفتاحك الفعلي
+                                'format' : 'iframe',
+                                'height' : 60,
+                                'width' : 468,
+                                'params' : {}
+                            };
+                        </script>
+                        <script type="text/javascript" src="//www.highperformanceformat.com/0244edf54baa4e31fc3437c4aebca346/invoke.js" async></script>
+                    </div>
+
+                    <div class="match-info-box"> 
+                        <img class="match-details-thumbnail" src="" alt="صورة المباراة" loading="lazy" width="250" height="180"> 
+                        <div class="info-columns">
+                            <p><strong>الوصف:</strong> <span id="match-details-description-js"></span></p>
+                            <p><strong>وقت المباراة:</strong> <span id="match-details-date-time-js"></span></p>
+                            <p><strong>البطولة:</strong> <span id="match-details-league-js"></span></p>
+                            <p><strong>المعلقون:</strong> <span id="match-details-commentators-js"></span></p>
+                            <p><strong>الفرق المتنافسة:</strong> <span id="match-details-teams-js"></span></p>
+                            <p><strong>ملعب المباراة:</strong> <span id="match-details-stadium-js"></span></p>
+                            <p><strong>الحالة:</strong> <span id="match-details-status-js"></span></p>
+                            <p class="match-details-score-container hidden"><strong>النتيجة النهائية:</strong> <span id="match-details-score-js"></span></p>
+                            <p class="match-details-highlights-container hidden"><strong>ملخص الفيديو:</strong> <a href="#" target="_blank" rel="noopener noreferrer" class="btn btn-secondary match-details-highlights-link">شاهد الملخص</a></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </template>
+
+        <template id="suggested-matches-template">
+            <section class="view-section suggested-matches-section"> 
+                <div class="container">
+                    <h2 class="section-title">مباريات قد تهمك</h2>
+                    <div class="match-grid"> </div>
+                </div>
+            </section>
+        </template>
         <footer class="main-footer">
             <div class="container footer-content">
                 <p>&copy; 2025 شاهد كورة - Ultimate Pitch. جميع الحقوق محفوظة.</p>
