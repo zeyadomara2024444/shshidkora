@@ -1,6 +1,7 @@
 // script.js - كود "شاهد كورة" الاحترافي الفائق لـ "Ultimate Pitch UI"
 // مع تحسينات الأداء، SEO، وتجربة الموبايل (محدث لتقليل التقطيع والأرشفة)
 // **تم حل مشكلة التعليق عند التحديث/الانتقال المباشر لصفحات التفاصيل من جانب JavaScript.**
+// **التركيز الآن على ضمان وجود وصحة ملف 'matches.json' في النشرة النهائية على Netlify.**
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🏁 DOM Content Loaded. Ultimate Pitch script execution started.');
@@ -102,13 +103,16 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchAllContentData() {
         try {
             console.log('📡 Fetching all content data from matches.json...');
+            // 💡 تأكد أن مسار 'matches.json' صحيح هنا. إذا كان الملف في نفس مجلد 'index.html'، فالصيغة 'matches.json' صحيحة.
+            // إذا كان في مجلد فرعي، مثلاً 'data/matches.json'، يجب أن يكون '/data/matches.json'.
             const response = await fetch('matches.json');
             if (!response.ok) {
+                // إذا كان Status 404 أو أي خطأ آخر، ارمِ خطأ
                 throw new Error(`HTTP error! Status: ${response.status} - Could not load matches.json. Check file path and server configuration.`);
             }
             const data = await response.json();
             if (!Array.isArray(data)) {
-                console.error('❌ Fetched data is not an array. Please check matches.json format.');
+                console.error('❌ Fetched data is not an array. Please check matches.json format. Expected an array of objects.');
                 allContentData = [];
             } else {
                 allContentData = data;
@@ -121,11 +125,12 @@ document.addEventListener('DOMContentLoaded', () => {
             initialPageLoadLogic();
         } catch (error) {
             console.error('❌ Failed to load all content data:', error.message);
+            // عرض رسالة خطأ واضحة للمستخدم في حالة فشل تحميل البيانات
             contentDisplay.innerHTML = `
-                <div class="empty-state" style="padding: 50px; background-color: var(--up-bg-medium); border: 2px solid var(--up-accent-red); border-radius: var(--border-radius-card); box-shadow: var(--up-shadow-strong); margin-top: 50px;">
-                    <p style="color: var(--up-text-primary);">عذرًا، لم نتمكن من الاتصال بمسار البيانات. يرجى التحقق من اتصالك بالشبكة والمحاولة لاحقًا.</p>
+                <div class="empty-state" style="padding: 50px; background-color: var(--up-bg-medium); border: 2px solid var(--up-accent-red); border-radius: 10px; box-shadow: 0 0 20px rgba(255, 0, 0, 0.5); margin-top: 50px; text-align: center;">
+                    <p style="color: var(--up-text-primary); font-size: 1.2em;">عذرًا، لم نتمكن من الاتصال بمسار البيانات. يرجى التحقق من اتصالك بالشبكة أو المحاولة لاحقًا.</p>
+                    <p style="font-size: 0.9em; color: #ccc;">(خطأ: ${error.message})</p>
                 </div>`;
-            // لا يجب استدعاء initialPageLoadLogic هنا لأن البيانات غير متاحة
         }
     }
 
@@ -294,18 +299,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // Disposing of the iframe player instance before switching views if it exists
         const oldPlayer = contentDisplay.querySelector('.match-iframe-player');
         if (oldPlayer) {
-            // If using Video.js or a custom player, ensure it's disposed or removed safely
-            // For simple iframes, removing them from DOM might be sufficient for resource release
             oldPlayer.remove();
             console.log('[IFRAME Player] Removed old iframe player from DOM.');
         }
         // Ensure video overlay is not stuck if leaving match details view
-        const videoOverlay = document.getElementById('video-overlay'); // Get it again as it might be new
-        if (videoOverlay) {
-            videoOverlay.style.pointerEvents = 'auto'; // Re-enable clicks
-            videoOverlay.classList.remove('hidden'); // Show it again
-            videoOverlay.style.cursor = 'pointer'; // Reset cursor
-            videoOverlay.onclick = null; // Remove old onclick handler
+        const videoOverlayElement = document.querySelector('.video-overlay'); // Select dynamically as it's part of a template
+        if (videoOverlayElement) {
+            videoOverlayElement.style.pointerEvents = 'auto'; // Re-enable clicks
+            videoOverlayElement.classList.remove('hidden'); // Show it again
+            videoOverlayElement.style.cursor = 'pointer'; // Reset cursor
+            videoOverlayElement.onclick = null; // Remove old onclick handler
             console.log('[Video Overlay] Resetting overlay state.');
         }
 
@@ -848,7 +851,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        document.title = pageTitle;
+        document.querySelector('title').textContent = pageTitle; // تم تصحيح السيلكتور
         document.querySelector('meta[name="description"]')?.setAttribute('content', pageDescription);
         document.querySelector('meta[name="keywords"]')?.setAttribute('content', pageKeywords);
 
@@ -1337,7 +1340,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }).catch(err => {
                 console.error('[Popstate] Failed to fetch data for history state:', err);
                 contentDisplay.innerHTML = `
-                    <div class="empty-state" style="padding: 50px; background-color: var(--up-bg-medium); border: 2px solid var(--up-accent-red); border-radius: 10px; border: 2px solid #ff4d4d; color: #ffcccc; font-family: sans-serif; font-size: 22px; box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);">
+                    <div class="empty-state" style="padding: 50px; background-color: var(--up-bg-medium); border: 2px solid var(--up-accent-red); border-radius: 10px; box-shadow: 0 0 20px rgba(255, 0, 0, 0.5); color: #ffcccc; font-family: sans-serif; font-size: 22px; margin-top: 50px; text-align: center;">
                         <p style="font-size: 16px; color: #f47b7b; margin-top: 15px;">عذراً، حدث خطأ أثناء تحميل البيانات من السجل. يرجى تحديث الصفحة.</p>
                     </div>`;
             });
