@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('✅ All critical DOM elements and templates found. Proceeding with script execution.');
     }
 
-    // --- 2. Adsterra Configuration ---
+    // --- 2. Adsterra Configuration (Included from Code Block 2) ---
     const ADSTERRA_DIRECT_LINK_URL = 'https://www.profitableratecpm.com/spqbhmyax?key=2469b039d4e7c471764bd04c57824cf2';
     const DIRECT_LINK_COOLDOWN_MATCH_CARD = 3 * 60 * 1000; // 3 minutes
     const DIRECT_LINK_COOLDOWN_VIDEO_INTERACTION = 15 * 1000; // 15 seconds
@@ -77,14 +77,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const currentTime = Date.now();
         if (currentTime - lastClickTime > cooldownDuration) {
-            const newWindow = window.open(ADSTERRA_DIRECT_LINK_URL, '_blank');
-            if (newWindow) {
-                newWindow.focus();
-                setLastClickTime(currentTime);
-                console.log(`💰 [Ad Click - ${type}] Direct link opened successfully.`);
-                return true;
-            } else {
-                console.warn(`⚠️ [Ad Click - ${type}] Pop-up blocked or direct link failed to open. Ensure pop-ups are allowed.`);
+            try {
+                const newWindow = window.open(ADSTERRA_DIRECT_LINK_URL, '_blank');
+                if (newWindow) {
+                    newWindow.focus();
+                    setLastClickTime(currentTime);
+                    console.log(`💰 [Ad Click - ${type}] Direct link opened successfully. New window reference:`, newWindow);
+                    return true;
+                } else {
+                    console.warn(`⚠️ [Ad Click - ${type}] Pop-up blocked or direct link failed to open (window.open returned null). User might have a blocker.`);
+                    return false;
+                }
+            } catch (e) {
+                console.error(`❌ [Ad Click - ${type}] Error attempting to open direct link:`, e);
                 return false;
             }
         } else {
@@ -116,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.warn('⚠️ matches.json loaded, but it is empty. No content will be displayed.');
             }
             console.log('✅ All content data loaded successfully from matches.json. Total items found:', allContentData.length);
-            // 💡 التعديل هنا: بعد تحميل البيانات بنجاح، نقوم بتشغيل منطق تحميل الصفحة الأولي.
+            // 💡 CRITICAL: Call initialPageLoadLogic AFTER data is successfully loaded
             initialPageLoadLogic();
         } catch (error) {
             console.error('❌ Failed to load all content data:', error.message);
@@ -124,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="empty-state" style="padding: 50px; background-color: var(--up-bg-medium); border: 2px solid var(--up-accent-red); border-radius: var(--border-radius-card); box-shadow: var(--up-shadow-strong); margin-top: 50px;">
                     <p style="color: var(--up-text-primary);">عذرًا، لم نتمكن من الاتصال بمسار البيانات. يرجى التحقق من اتصالك بالشبكة والمحاولة لاحقًا.</p>
                 </div>`;
-            // لا يجب استدعاء initialPageLoadLogic هنا لأن البيانات غير متاحة
+            // Do NOT call initialPageLoadLogic here if data is not available
         }
     }
 
@@ -284,6 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/-+/g, '-');
     }
 
+    // --- renderView function (from Code Block 1) ---
     async function renderView(viewName, params = {}, pushState = true) {
         console.log(`🔄 [View Render] Attempting to render view: "${viewName}" with params:`, params);
 
@@ -327,7 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (viewName === 'home') {
                     currentSectionData = allContentData.filter(item => item.type === 'match' && (item.status === 'Live' || new Date(item.date_time) > new Date()))
-                                                     .sort((a, b) => new Date(a.date_time) - new Date(b.date_time));
+                                                    .sort((a, b) => new Date(a.date_time) - new Date(b.date_time));
                     sectionTitleText = 'مباريات مباشرة وقادمة';
                     templateToUse = liveMatchesTemplate;
                     urlPath = '/';
@@ -453,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 displayContent(currentSectionData, targetGrid);
 
-                // Hide pagination controls entirely for these views (Ensure this element doesn't exist in templates or is display:none in CSS)
+                // Hide pagination controls entirely for these views
                 const paginationControls = contentDisplay.querySelector('.pagination-controls');
                 if (paginationControls) paginationControls.style.display = 'none';
 
@@ -466,11 +472,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const itemType = params.type;
                 const item = allContentData.find(i => i.id === itemId && i.type === itemType);
 
-                // ❗ التعديل هنا: إذا لم يتم العثور على العنصر بعد تحميل البيانات، عد للصفحة الرئيسية
                 if (!item || item.type !== 'match') {
                     console.error('❌ [View Render] Match details: Item not found or not a match type for ID:', itemId);
-                    // 💡 توجيه المستخدم إلى الصفحة الرئيسية بدلاً من التعليق
-                    renderView('home', {}, true);
+                    renderView('home', {}, true); // Redirect to home if item is invalid
                     return;
                 }
                 currentDetailedItem = item;
@@ -481,58 +485,51 @@ document.addEventListener('DOMContentLoaded', () => {
                 const videoPlayerContainer = detailsContainer.querySelector('.video-player-container');
                 const videoOverlay = detailsContainer.querySelector('.video-overlay');
 
-                // 🚀 **بداية التعديلات الهامة لحل مشكلة التعليق عند التحديث** 🚀
-
-                // 1. إزالة أي مشغل فيديو قديم موجود داخل الحاوية قبل إضافة الجديد
-                // هذا يضمن أن المتصفح يقوم بتفريغ الموارد المرتبطة بالـ iframe القديم
+                // --- START: CRITICAL REFINEMENTS FOR IFRAME & OVERLAY ---
                 if (videoPlayerContainer) {
+                    // Aggressively remove all children (old iframes/content)
+                    // هذا يضمن مسح أي iframe قديم تمامًا قبل إضافة الجديد.
                     while (videoPlayerContainer.firstChild) {
                         videoPlayerContainer.removeChild(videoPlayerContainer.firstChild);
                     }
+                    console.log('[IFRAME Cleanup] Cleared video player container.');
                 }
 
-                // 2. إعادة تهيئة الطبقة الشفافة وربط حدث النقر بها
                 if (videoOverlay) {
+                    // Ensure overlay is initially visible and interactive
                     videoOverlay.style.pointerEvents = 'auto'; // مهم: تأكد أنها قابلة للنقر
-                    videoOverlay.classList.remove('hidden');    // مهم: تأكد أنها مرئية
-                    videoOverlay.style.cursor = 'pointer';      // إظهار أنها قابلة للنقر
+                    videoOverlay.style.opacity = '1';       // مهم: تأكد أنها مرئية (شفافة بالكامل ولكن موجودة)
+                    videoOverlay.classList.remove('hidden'); // إزالة فئة الإخفاء في حال وجودها
+                    videoOverlay.style.cursor = 'pointer';
 
-                    // إزالة زر "شاهد الآن" نهائياً من الـ overlay (للتأكد)
-                    const playButton = videoOverlay.querySelector('.video-play-btn');
-                    if(playButton) {
-                        playButton.remove();
-                    }
-
-                    // إزالة أي مستمع حدث 'click' سابق من الـ videoOverlay لمنع التراكم
-                    // (هذا مهم جداً لحل مشاكل التعليق)
-                    // بما أننا نستخدم cloneNode(true) فإن مستمعي الأحداث لا ينسخون
-                    // ولكن من الجيد التأكد إذا كان هناك أي منطق خارجي يضيف مستمعين
-                    // الأفضل هو إعادة تعيين الـ onclick بدلاً من addEventListener لضمان استبدال واحد بواحد
+                    // Clear any existing onclick to prevent multiple assignments on re-renders
+                    // استخدام onclick = null ثم التعيين مرة واحدة هو أفضل طريقة لضمان وجود مستمع واحد فقط
+                    // بدلاً من addEventListener التي قد تضيف مستمعين متكررين في كل مرة يتم فيها renderView.
+                    videoOverlay.onclick = null;
                     videoOverlay.onclick = async (e) => {
                         console.log('⏯️ [Ad Click] Video overlay clicked. Attempting to open direct link.');
                         const adOpened = openAdLink(DIRECT_LINK_COOLDOWN_VIDEO_INTERACTION, 'videoOverlay');
 
                         if (adOpened) {
-                            // بعد فتح الإعلان، يتم إخفاء الطبقة الشفافة ليصبح الفيديو قابلاً للتفاعل
-                            // استخدم requestAnimationFrame لتأخير التغيير قليلاً للسماح للمتصفح بمعالجة فتح التبويب الجديد
+                            // Delay hiding the overlay slightly to allow browser to process new tab opening
                             requestAnimationFrame(() => {
                                 videoOverlay.style.pointerEvents = 'none';
-                                videoOverlay.classList.add('hidden');
+                                videoOverlay.style.opacity = '0'; // استخدم opacity للانتقال السلس
+                                videoOverlay.classList.add('hidden'); // أضف الكلاس بعد انتهاء الانتقال
                                 videoOverlay.style.cursor = 'default';
                                 console.log('[IFRAME Player] Overlay hidden after ad interaction.');
                             });
                         } else {
-                            console.log('[IFRAME Overlay] Ad did not open due to cooldown. Overlay remains active and clickable.');
+                            console.log('[IFRAME Overlay] Ad did not open due to cooldown or block. Overlay remains active and clickable.');
                         }
-                        e.stopPropagation(); // منع انتشار حدث النقر لأي عناصر خلفية
+                        e.stopPropagation(); // Prevent click from bubbling up
                     };
                 }
 
-                // 3. تحميل الـ iframe بعد إعداد الطبقة الشفافة
                 const videoUrl = item.embed_url;
                 if (!videoUrl) {
                     console.error(`❌ Failed to get video URL for match ID: ${itemId}. Cannot embed iframe.`);
-                    if (videoPlayerContainer) { // تأكد من وجود الحاوية قبل التلاعب بها
+                    if (videoPlayerContainer) {
                         videoPlayerContainer.innerHTML = '<p style="text-align: center; color: var(--up-text-primary); margin-top: 20px;">عذرًا، لا يمكن تشغيل الفيديو حاليًا (الرابط غير صالح).</p>';
                     }
                     break;
@@ -544,16 +541,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 iframeElement.setAttribute('allowfullscreen', '');
                 iframeElement.setAttribute('scrolling', 'no');
                 iframeElement.setAttribute('rel', 'noopener noreferrer');
-                iframeElement.setAttribute('loading', 'lazy'); // هذا يساعد في تأخير التحميل
+                iframeElement.setAttribute('loading', 'eager'); // تغيير إلى 'eager' لضمان بدء التحميل فورًا عند عرض الصفحة
                 iframeElement.sandbox = 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms allow-pointer-lock allow-top-navigation-by-user-activation';
                 iframeElement.classList.add('match-iframe-player');
-
-                // إضافة الـ iframe إلى الحاوية
-                if (videoPlayerContainer) { // تأكد من وجود الحاوية قبل الإضافة
+                
+                // Add iframe only if videoPlayerContainer exists
+                if (videoPlayerContainer) {
                     videoPlayerContainer.appendChild(iframeElement);
                     console.log('[IFRAME Player] New iframe element created with src:', videoUrl);
                 }
-                // 🚀 **نهاية التعديلات الهامة لحل مشكلة التعليق عند التحديث** 🚀
+                // --- END: CRITICAL REFINEMENTS FOR IFRAME & OVERLAY ---
 
                 detailsContainer.querySelector('.match-details-title').textContent = item.title || 'غير متوفر';
                 detailsContainer.querySelector('.match-details-description').textContent = item.short_description || 'لا يوجد وصف متاح.';
@@ -591,17 +588,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     detailsThumbnail.onerror = function() { this.src = '/images/default-match-poster.webp'; };
                     console.log(`[Details] Thumbnail set for ${item.title}`);
 
-                    detailsThumbnail.addEventListener('click', () => {
+                    // Ensure click listener is correctly attached/re-attached
+                    detailsThumbnail.onclick = null; // Clear existing
+                    detailsThumbnail.onclick = () => {
                         console.log('🖼️ [Ad Click] Match details thumbnail clicked. Attempting to open direct link.');
                         openAdLink(DIRECT_LINK_COOLDOWN_MATCH_CARD, 'matchDetailsThumbnail');
-                    });
+                    };
                 }
                 
                 contentDisplay.innerHTML = '';
                 contentDisplay.appendChild(newViewElement);
                 contentDisplay.querySelector('.view-section').classList.add('active-view');
 
-                const backBtn = contentDisplay.querySelector('.back-btn'); // Select from contentDisplay after append
+                const backBtn = contentDisplay.querySelector('.back-btn');
                 if (backBtn) {
                     backBtn.onclick = () => window.history.back();
                 }
@@ -1233,6 +1232,13 @@ document.addEventListener('DOMContentLoaded', () => {
         let viewName = 'home';
         let params = {};
 
+        // Defensive check: If, somehow, this is called before data is ready,
+        // we should log and potentially retry or show a loading state.
+        if (!allContentData || allContentData.length === 0) {
+            console.warn('⚠️ [Initial Load] allContentData not yet available. This should ideally not happen.');
+            return; 
+        }
+
         if (currentPath.startsWith('/match/')) {
             viewName = 'match-details';
             params.id = parseInt(urlParams.get('id'));
@@ -1243,6 +1249,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderView('home', {}, false); // Use false for pushState as it's an initial load fallback
                 return;
             }
+            // Verify if the item actually exists in the loaded data before rendering match-details
+            const foundItem = allContentData.find(i => i.id === params.id && i.type === params.type);
+            if (!foundItem) {
+                console.warn(`⚠️ [Initial Load] Match item with ID ${params.id} and type ${params.type} not found in data. Falling back to home.`);
+                renderView('home', {}, false); // Fallback if data doesn't contain the requested item
+                return;
+            }
+
         } else if (currentPath === '/live-matches') {
             viewName = 'live';
         } else if (currentPath === '/upcoming-matches') {
@@ -1274,36 +1288,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.addEventListener('popstate', (event) => {
         console.log('↩️ [Popstate] Browser history navigation detected.', event.state);
-        // عند استخدام popstate، نعيد تشغيل منطق تحميل الصفحة الأولية
-        // هذا سيقوم بتحميل العرض المناسب بناءً على state في سجل المتصفح
         initialPageLoadLogic();
     });
 
-    // Font loading optimization (using Font Face Observer)
-    async function loadFonts() {
-        if (typeof FontFaceObserver !== 'undefined') {
-            const oswald = new FontFaceObserver('Oswald');
-            const roboto = new FontFaceObserver('Roboto');
-
-            try {
-                await Promise.all([
-                    oswald.load(null, 5000),
-                    roboto.load(null, 5000)
-                ]);
-                document.documentElement.classList.add('fonts-loaded');
-                console.log('✅ Fonts loaded successfully.');
-            } catch (e) {
-                console.error('❌ Font loading failed:', e);
-                document.documentElement.classList.add('fonts-load-failed');
-            }
-        } else {
-            console.warn('⚠️ FontFaceObserver not available. Fonts may load without FOUT optimization.');
-            document.documentElement.classList.add('fonts-loaded');
-        }
-    }
-
-    // 💡 التعديل هنا: نبدأ بجلب البيانات أولاً.
-    // بمجرد تحميلها، سيتم استدعاء initialPageLoadLogic() داخل fetchAllContentData().
+    // 💡 CRITICAL: We start by fetching data first.
+    // Once data is successfully loaded, initialPageLoadLogic() will be called inside fetchAllContentData().
     fetchAllContentData();
     loadFonts();
 });
