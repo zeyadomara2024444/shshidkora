@@ -34,14 +34,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 
-    <link rel="preload" href="/style.css" as="style">
-    <link rel="preload" href="/script.js" as="script">
+    <link rel="preload" href="./style.css" as="style">
+    <link rel="preload" href="./script.js" as="script">
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Roboto:wght@400;700&display=swap" as="style">
-    <link rel="preload" href="/images/hero-ultimate-pitch-bg.webp" as="image" type="image/webp"> 
+    <link rel="preload" href="/images/hero-ultimate-pitch-bg.webp" as="image" type="image/webp">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="style.css">
 
 </head>
 <body>
@@ -52,7 +52,7 @@
     <div class="site-wrapper">
         <header class="main-header">
             <div class="container header-content">
-                <a href="/" id="home-logo-link" class="site-logo" aria-label="شاهد كورة - الرئيسية">
+                <a href="#" id="home-logo-link" class="site-logo" aria-label="شاهد كورة - الرئيسية">
                     <span class="logo-text">شاهد كورة</span>
                     <i class="fas fa-futbol logo-icon"></i>
                 </a>
@@ -163,14 +163,13 @@
                         <div class="video-player-container"> 
                             </div>
                         <div class="video-overlay" aria-label="انقر للتشغيل وفتح الإعلان">
-                            <i class="fas fa-play-circle video-play-icon"></i>
-                        </div>
+                            </div>
                     </div>
 
                     <div class="ad-banner-center banner-ad-container">
                         <script type="text/javascript">
                             atOptions = {
-                                'key' : 'YOUR_ADSTERRA_KEY', // تأكد من استبدال هذا بمفتاحك الفعلي
+                                'key' : '', // your adsterra key
                                 'format' : 'iframe',
                                 'height' : 60,
                                 'width' : 468,
@@ -183,14 +182,14 @@
                     <div class="match-info-box"> 
                         <img class="match-details-thumbnail" src="" alt="صورة المباراة" loading="lazy" width="250" height="180"> 
                         <div class="info-columns">
-                            <p><strong>الوصف:</strong> <span id="match-details-description-js"></span></p>
-                            <p><strong>وقت المباراة:</strong> <span id="match-details-date-time-js"></span></p>
-                            <p><strong>البطولة:</strong> <span id="match-details-league-js"></span></p>
-                            <p><strong>المعلقون:</strong> <span id="match-details-commentators-js"></span></p>
-                            <p><strong>الفرق المتنافسة:</strong> <span id="match-details-teams-js"></span></p>
-                            <p><strong>ملعب المباراة:</strong> <span id="match-details-stadium-js"></span></p>
-                            <p><strong>الحالة:</strong> <span id="match-details-status-js"></span></p>
-                            <p class="match-details-score-container hidden"><strong>النتيجة النهائية:</strong> <span id="match-details-score-js"></span></p>
+                            <p><strong>الوصف:</strong> <span class="match-details-description"></span></p>
+                            <p><strong>وقت المباراة:</strong> <span class="match-details-date-time"></span></p>
+                            <p><strong>البطولة:</strong> <span class="match-details-league"></span></p>
+                            <p><strong>المعلقون:</strong> <span class="match-details-commentators"></span></p>
+                            <p><strong>الفرق المتنافسة:</strong> <span class="match-details-teams"></span></p>
+                            <p><strong>ملعب المباراة:</strong> <span class="match-details-stadium"></span></p>
+                            <p><strong>الحالة:</strong> <span class="match-details-status"></span></p>
+                            <p class="match-details-score-container hidden"><strong>النتيجة النهائية:</strong> <span class="match-details-score"></span></p>
                             <p class="match-details-highlights-container hidden"><strong>ملخص الفيديو:</strong> <a href="#" target="_blank" rel="noopener noreferrer" class="btn btn-secondary match-details-highlights-link">شاهد الملخص</a></p>
                         </div>
                     </div>
@@ -206,6 +205,7 @@
                 </div>
             </section>
         </template>
+
         <footer class="main-footer">
             <div class="container footer-content">
                 <p>&copy; 2025 شاهد كورة - Ultimate Pitch. جميع الحقوق محفوظة.</p>
@@ -213,12 +213,12 @@
                     <a href="https://t.me/ShahidKoraOfficial" target="_blank" rel="noopener noreferrer" aria-label="قناتنا الرسمية على تيليجرام"><i class="fab fa-telegram-plane"></i> قناتنا الرسمية</a>
                     <a href="https://t.me/ShahidKoraMatches" target="_blank" rel="noopener noreferrer" aria-label="قناة المباريات على تيليجرام"><i class="fab fa-telegram-plane"></i> قناة المباريات</a>
                     <a href="https://t.me/ShahidKoraHighlights" target="_blank" rel="noopener noreferrer" aria-label="قناة الملخصات على تيليجرام"><i class="fab fa-telegram-plane"></i> قناة الملخصات</a>
-                    <a href="/privacy-policy.html" rel="privacy-policy">سياسة الخصوصية</a> 
+                    <a href="/privacy-policy.html" rel="privacy-policy">سياسة الخصوصية</a>
                 </div>
             </div>
         </footer>
     </div> 
     
-    <script src="/script.js" defer></script>
+    <script src="./script.js" defer></script>
 </body>
 </html>
