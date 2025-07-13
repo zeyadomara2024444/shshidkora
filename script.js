@@ -1,10 +1,10 @@
 // script.js - كود "شاهد كورة" الاحترافي الفائق لـ "Ultimate Pitch UI"
-// مع تحسينات الأداء، SEO، وتجربة الموبايل (محدث لتقليل التقطيع والأرشفة)
-// **تم التركيز على حل مشكلة التعليق عند التحديث/الانتقال المباشر لصفحات التفاصيل.**
-// **تم إضافة المزيد من التحققات لضمان وجود وصحة ملف 'matches.json' والتوجيه في حالة الأخطاء.**
+// مع تحسينات الأداء، SEO، وتجربة الموبايل (بدون صفحات تفاصيل المباريات الفردية)
+// **تمت إزالة كل المنطق المتعلق بصفحات تفاصيل المباريات (match-details).**
+// **التركيز على ضمان سلاسة التحديث والتحميل لصفحات القوائم الرئيسية.**
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🏁 DOM Content Loaded. Ultimate Pitch script execution started.');
+    console.log('🏁 DOM Content Loaded. Ultimate Pitch script execution started. (No Match Details Page)');
 
     // --- 1. DOM Element References & Critical Verification ---
     const mainNav = document.getElementById('main-nav');
@@ -20,8 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const upcomingMatchesTemplate = document.getElementById('upcoming-matches-template');
     const highlightsTemplate = document.getElementById('highlights-template');
     const newsTemplate = document.getElementById('news-template');
-    const matchDetailsTemplate = document.getElementById('match-details-template');
-    const suggestedMatchesTemplate = document.getElementById('suggested-matches-template');
+    // Removed: matchDetailsTemplate
+    // Removed: suggestedMatchesTemplate
 
     const requiredElements = {
         '#main-nav': mainNav,
@@ -29,9 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
         '#live-matches-template': liveMatchesTemplate,
         '#upcoming-matches-template': upcomingMatchesTemplate,
         '#highlights-template': highlightsTemplate,
-        '#news-template': newsTemplate,
-        '#match-details-template': matchDetailsTemplate,
-        '#suggested-matches-template': suggestedMatchesTemplate
+        '#news-template': newsTemplate
     };
 
     let criticalErrorDetected = false;
@@ -54,35 +52,20 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('✅ All critical DOM elements and templates found. Proceeding with script execution.');
     }
 
-    // --- 2. Adsterra Configuration ---
+    // --- 2. Adsterra Configuration (Simplified as no match details page) ---
+    // Direct link functions are kept but interaction will need to be re-assigned or removed
     const ADSTERRA_DIRECT_LINK_URL = 'https://www.profitableratecpm.com/spqbhmyax?key=2469b039d4e7c471764bd04c57824cf2';
-    const DIRECT_LINK_COOLDOWN_MATCH_CARD = 3 * 60 * 1000; // 3 minutes
-    const DIRECT_LINK_COOLDOWN_VIDEO_INTERACTION = 15 * 1000; // 15 seconds
+    const DIRECT_LINK_COOLDOWN_GENERAL = 60 * 1000; // 1 minute cooldown for general ad clicks
 
-    let lastDirectLinkClickTimeMatchCard = 0;
-    let lastDirectLinkClickTimeVideoInteraction = 0;
+    let lastDirectLinkClickTimeGeneral = 0;
 
     function openAdLink(cooldownDuration, type) {
-        let lastClickTime;
-        let setLastClickTime;
-
-        if (type === 'matchCard' || type === 'matchDetailsThumbnail') {
-            lastClickTime = lastDirectLinkClickTimeMatchCard;
-            setLastClickTime = (time) => lastDirectLinkClickTimeMatchCard = time;
-        } else if (type.startsWith('video')) {
-            lastClickTime = lastDirectLinkClickTimeVideoInteraction;
-            setLastClickTime = (time) => lastDirectLinkClickTimeVideoInteraction = time;
-        } else {
-            console.error('Invalid ad type for openAdLink:', type);
-            return false;
-        }
-
         const currentTime = Date.now();
-        if (currentTime - lastClickTime > cooldownDuration) {
+        if (currentTime - lastDirectLinkClickTimeGeneral > cooldownDuration) {
             const newWindow = window.open(ADSTERRA_DIRECT_LINK_URL, '_blank');
             if (newWindow) {
                 newWindow.focus();
-                setLastClickTime(currentTime);
+                lastDirectLinkClickTimeGeneral = currentTime;
                 console.log(`💰 [Ad Click - ${type}] Direct link opened successfully.`);
                 return true;
             } else {
@@ -90,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return false;
             }
         } else {
-            const timeLeft = (cooldownDuration - (currentTime - lastClickTime)) / 1000;
+            const timeLeft = (cooldownDuration - (currentTime - lastDirectLinkClickTimeGeneral)) / 1000;
             console.log(`⏳ [Ad Click - ${type}] Direct link cooldown active. No new tab opened. Time left: ${timeLeft.toFixed(1)}s`);
             return false;
         }
@@ -98,20 +81,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 3. Content Data & Dynamic Loading ---
     let allContentData = [];
-    let currentDetailedItem = null;
 
     async function fetchAllContentData() {
         try {
             console.log('📡 Fetching all content data from matches.json...');
             const response = await fetch('matches.json');
             
-            // Check for network errors or non-200 status codes
             if (!response.ok) {
-                const errorText = await response.text(); // Get response body for more info
+                const errorText = await response.text(); 
                 throw new Error(`HTTP error! Status: ${response.status}. Response: ${errorText.substring(0, 100)}...`);
             }
             
-            const data = await response.json(); // This is where JSON.parse error occurs
+            const data = await response.json();
             
             if (!Array.isArray(data)) {
                 console.error('❌ Fetched data is not an array. Please check matches.json format. Expected an array of objects.');
@@ -130,17 +111,15 @@ document.addEventListener('DOMContentLoaded', () => {
             initialPageLoadLogic();
         } catch (error) {
             console.error('❌ Failed to load all content data:', error.message);
-            // Display clear error message to the user
             contentDisplay.innerHTML = `
                 <div class="empty-state" style="padding: 50px; background-color: var(--up-bg-medium); border: 2px solid var(--up-accent-red); border-radius: 10px; box-shadow: 0 0 20px rgba(255, 0, 0, 0.5); margin-top: 50px; text-align: center;">
                     <p style="color: var(--up-text-primary); font-size: 1.2em;">عذرًا، لم نتمكن من الاتصال بمسار البيانات أو البيانات تالفة.</p>
                     <p style="font-size: 0.9em; color: #ccc;">الرجاء التأكد من ملف <code style="color:#FFF;">matches.json</code> و اتصالك بالشبكة. (خطأ: ${error.message})</p>
                     <button class="btn btn-secondary" onclick="window.location.reload()" style="margin-top: 20px;">إعادة تحميل الصفحة</button>
                 </div>`;
-            // Also ensure navigation links don't try to render non-existent data
-            navLinks.forEach(link => link.style.pointerEvents = 'none'); // Disable nav links
-            if (homeLogoLink) homeLogoLink.style.pointerEvents = 'none'; // Disable home logo
-            searchButton.disabled = true; // Disable search
+            navLinks.forEach(link => link.style.pointerEvents = 'none');
+            if (homeLogoLink) homeLogoLink.style.pointerEvents = 'none';
+            searchButton.disabled = true;
         }
     }
 
@@ -156,28 +135,33 @@ document.addEventListener('DOMContentLoaded', () => {
             let statusClass = '';
             let scoreDisplay = '';
             let actionText = '';
+            let actionLink = '#'; // Default action for match cards without details page
 
             const matchDateObj = new Date(item.date_time);
             const now = new Date();
-            const matchEndTime = new Date(matchDateObj.getTime() + 105 * 60 * 1000); // Standard 90 min + 15 buffer
+            const matchEndTime = new Date(matchDateObj.getTime() + 105 * 60 * 1000);
 
             if (item.status === 'Live' && now >= matchDateObj && now < matchEndTime) {
                 statusText = 'مباشر الآن';
                 statusClass = 'live-status';
-                actionText = 'انطلق للبث';
+                actionText = 'مشاهدة البث (إعلان)'; // Changed text as no details page
+                actionLink = ADSTERRA_DIRECT_LINK_URL; // Link directly to ad
             } else if (item.status === 'Upcoming' && now < matchDateObj) {
                 statusText = `تبدأ في: ${matchDateObj.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}`;
                 statusClass = 'upcoming-status';
-                actionText = 'عرض التفاصيل';
+                actionText = 'تنبيه للمشاهدة'; // No details page, just a notification/ad
+                actionLink = ADSTERRA_DIRECT_LINK_URL; // Link directly to ad
             } else if (item.status === 'Finished' || now >= matchEndTime) {
                 statusText = 'اكتملت';
                 statusClass = 'finished-status';
                 scoreDisplay = `<span class="match-score">${item.score || 'N/A'}</span>`;
                 actionText = item.highlights_url ? 'نبضات الملخص' : 'لا يوجد سجل';
+                actionLink = item.highlights_url || ADSTERRA_DIRECT_LINK_URL; // Link to highlights or ad
             } else {
                 statusText = 'غير متاح';
                 statusClass = 'finished-status';
-                actionText = 'عرض التفاصيل';
+                actionText = 'عرض المعلومات (إعلان)'; // No details page, just ad
+                actionLink = ADSTERRA_DIRECT_LINK_URL; // Link directly to ad
             }
 
             innerContent = `
@@ -198,19 +182,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${scoreDisplay}
                     <div class="match-status ${statusClass}">${statusText}</div>
                     <div class="card-actions">
-                        <button class="card-action-btn btn-secondary" ${item.status === 'Finished' && !item.highlights_url ? 'disabled' : ''}>${actionText}</button>
+                        <a href="${actionLink}" target="_blank" rel="noopener noreferrer" class="card-action-btn btn-secondary" ${item.status === 'Finished' && !item.highlights_url && actionLink === ADSTERRA_DIRECT_LINK_URL ? '' : ''}>${actionText}</a>
                     </div>
                 </div>
             `;
+            // If there's no match details page, the whole card can open an ad
             card.addEventListener('click', (e) => {
-                if (e.target.classList.contains('card-action-btn') && e.target.disabled) {
-                    e.stopPropagation();
+                if (e.target.tagName === 'A' || e.target.closest('a')) {
+                    // If clicking the button/link inside, let it handle the navigation
                     return;
                 }
-                console.log(`⚡ [Interaction] Match card clicked: ${item.id}`);
-                openAdLink(DIRECT_LINK_COOLDOWN_MATCH_CARD, 'matchCard');
-                const itemSlug = createSlug(item.title);
-                renderView('match-details', { id: item.id, type: item.type, slug: itemSlug });
+                console.log(`⚡ [Interaction] Match card clicked (general ad/link): ${item.id}`);
+                openAdLink(DIRECT_LINK_COOLDOWN_GENERAL, 'matchCard_general');
+                // You could also redirect to a general ad link if the whole card is clicked,
+                // or just let the button handle it. Current setup opens ad on card click.
+                window.open(actionLink, '_blank');
             });
         } else if (item.type === 'news') {
             card.classList.remove('match-card');
@@ -233,7 +219,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
             card.addEventListener('click', (e) => {
-                // Clicking anywhere on the news card opens the article
+                if (e.target.tagName === 'A' || e.target.closest('a')) {
+                    return; // Don't trigger ad if clicking on the "Read More" link
+                }
                 console.log(`⚡ [Interaction] News card clicked (opening external link): ${item.id}`);
                 window.open(item.article_url, '_blank');
             });
@@ -300,21 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function renderView(viewName, params = {}, pushState = true) {
         console.log(`🔄 [View Render] Attempting to render view: "${viewName}" with params:`, params);
 
-        // Remove old iframe player and reset overlay state if switching from match-details
-        const oldPlayer = contentDisplay.querySelector('.match-iframe-player');
-        if (oldPlayer) {
-            oldPlayer.remove();
-            console.log('[IFRAME Player] Removed old iframe player from DOM.');
-        }
-        const videoOverlayElement = contentDisplay.querySelector('.video-overlay');
-        if (videoOverlayElement) {
-            videoOverlayElement.style.pointerEvents = 'auto';
-            videoOverlayElement.classList.remove('hidden');
-            videoOverlayElement.style.cursor = 'pointer';
-            // Remove previous event listener to prevent multiple bindings
-            videoOverlayElement.onclick = null; 
-            console.log('[Video Overlay] Resetting overlay state.');
-        }
+        // No need to remove old iframe player or reset video overlay, as match-details page is removed.
 
         const currentActiveView = contentDisplay.querySelector('.view-section.active-view');
         if (currentActiveView) {
@@ -489,143 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 newUrl.pathname = urlPath;
                 break;
 
-            case 'match-details':
-                const itemId = parseInt(params.id);
-                const itemType = params.type;
-                const item = allContentData.find(i => i.id === itemId && i.type === itemType);
-
-                if (!item || item.type !== 'match') {
-                    console.error('❌ [View Render] Match details: Item not found or not a match type for ID:', itemId);
-                    renderView('home', {}, true); // Fallback to home if item is not found
-                    return;
-                }
-                currentDetailedItem = item;
-
-                newViewElement = matchDetailsTemplate.content.cloneNode(true);
-                const detailsContainer = newViewElement;
-
-                const videoPlayerContainer = detailsContainer.querySelector('.video-player-container');
-                const videoOverlayElement = detailsContainer.querySelector('.video-overlay');
-
-                // Clear any existing player/content in the container
-                if (videoPlayerContainer) {
-                    videoPlayerContainer.innerHTML = ''; // Clear previous iframes/content
-                }
-                
-                // Configure and re-attach video overlay functionality
-                if (videoOverlayElement) {
-                    videoOverlayElement.style.pointerEvents = 'auto';
-                    videoOverlayElement.classList.remove('hidden');
-                    videoOverlayElement.style.cursor = 'pointer';
-                    
-                    // Remove existing play icon to prevent duplicates (if it was added by previous render)
-                    const existingPlayIcon = videoOverlayElement.querySelector('.video-play-icon');
-                    if (existingPlayIcon) existingPlayIcon.remove();
-
-                    // Add play icon (optional, but good for UX)
-                    const playIcon = document.createElement('i');
-                    playIcon.classList.add('fas', 'fa-play-circle', 'video-play-icon');
-                    videoOverlayElement.appendChild(playIcon);
-
-                    videoOverlayElement.onclick = async (e) => {
-                        console.log('⏯️ [Ad Click] Video overlay clicked. Attempting to open direct link.');
-                        const adOpened = openAdLink(DIRECT_LINK_COOLDOWN_VIDEO_INTERACTION, 'videoOverlay');
-
-                        if (adOpened) {
-                            requestAnimationFrame(() => {
-                                videoOverlayElement.style.pointerEvents = 'none';
-                                videoOverlayElement.classList.add('hidden');
-                                videoOverlayElement.style.cursor = 'default';
-                                console.log('[IFRAME Player] Overlay hidden after ad interaction.');
-                            });
-                        } else {
-                            console.log('[IFRAME Overlay] Ad did not open due to cooldown. Overlay remains active and clickable.');
-                        }
-                        e.stopPropagation(); // Prevent click from bubbling up
-                    };
-                }
-
-                // Load iframe after overlay setup
-                const videoUrl = item.embed_url;
-                if (!videoUrl) {
-                    console.error(`❌ Failed to get video URL for match ID: ${itemId}. Cannot embed iframe.`);
-                    if (videoPlayerContainer) {
-                        videoPlayerContainer.innerHTML = '<p style="text-align: center; color: var(--up-text-primary); margin-top: 20px;">عذرًا، لا يمكن تشغيل الفيديو حاليًا (الرابط غير صالح).</p>';
-                    }
-                } else {
-                    const iframeElement = document.createElement('iframe');
-                    iframeElement.src = videoUrl;
-                    iframeElement.setAttribute('frameborder', '0');
-                    iframeElement.setAttribute('allowfullscreen', '');
-                    iframeElement.setAttribute('scrolling', 'no');
-                    iframeElement.setAttribute('rel', 'noopener noreferrer');
-                    iframeElement.setAttribute('loading', 'lazy');
-                    iframeElement.sandbox = 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms allow-pointer-lock allow-top-navigation-by-user-activation';
-                    iframeElement.classList.add('match-iframe-player');
-
-                    if (videoPlayerContainer) {
-                        videoPlayerContainer.appendChild(iframeElement);
-                        console.log('[IFRAME Player] New iframe element created with src:', videoUrl);
-                    }
-                }
-
-                detailsContainer.querySelector('.match-details-title').textContent = item.title || 'غير متوفر';
-                detailsContainer.querySelector('#match-details-description-js').textContent = item.short_description || 'لا يوجد وصف متاح.';
-                const matchDateTime = item.date_time ? new Date(item.date_time) : null;
-                detailsContainer.querySelector('#match-details-date-time-js').textContent = matchDateTime ?
-                    matchDateTime.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }) + ' - ' +
-                    matchDateTime.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) : 'غير متوفر';
-                detailsContainer.querySelector('#match-details-league-js').textContent = item.league_name || 'غير محدد';
-                detailsContainer.querySelector('#match-details-commentators-js').textContent = Array.isArray(item.commentators) ? item.commentators.join(', ') : item.commentators || 'غير متوفر';
-                detailsContainer.querySelector('#match-details-teams-js').innerHTML = `${item.home_team || 'فريق'} <span class="vs-text">vs</span> ${item.away_team || 'فريق'}` || 'غير متوفر';
-                detailsContainer.querySelector('#match-details-stadium-js').textContent = item.stadium || 'غير متوفر';
-                detailsContainer.querySelector('#match-details-status-js').textContent = item.status || 'N/A';
-
-                if (item.status === 'Finished') {
-                    detailsContainer.querySelector('.match-details-score-container').classList.remove('hidden');
-                    detailsContainer.querySelector('#match-details-score-js').textContent = item.score || 'N/A';
-                    if (item.highlights_url) {
-                        detailsContainer.querySelector('.match-details-highlights-container').classList.remove('hidden');
-                        detailsContainer.querySelector('.match-details-highlights-link').href = item.highlights_url;
-                    } else {
-                        detailsContainer.querySelector('.match-details-highlights-container').classList.add('hidden');
-                    }
-                } else {
-                    detailsContainer.querySelector('.match-details-score-container').classList.add('hidden');
-                    detailsContainer.querySelector('.match-details-highlights-container').classList.add('hidden');
-                }
-
-                const detailsThumbnail = detailsContainer.querySelector('.match-details-thumbnail');
-                if (detailsThumbnail) {
-                    detailsThumbnail.src = item.thumbnail || '/images/default-match-poster.webp';
-                    detailsThumbnail.alt = item.title;
-                    detailsThumbnail.onerror = function() { this.src = '/images/default-match-poster.webp'; };
-                    console.log(`[Details] Thumbnail set for ${item.title}`);
-
-                    detailsThumbnail.addEventListener('click', () => {
-                        console.log('🖼️ [Ad Click] Match details thumbnail clicked. Attempting to open direct link.');
-                        openAdLink(DIRECT_LINK_COOLDOWN_MATCH_CARD, 'matchDetailsThumbnail');
-                    });
-                }
-                
-                contentDisplay.innerHTML = '';
-                contentDisplay.appendChild(newViewElement);
-                contentDisplay.querySelector('.view-section').classList.add('active-view');
-
-                const backBtn = contentDisplay.querySelector('.back-btn');
-                if (backBtn) {
-                    backBtn.onclick = () => window.history.back();
-                }
-
-                pageTitle = `${item.title} - بث مباشر | شاهد كورة`;
-                urlPath = `/match/${params.slug || createSlug(item.title)}`;
-                newUrl.pathname = urlPath;
-                newUrl.searchParams.set('id', item.id);
-                newUrl.searchParams.set('type', item.type);
-
-                displaySuggestedMatches(item.id);
-
-                break;
+            // Removed 'case match-details' section entirely
 
             default:
                 console.warn(`⚠️ [View Render] Unknown view "${viewName}". Falling back to home.`);
@@ -641,86 +479,16 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(`🔗 [URL] URL replaced with ${newUrl.toString()}`);
         }
 
-        updateMetaTags(currentDetailedItem, viewName, params);
-        addJsonLdSchema(currentDetailedItem, viewName, params);
+        // Updated meta tags and schema.org to reflect changes (no match details)
+        updateMetaTags(null, viewName, params); // Pass null for item as no specific item page now
+        addJsonLdSchema(null, viewName, params); // Pass null for item as no specific item page now
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function displaySuggestedMatches(currentMatchId) {
-        if (!suggestedMatchesTemplate) {
-            console.error('❌ Suggested matches template not found.');
-            return;
-        }
+    // Removed displaySuggestedMatches function entirely
 
-        const existingSuggestedSection = contentDisplay.querySelector('.suggested-matches-section');
-        if (existingSuggestedSection) {
-            existingSuggestedSection.remove();
-        }
-
-        const suggestedSection = suggestedMatchesTemplate.content.cloneNode(true);
-        const suggestedMatchGrid = suggestedSection.querySelector('.match-grid');
-        const currentMatchDetailsSection = contentDisplay.querySelector('.match-details-section');
-
-        if (!currentMatchDetailsSection || !suggestedMatchGrid || !currentDetailedItem || currentDetailedItem.type !== 'match') {
-            console.error('❌ displaySuggestedMatches: Current match details section or grid not found/not a match. Cannot display suggestions.');
-            return;
-        }
-
-        currentMatchDetailsSection.insertAdjacentElement('afterend', suggestedSection.children[0]);
-        const activeSuggestedSection = contentDisplay.querySelector('.suggested-matches-section');
-        if (activeSuggestedSection) activeSuggestedSection.classList.add('active-view');
-
-        const currentMatchLeague = currentDetailedItem.league_name;
-        let suggested = [];
-        const maxSuggestions = 12;
-
-        if (currentMatchLeague) {
-            suggested = allContentData.filter(item =>
-                item.type === 'match' &&
-                item.id !== currentMatchId &&
-                item.league_name === currentMatchLeague &&
-                (item.status === 'Live' || new Date(item.date_time) > new Date() || (item.status === 'Finished' && item.highlights_url))
-            );
-            suggested.sort((a, b) => {
-                const statusOrder = { 'Live': 1, 'Upcoming': 2, 'Finished': 3 };
-                if (statusOrder[a.status] !== statusOrder[b.status]) {
-                    return statusOrder[a.status] - statusOrder[b.status];
-                }
-                return new Date(a.date_time) - new Date(b.date_time);
-            });
-            suggested = suggested.slice(0, maxSuggestions);
-        }
-
-        if (suggested.length < maxSuggestions) {
-            const otherMatches = allContentData.filter(item =>
-                item.type === 'match' &&
-                item.id !== currentMatchId &&
-                !suggested.some(s => s.id === item.id) &&
-                (item.status === 'Live' || new Date(item.date_time) > new Date() || (item.status === 'Finished' && item.highlights_url))
-            ).sort(() => 0.5 - Math.random());
-
-            const needed = maxSuggestions - suggested.length;
-            suggested = [...suggested, ...otherMatches.slice(0, needed)];
-        }
-
-        if (suggested.length === 0) {
-            if (activeSuggestedSection) {
-                activeSuggestedSection.innerHTML = `
-                    <div class="container">
-                        <h2 class="section-title">مباريات قد تهمك</h2>
-                        <p style="text-align: center; color: var(--up-text-secondary); padding: 20px;">لا توجد مباريات مقترحة حالياً.</p>
-                    </div>`;
-            }
-            console.log('✨ [Suggestions] No suggested matches available.');
-            return;
-        }
-
-        displayContent(suggested, suggestedMatchGrid);
-        console.log(`✨ [Suggestions] Displayed ${suggested.length} suggested matches.`);
-    }
-
-    // --- 4. SEO & Schema.org Management ---
+    // --- 4. SEO & Schema.org Management (Adjusted for no match details page) ---
     function updateMetaTags(item = null, viewName = 'home', params = {}) {
         let canonicalLink = document.querySelector('link[rel="canonical"]');
         if (!canonicalLink) {
@@ -749,86 +517,56 @@ document.addEventListener('DOMContentLoaded', () => {
         twitterImage = defaultTwitterImage;
         twitterCreatorHandle = '@ShahidKoraUP';
 
-        if (item && item.type === 'match' && viewName === 'match-details') {
-            const itemSlug = createSlug(item.title);
-            const itemUrl = `${baseUrl}match/${itemSlug}`;
-            canonicalLink.setAttribute('href', itemUrl);
+        // Simplified logic since no match details or news details pages are generated dynamically
+        const currentURL = new URL(window.location.href);
+        let canonicalPath = currentURL.pathname;
+        if (viewName === 'search' && params.query) {
+            canonicalPath = `/search?q=${encodeURIComponent(params.query)}`;
+        }
+        canonicalLink.setAttribute('href', currentURL.origin + canonicalPath);
 
-            pageTitle = `${item.title} - بث مباشر | شاهد كورة`;
-            const shortDesc = (item.short_description || `شاهد مباراة ${item.home_team} ضد ${item.away_team} بث مباشر بجودة عالية على شاهد كورة.`).substring(0, 155);
-            pageDescription = shortDesc + (item.short_description && item.short_description.length > 155 ? '...' : '');
-
-            const matchCommentators = Array.isArray(item.commentators) && item.commentators.length > 0 ? item.commentators.join(', ') : 'غير متوفر';
-            const matchTeams = `${item.home_team}, ${item.away_team}`;
-            const matchLeague = item.league_name;
-            pageKeywords = [
-                item.title, item.home_team, item.away_team, matchLeague, matchCommentators,
-                'شاهد كورة', 'بث مباشر', 'مباريات كرة قدم', 'كورة لايف', 'بث حي', 'ملخصات أهداف'
-            ].filter(Boolean).join(', ');
-
-            ogUrl = itemUrl;
-            ogTitle = `${item.title} - بث مباشر على شاهد كورة`;
-            ogDescription = pageDescription;
-            ogImage = item.thumbnail;
-            ogType = "video.other";
-
-            twitterTitle = ogTitle;
-            twitterDescription = ogDescription;
-            twitterImage = ogImage;
-
-        } else if (item && item.type === 'news' && viewName === 'news') {
-            const itemSlug = createSlug(item.title);
-            const itemUrl = item.article_url || `${baseUrl}news/${itemSlug}`;
-            canonicalLink.setAttribute('href', itemUrl);
-
-            pageTitle = `${item.title} - آخر الأخبار | شاهد كورة`;
+        if (viewName === 'live') {
+            pageTitle = 'مباريات كرة القدم بث مباشر - شاهد كورة';
+            pageDescription = 'شاهد جميع مباريات كرة القدم الجارية الآن بجودة عالية وبدون تقطيع على شاهد كورة. لا تفوت أي لحظة من الإثارة!';
+            pageKeywords = 'مباريات مباشر، بث مباشر، مشاهدة مباشرة، كورة لايف، مباريات اليوم، شاهد كورة مباشر';
+            ogUrl = `${baseUrl}live-matches`;
+        } else if (viewName === 'upcoming') {
+            pageTitle = 'مواعيد مباريات كرة القدم القادمة - شاهد كورة';
+            pageDescription = 'اكتشف جدول مواعيد مباريات كرة القدم القادمة في جميع الدوريات والبطولات. كن على استعداد للمواجهات المنتظرة على شاهد كورة.';
+            pageKeywords = 'مواعيد مباريات، جدول مباريات، مباريات الغد، مباريات اليوم، كورة قادمة، شاهد كورة';
+            ogUrl = `${baseUrl}upcoming-matches`;
+        } else if (viewName === 'highlights') {
+            pageTitle = 'أهداف وملخصات مباريات كرة القدم - شاهد كورة';
+            pageDescription = 'شاهد أفضل الأهداف وملخصات المباريات فور انتهائها. استمتع بجميع اللحظات الحاسمة والجنونية من عالم كرة القدم على شاهد كورة.';
+            pageKeywords = 'أهداف، ملخصات، ملخص مباراة، أهداف اليوم، كورة أهداف، شاهد كورة ملخصات';
+            ogUrl = `${baseUrl}highlights`;
+        } else if (viewName === 'news') {
+            pageTitle = 'آخر أخبار كرة القدم - شاهد كورة';
+            pageDescription = 'ابق على اطلاع بآخر أخبار كرة القدم، التحليلات العميقة، والانتقالات الحصرية من كبرى الدوريات العالمية على شاهد كورة.';
+            pageKeywords = 'أخبار كرة قدم، أخبار رياضية، تحليلات كروية، انتقالات اللاعبين، كورة أخبار، شاهد كورة';
+            ogUrl = `${baseUrl}news`;
+        } else if (viewName === 'search' && params.query) {
+            pageTitle = `نتائج البحث عن "${params.query}" - شاهد كورة`;
+            pageDescription = `استكشف نتائج البحث عن ${params.query} من المباريات والأخبار والملخصات على شاهد كورة.`;
+            pageKeywords = `بحث ${params.query}, نتائج البحث كورة, شاهد كورة بحث`;
+            ogUrl = `${baseUrl}search?q=${encodeURIComponent(params.query)}`;
+        }
+        // For 'news' type, the article_url handles the direct link, so its meta data will be used.
+        // If an article_url is NOT present for a news item, it falls back to generic news page metadata.
+        if (item && item.type === 'news' && item.article_url) {
+            pageTitle = `${item.title} - أخبار شاهد كورة`;
             const shortDesc = (item.short_description || `اقرأ أحدث الأخبار الرياضية عن ${item.title} على شاهد كورة.`).substring(0, 155);
             pageDescription = shortDesc + (item.short_description && item.short_description.length > 155 ? '...' : '');
             pageKeywords = [item.title, 'أخبار كورة', 'شاهد كورة', 'أخبار رياضية', 'تحليلات كروية', 'انتقالات اللاعبين'].filter(Boolean).join(', ');
-
-            ogUrl = itemUrl;
-            ogTitle = `${item.title} - أخبار شاهد كورة`;
+            ogUrl = item.article_url;
+            ogTitle = pageTitle;
             ogDescription = pageDescription;
-            ogImage = item.thumbnail;
+            ogImage = item.thumbnail || defaultOgImage;
             ogType = "article";
-
             twitterTitle = ogTitle;
             twitterDescription = ogDescription;
             twitterImage = ogImage;
-        } else {
-            const currentURL = new URL(window.location.href);
-            let canonicalPath = currentURL.pathname;
-            if (viewName === 'search' && params.query) {
-                canonicalPath = `/search?q=${encodeURIComponent(params.query)}`;
-            }
-            canonicalLink.setAttribute('href', currentURL.origin + canonicalPath);
-
-            if (viewName === 'live') {
-                pageTitle = 'مباريات كرة القدم بث مباشر - شاهد كورة';
-                pageDescription = 'شاهد جميع مباريات كرة القدم الجارية الآن بجودة عالية وبدون تقطيع على شاهد كورة. لا تفوت أي لحظة من الإثارة!';
-                pageKeywords = 'مباريات مباشر، بث مباشر، مشاهدة مباشرة، كورة لايف، مباريات اليوم، شاهد كورة مباشر';
-                ogUrl = `${baseUrl}live-matches`;
-            } else if (viewName === 'upcoming') {
-                pageTitle = 'مواعيد مباريات كرة القدم القادمة - شاهد كورة';
-                pageDescription = 'اكتشف جدول مواعيد مباريات كرة القدم القادمة في جميع الدوريات والبطولات. كن على استعداد للمواجهات المنتظرة على شاهد كورة.';
-                pageKeywords = 'مواعيد مباريات، جدول مباريات، مباريات الغد، مباريات اليوم، كورة قادمة، شاهد كورة';
-                ogUrl = `${baseUrl}upcoming-matches`;
-            } else if (viewName === 'highlights') {
-                pageTitle = 'أهداف وملخصات مباريات كرة القدم - شاهد كورة';
-                pageDescription = 'شاهد أفضل الأهداف وملخصات المباريات فور انتهائها. استمتع بجميع اللحظات الحاسمة والجنونية من عالم كرة القدم على شاهد كورة.';
-                pageKeywords = 'أهداف، ملخصات، ملخص مباراة، أهداف اليوم، كورة أهداف، شاهد كورة ملخصات';
-                ogUrl = `${baseUrl}highlights`;
-            } else if (viewName === 'news') {
-                pageTitle = 'آخر أخبار كرة القدم - شاهد كورة';
-                pageDescription = 'ابق على اطلاع بآخر أخبار كرة القدم، التحليلات العميقة، والانتقالات الحصرية من كبرى الدوريات العالمية على شاهد كورة.';
-                pageKeywords = 'أخبار كرة قدم، أخبار رياضية، تحليلات كروية، انتقالات اللاعبين، كورة أخبار، شاهد كورة';
-                ogUrl = `${baseUrl}news`;
-            } else if (viewName === 'search' && params.query) {
-                pageTitle = `نتائج البحث عن "${params.query}" - شاهد كورة`;
-                pageDescription = `استكشف نتائج البحث عن ${params.query} من المباريات والأخبار والملخصات على شاهد كورة.`;
-                pageKeywords = `بحث ${params.query}, نتائج البحث كورة, شاهد كورة بحث`;
-                ogUrl = `${baseUrl}search?q=${encodeURIComponent(params.query)}`;
-            }
+            canonicalLink.setAttribute('href', item.article_url);
         }
 
         document.querySelector('title').textContent = pageTitle;
@@ -881,86 +619,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ]
         };
 
-        if (item && item.type === 'match' && viewName === 'match-details') {
-            let formattedStartDate;
-            try {
-                const date = new Date(item.date_time);
-                formattedStartDate = !isNaN(date.getTime()) ? date.toISOString() : new Date().toISOString();
-            } catch (e) { formattedStartDate = new Date().toISOString(); }
-
-            const commentatorsArray = Array.isArray(item.commentators) && item.commentators.length > 0 ? item.commentators : String(item.commentators || '').split(',').map(s => s.trim()).filter(s => s !== '');
-
-            const matchSchema = {
-                "@context": "http://schema.org",
-                "@type": "SportsEvent",
-                "name": item.title,
-                "description": item.short_description || `شاهد مباراة ${item.title} بث مباشر بجودة عالية على شاهد كورة.`,
-                "url": currentUrl,
-                "startDate": formattedStartDate,
-                "location": {
-                    "@type": "Place",
-                    "name": item.stadium || "غير محدد"
-                },
-                "homeTeam": {
-                    "@type": "SportsTeam",
-                    "name": item.home_team,
-                    "logo": item.home_team_logo || `${baseUrl}images/default-team-logo.webp` // Fallback for logo
-                },
-                "awayTeam": {
-                    "@type": "SportsTeam",
-                    "name": item.away_team,
-                    "logo": item.away_team_logo || `${baseUrl}images/default-team-logo.webp` // Fallback for logo
-                },
-                "sport": "http://schema.org/Soccer",
-                "eventStatus": `http://schema.org/Event${item.status === 'Live' ? 'Scheduled' : (item.status === 'Upcoming' ? 'Scheduled' : 'Completed')}`,
-                "image": item.thumbnail || `${baseUrl}images/default-match-poster.webp`, // Fallback for thumbnail
-                "potentialAction": {
-                    "@type": "WatchAction",
-                    "target": {
-                        "@type": "EntryPoint",
-                        "urlTemplate": currentUrl,
-                        "inLanguage": "ar",
-                        "actionPlatform": [
-                            "http://schema.org/DesktopWebPlatform",
-                            "http://schema.org/MobileWebPlatform"
-                        ]
-                    },
-                    "expectsAcceptanceOf": {
-                        "@type": "Offer",
-                        "name": "مشاهدة المباراة",
-                        "price": "0",
-                        "priceCurrency": "USD",
-                        "availability": "http://schema.org/InStock",
-                        "url": currentUrl
-                    }
-                },
-                "organizer": {
-                    "@type": "Organization",
-                    "name": "شاهد كورة"
-                }
-            };
-
-            if (commentatorsArray.length > 0) {
-                matchSchema.performer = commentatorsArray.map(commentator => ({ "@type": "Person", "name": commentator }));
-            }
-            if (item.league_name) {
-                matchSchema.superEvent = { "@type": "SportsEvent", "name": item.league_name };
-            }
-            if (item.status === 'Finished' && item.score) {
-                matchSchema.result = { "@type": "SportsEvent", "name": item.score };
-            }
-
-            addSchemaToHead(matchSchema);
-            schemaAdded = true;
-
-            breadcrumbListSchema.itemListElement.push({
-                "@type": "ListItem",
-                "position": 2,
-                "name": item.title,
-                "item": currentUrl
-            });
-
-        } else if (viewName === 'news' && item && item.type === 'news') {
+        // Removed SportsEvent Schema
+        if (viewName === 'news' && item && item.type === 'news' && item.article_url) {
             const newsSchema = {
                 "@context": "http://schema.org",
                 "@type": "NewsArticle",
@@ -971,7 +631,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "headline": item.title,
                 "image": {
                     "@type": "ImageObject",
-                    "url": item.thumbnail || `${baseUrl}images/default-news-thumbnail.webp` // Fallback
+                    "url": item.thumbnail || `${baseUrl}images/default-news-thumbnail.webp`
                 },
                 "datePublished": item.date_time ? new Date(item.date_time).toISOString() : new Date().toISOString(),
                 "dateModified": item.date_time ? new Date(item.date_time).toISOString() : new Date().toISOString(),
@@ -1105,13 +765,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    document.addEventListener('click', (e) => {
-        if (e.target && e.target.classList.contains('back-btn')) {
-            e.preventDefault();
-            console.log('🔙 [Interaction] Back button clicked (delegated).');
-            window.history.back();
-        }
-    });
+    // Removed the specific 'back-btn' listener as match-details page is gone.
+    // If you have a general back button elsewhere, you might need to re-add a listener for it.
 
     if (searchInput && searchButton) {
         const performSearch = () => {
@@ -1184,21 +839,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, { passive: true });
 
-    // --- Global Security Measures (Recommended to REMOVE for better UX and limited actual security) ---
-    // If you insist on keeping them, understand their limitations.
+    // --- Global Security Measures (Still Recommended to REMOVE) ---
+    // These are commented out by default for better user experience.
     document.addEventListener('contextmenu', e => {
-        // e.preventDefault(); // Uncomment to re-enable
+        // e.preventDefault(); 
         // console.warn('🚫 [Security] Right-click disabled.');
     }, { passive: false });
 
     document.addEventListener('keydown', e => {
         if (
-            // e.key === 'F12' || // Uncomment to re-enable
-            // (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) || // Uncomment to re-enable
-            // (e.ctrlKey && e.key === 'u') || // Uncomment to re-enable
-            // (e.altKey && e.metaKey && e.key === 'I') // Uncomment to re-enable
+            // e.key === 'F12' ||
+            // (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
+            // (e.ctrlKey && e.key === 'u') ||
+            // (e.altKey && e.metaKey && e.key === 'I')
         ) {
-            // e.preventDefault(); // Uncomment to re-enable
+            // e.preventDefault(); 
             // console.warn(`🚫 [Security] Developer tools/source hotkey prevented: ${e.key}`);
         }
     }, { passive: false });
@@ -1213,21 +868,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (widthThreshold || heightThreshold) {
                 if (!isOpen) {
                     isOpen = true;
-                    // console.warn('🚨 [Security] Developer tools detected! This action is discouraged.'); // Uncomment to re-enable
+                    // console.warn('🚨 [Security] Developer tools detected! This action is discouraged.'); 
                 }
             } else {
                 if (isOpen) {
                     isOpen = false;
-                    // console.log('✅ [Security] Developer tools closed.'); // Uncomment to re-enable
+                    // console.log('✅ [Security] Developer tools closed.');
                 }
             }
         };
-        // Use requestAnimationFrame for smoother and less CPU-intensive checking
-        const animateDevToolsCheck = () => {
-            checkDevTools();
-            requestAnimationFrame(animateDevToolsCheck);
-        };
-        // animateDevToolsCheck(); // Uncomment to re-enable
+        // animateDevToolsCheck(); 
     })();
     // --- End Security Measures ---
 
@@ -1243,16 +893,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let viewName = 'home';
         let params = {};
 
+        // No '/match/' path anymore, fallback directly to home if such a URL is accessed.
         if (currentPath.startsWith('/match/')) {
-            viewName = 'match-details';
-            params.id = parseInt(urlParams.get('id'));
-            params.type = urlParams.get('type');
-            params.slug = currentPath.substring(currentPath.lastIndexOf('/') + 1);
-            if (isNaN(params.id) || !params.type) {
-                console.warn('⚠️ [Initial Load] Missing or invalid ID/type for match details in URL. Falling back to home.');
-                renderView('home', {}, false);
-                return;
-            }
+            console.warn('⚠️ [Initial Load] Attempted to load a match details page, which is no longer supported. Falling back to home.');
+            renderView('home', {}, false); 
+            return;
         } else if (currentPath === '/live-matches') {
             viewName = 'live';
         } else if (currentPath === '/upcoming-matches') {
@@ -1268,14 +913,14 @@ document.addEventListener('DOMContentLoaded', () => {
             params.query = urlParams.get('q') || '';
             if (!params.query) {
                 console.warn('⚠️ [Initial Load] Empty search query in URL. Falling back to home.');
-                renderView('home', {}, false);
+                renderView('home', {}, false); 
                 return;
             }
         } else if (currentPath === '/') {
             viewName = 'home';
         } else {
             console.warn(`⚠️ [Initial Load] Unknown URL path: ${currentPath}. Falling back to home.`);
-            renderView('home', {}, false);
+            renderView('home', {}, false); 
             return;
         }
 
@@ -1294,11 +939,8 @@ document.addEventListener('DOMContentLoaded', () => {
             fetchAllContentData().then(() => {
                 if (event.state && event.state.view) {
                     const params = {};
-                    if (event.state.view === 'match-details') {
-                        params.id = event.state.id;
-                        params.type = event.state.type;
-                        params.slug = event.state.slug;
-                    } else if (event.state.view === 'upcoming') {
+                    // No match-details specific params needed anymore
+                    if (event.state.view === 'upcoming') {
                         params.category = event.state.category || 'all';
                         params.league = event.state.league || 'all';
                     } else if (event.state.view === 'search') {
@@ -1321,11 +963,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (event.state && event.state.view) {
             const params = {};
-            if (event.state.view === 'match-details') {
-                params.id = event.state.id;
-                params.type = event.state.type;
-                params.slug = event.state.slug;
-            } else if (event.state.view === 'upcoming') {
+            // No match-details specific params needed anymore
+            if (event.state.view === 'upcoming') {
                 params.category = event.state.category || 'all';
                 params.league = event.state.league || 'all';
             } else if (event.state.view === 'search') {
