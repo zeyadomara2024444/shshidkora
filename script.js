@@ -297,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log(`✅ View "${viewId}" loaded successfully from template.`);
                 callback(sectionElement); // Execute callback with the newly loaded section element
             } else {
-                console.error(`Error: Template with ID "${viewId}" does not contain a valid root section element.`);
+                console.error(`Error: Template with ID "${viewId}" doesF not contain a valid root section element.`);
             }
         } else {
             console.error(`Error: Template with ID "${viewId}" not found or its content is empty.`);
@@ -493,8 +493,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (element.dataset.srcset) {
                         element.srcset = element.dataset.srcset;
                     }
+                    element.classList.remove('lazyload');
                 }
-                element.classList.remove('lazyload');
             });
         }
         console.log('🖼️ [Lazy Load] IntersectionObserver initialized for images (or fallback used).');
@@ -927,9 +927,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const matchDetailsHighlightsContainer = sectionElement.querySelector('#match-details-highlights-container');
                 const matchDetailsHighlightsLink = sectionElement.querySelector('#match-details-highlights-link');
                 const matchDetailsPoster = sectionElement.querySelector('#match-details-poster');
-                const videoContainer = sectionElement.querySelector('.video-player-container'); // Correctly targets the class now
+                const videoContainer = sectionElement.querySelector('.video-player-container'); 
                 const videoLoadingSpinner = sectionElement.querySelector('#video-loading-spinner');
-                const videoOverlay = sectionElement.querySelector('#video-overlay'); // Correctly targets the ID now
+                const videoOverlay = sectionElement.querySelector('#video-overlay');
+                const playbackErrorMessage = sectionElement.querySelector('#playback-error-message'); // NEW: Error message element
 
                 // Populate text content for match details
                 matchDetailsTitleElement.textContent = match.title || 'عنوان غير متوفر';
@@ -974,10 +975,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 // --- iframe Player Setup ---
                 const iframeUrl = match.embed_url;
 
+                if (playbackErrorMessage) playbackErrorMessage.classList.add('hidden'); // Hide any previous error messages
+
                 if (!iframeUrl) {
                     console.error(`❌ Failed to get stream URL for match ID: ${matchId}. Cannot initialize player. (embed_url is null/empty)`);
                     if (videoContainer) {
-                        videoContainer.innerHTML = '<p style="text-align: center; color: var(--up-text-primary); margin-top: 20px;">عذرًا، لا يمكن تشغيل البث حاليًا (الرابط غير صالح أو غير متوفر). يرجى التأكد من توفر الرابط.</p>';
+                        videoContainer.innerHTML = ''; // Clear player area
+                        if (playbackErrorMessage) {
+                            playbackErrorMessage.textContent = 'عذرًا، لا يمكن تشغيل البث حاليًا. رابط البث غير متوفر أو غير صالح.';
+                            playbackErrorMessage.classList.remove('hidden');
+                        }
                     }
                     if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
                     if (videoOverlay) {
@@ -999,19 +1006,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         iframeElement.setAttribute('frameborder', '0');
                         iframeElement.setAttribute('allowfullscreen', 'true');
                         
-                        // *** IMPORTANT SANDBOX ATTRIBUTES FOR MOBILE COMPATIBILITY ***
-                        // These attributes are crucial.
-                        // 'allow-scripts': allows scripts to run within the iframe.
-                        // 'allow-same-origin': allows content to be treated as being from the same origin as the embedding document (if not set, all content is treated as unique origin, which can break functionality).
-                        // 'allow-popups': allows popups to be opened (important for player controls, ads).
-                        // 'allow-popups-to-escape-sandbox': allows popups to open new windows outside the sandbox (important for ads like Adsterra pop-unders).
-                        // 'allow-top-navigation-by-user-activation': allows the iframe to navigate the top-level Browse context, but only if initiated by a user gesture.
-                        // 'allow-forms': allows form submission.
-                        // 'allow-modals': allows modal dialogs (e.g., alert, confirm, prompt).
-                        // 'allow-downloads': allows downloads to occur.
+                        // *** CRITICAL SANDBOX ATTRIBUTES FOR MOBILE COMPATIBILITY & ADS ***
+                        // These attributes are designed to provide maximum compatibility while maintaining reasonable security.
+                        // allow-scripts: Essential for the iframe content (video player) to function.
+                        // allow-same-origin: Allows the iframe content to behave as if it's from the same origin, crucial for some player scripts.
+                        // allow-popups: Allows the iframe to open new windows (e.g., for ads like Adsterra pop-unders).
+                        // allow-popups-to-escape-sandbox: Extremely important for pop-unders to open outside the sandboxed iframe.
+                        // allow-top-navigation-by-user-activation: Allows the iframe to navigate the top-level window, but ONLY if triggered by a user gesture (a click). This is key for some players or ad interactions.
+                        // allow-forms: Allows form submissions within the iframe (less common for video players, but good for general compatibility).
+                        // allow-modals: Allows modal dialogs (alert, confirm, prompt) within the iframe.
+                        // allow-downloads: Allows downloads initiated by the iframe.
                         iframeElement.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation allow-forms allow-modals allow-downloads');
                         
-                        // 'allow' attribute for browser features (autoplay is omitted here to comply with policies)
+                        // 'allow' attribute for browser features. Autoplay is specifically OMITTED to comply with mobile browser policies.
+                        // Most mobile browsers will block autoplay with sound, forcing a user interaction.
                         iframeElement.setAttribute('allow', 'fullscreen; picture-in-picture; encrypted-media;'); 
 
                         iframeElement.style.width = '100%';
@@ -1022,20 +1030,38 @@ document.addEventListener('DOMContentLoaded', () => {
                         
                         iframeElement.setAttribute('title', `مشغل بث مباشر لمباراة ${match.title}`);
 
+                        let iframeLoadTimeout = setTimeout(() => {
+                            if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
+                            if (playbackErrorMessage) {
+                                playbackErrorMessage.textContent = 'البث يستغرق وقتًا طويلاً للتحميل، قد يكون هناك مشكلة في مصدر البث أو الاتصال. يرجى المحاولة لاحقاً.';
+                                playbackErrorMessage.classList.remove('hidden');
+                            }
+                            console.warn('[iframe] Iframe loading timeout. Displayed a message to the user.');
+                            clearVideoOverlayAd(); // Clear overlay ad if iframe fails to load
+                        }, 15000); // 15 seconds timeout
+
                         iframeElement.onload = () => {
+                            clearTimeout(iframeLoadTimeout); // Clear timeout on successful load
                             console.log(`[iframe] iframe loaded successfully from: ${iframeUrl}`);
                             if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
+                            if (playbackErrorMessage) playbackErrorMessage.classList.add('hidden'); // Hide error on success
+                            
                             // Setup the transparent video overlay ad *after* the iframe loads
                             if (videoOverlay) {
                                 setupVideoOverlayAd(videoOverlay);
                             }
                         };
                         iframeElement.onerror = (e) => {
+                            clearTimeout(iframeLoadTimeout); // Clear timeout on error
                             console.error(`❌ [iframe] Failed to load iframe from: ${iframeUrl}. Error:`, e);
-                            console.log('Possible reasons: Cross-origin restrictions (X-Frame-Options), invalid URL, or content not supported on device.');
+                            console.log('Possible reasons: Cross-origin restrictions (X-Frame-Options), invalid URL, or content not supported on device. Check browser console for specifics.');
                             if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
                             if (videoContainer) {
-                                videoContainer.innerHTML = '<p style="text-align: center; color: var(--up-text-primary); margin-top: 20px;">عذرًا، لا يمكن تشغيل البث حاليًا (قد يكون الرابط غير صالح أو محظور). يرجى المحاولة لاحقاً.</p>';
+                                videoContainer.innerHTML = ''; // Clear player area
+                                if (playbackErrorMessage) {
+                                    playbackErrorMessage.textContent = 'عذرًا، لا يمكن تشغيل البث حاليًا (قد يكون الرابط غير صالح أو محظور). يرجى المحاولة لاحقاً.';
+                                    playbackErrorMessage.classList.remove('hidden');
+                                }
                             }
                             clearVideoOverlayAd(); // Clear overlay ad if iframe fails
                         };
@@ -1044,6 +1070,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }, 100); // Small delay before iframe insertion
                 } else {
                     console.error('❌ Critical error: ".video-player-container" not found in details view. Cannot create stream player.');
+                    if (playbackErrorMessage) {
+                        playbackErrorMessage.textContent = 'خطأ فني: لم يتم العثور على عنصر مشغل الفيديو في الصفحة.';
+                        playbackErrorMessage.classList.remove('hidden');
+                    }
                     return;
                 }
 
