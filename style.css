@@ -393,6 +393,7 @@ a:hover {
     transform: translateY(10px);
     transition: opacity var(--transition-medium), transform var(--transition-medium);
     position: relative;
+    z-index: 1;
 }
 .view-section.active-view {
     opacity: 1;
@@ -888,13 +889,13 @@ a:hover {
     transform: rotate(180deg);
 }
 
-/* Video Player Wrapper (holds the iframe) - ADJUSTED ASPECT RATIO for ALL screens */
+/* Video Player Wrapper (holds the iframe) */
 .video-player-wrapper {
     position: relative;
     width: 100%;
     max-width: 900px; /* Keep max-width for desktop */
     height: 0;
-    padding-bottom: 56.25%; /* Standard 16:9 aspect ratio for Desktop */
+    padding-bottom: 56.25%; /* Standard 16:9 aspect ratio for Desktop (remains unchanged for desktop) */
     margin: 0 auto 2vw auto;
     background-color: #000;
     border-radius: var(--border-radius-card);
@@ -961,7 +962,6 @@ a:hover {
 
 /* Ad Banner Center (under video) */
 .ad-banner-center {
-    /* NO LONGER display: none !important; here */
     text-align: center; /* To center the banner */
     margin-top: 20px; /* Space above banner */
     margin-bottom: 20px; /* Space below banner */
@@ -1442,10 +1442,10 @@ a:hover {
 
     /* Main Match Grid for Mobile (Home, Live, Upcoming, Highlights, News) */
     .match-grid {
-        /* Adjusted for mobile: more compact, fill width better */
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important; /* Allow smaller cards, 2-3 per row */
-        gap: 2vw !important; /* Slightly larger gap for readability */
-        padding: 0 0.8rem !important; /* Keep padding */
+        /* Adjusted for mobile: 2 columns, fill available width, shorter height */
+        grid-template-columns: repeat(auto-fit, minmax(47%, 1fr)) !important; /* Slightly larger min-width for wider cards */
+        gap: 2vw !important; /* Keep gap */
+        padding: 0 0.6rem !important; /* Adjust padding to fill more width */
     }
     .news-grid {
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
@@ -1457,7 +1457,7 @@ a:hover {
     /* Match Card Image Adjustment for Smaller Mobile - CRITICAL ADJUSTMENT */
     .match-card img {
         /* Increase width, decrease height for mobile cards to be 'wider and shorter' */
-        height: clamp(100px, 35vw, 160px) !important; /* Shorter height, still responsive */
+        height: clamp(90px, 30vw, 150px) !important; /* Further reduced height, still responsive */
         width: 100% !important; /* Ensure it fills card width */
         object-fit: cover !important;
         background-color: var(--up-bg-medium) !important;
@@ -1465,11 +1465,12 @@ a:hover {
     }
     .match-card .match-card-content {
         padding: 0.6rem;
-        min-height: clamp(60px, 10vw, 80px);
+        min-height: clamp(55px, 9vw, 75px); /* Adjusted min-height */
+        gap: 0.3rem; /* Slightly reduced gap */
     }
     .match-card h3 {
-        font-size: clamp(0.8rem, 3vw, 1rem) !important; /* Slightly smaller for mobile */
-        line-height: 1.3 !important;
+        font-size: clamp(0.75rem, 2.8vw, 0.95rem) !important; /* Slightly smaller for mobile */
+        line-height: 1.2 !important;
         -webkit-line-clamp: 2 !important;
         max-width: 98% !important;
         margin-left: auto !important;
@@ -1480,76 +1481,23 @@ a:hover {
     }
 
     .match-card .teams-logos {
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        justify-content: space-between !important;
-        align-items: center !important;
+        font-size: clamp(0.6rem, 2.5vw, 0.75rem) !important; /* Further adjusted font size */
         gap: 0.05rem !important;
-        margin-top: 0.1rem !important;
-        margin-bottom: 0.1rem !important;
-        padding: 0 0.1rem !important;
-        box-sizing: border-box;
     }
-
-    .match-card .teams-logos > div {
-        display: flex;
-        align-items: center;
-        flex-grow: 1;
-        flex-shrink: 1;
-        gap: 0.1rem !important;
-        min-width: 0;
-        max-width: none;
-        padding: 0;
-    }
-
-    .match-card .teams-logos > div:first-of-type {
-        justify-content: flex-end;
-    }
-
-    .match-card .teams-logos > div:nth-of-type(2) {
-        justify-content: flex-start;
-    }
-
-    .match-card .teams-logos span {
-        font-size: clamp(0.65rem, 3vw, 0.8rem) !important; /* Adjusted font size */
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        flex-grow: 1;
-        flex-shrink: 1;
-        min-width: 0;
-    }
-
-    .match-card .team-logo {
-        width: clamp(20px, 6vw, 30px) !important;
-        height: clamp(20px, 6vw, 30px) !important;
-        flex-shrink: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
-        margin: 0 !important;
-    }
-
-    .match-card .teams-logos > div:nth-of-type(2) .team-logo {
-        margin-left: 0 !important;
-        margin-right: 0.05rem !important;
-    }
-    .match-card .teams-logos > div:nth-of-type(2) span {
-        text-align: left !important;
-    }
-
     .match-card .teams-logos .vs-text {
-        font-size: clamp(0.7rem, 3vw, 1rem) !important;
-        font-weight: 900 !important;
-        color: var(--up-accent-red) !important;
-        margin: 0 0.05rem !important;
-        padding: 0 !important;
-        flex-shrink: 0 !important;
-        line-height: 1;
-        width: auto;
-        text-align: center;
-        order: 0;
+        font-size: clamp(0.65rem, 2.8vw, 0.9rem) !important;
     }
+    .match-card .team-logo {
+        width: clamp(18px, 5vw, 28px) !important; /* Adjusted team logo size */
+        height: clamp(18px, 5vw, 28px) !important;
+    }
+    .match-card .match-league,
+    .match-card .match-date,
+    .match-card .match-status {
+        font-size: clamp(0.6rem, 2.2vw, 0.75rem) !important;
+        padding: 0.3rem 0.6rem !important;
+    }
+
 
     .pagination-controls {
         margin-top: 5vw;
@@ -1570,40 +1518,38 @@ a:hover {
         padding: 0.5rem 1.2rem;
     }
     
-    /* Video Player Wrapper for Smaller Mobile - CRITICAL ADJUSTMENT */
+    /* Video Player Wrapper for Smaller Mobile - CRITICAL ADJUSTMENT for wider/shorter */
     .video-player-wrapper {
         margin-bottom: 3vw;
         max-width: 100% !important;
-        /* Increase padding-bottom to make it shorter and wider (more 'filled' in height) */
-        /* Adjusted from 80% to 65% for a slightly shorter, wider look */
-        padding-bottom: 65% !important; /* Adjusted to optimize for mobile wider/shorter */
+        /* Increase padding-bottom to make it shorter (relative to its new width) and occupy more horizontal space */
+        padding-bottom: 60% !important; /* Changed from 65% for even shorter/wider aspect */
         border-width: 1px !important;
     }
 
-    /* Suggested Matches Grid for Smaller Mobile - Changed to show 2 posters and shorter/wider */
+    /* Suggested Matches Grid for Smaller Mobile - show 2 posters and shorter/wider */
     .suggested-matches-section .match-grid {
-        grid-template-columns: repeat(auto-fit, minmax(46%, 1fr)) !important; /* Adjust to show 2 columns, slightly more space per item */
-        gap: 2vw !important; /* Adjust gap */
-        padding: 0 1vw !important; /* Adjust padding if needed */
-        justify-content: center; /* Center items if less than 2 full columns */
+        grid-template-columns: repeat(auto-fit, minmax(47%, 1fr)) !important; /* Adjusted for tighter fit for 2 columns */
+        gap: 2vw !important; /* Keep gap */
+        padding: 0 0.6rem !important; /* Adjusted padding to extend more */
+        justify-content: center; 
     }
 
     .suggested-matches-section .match-card {
-        /* Ensure suggested cards themselves are a bit more compact */
         border-radius: 8px !important;
     }
 
     .suggested-matches-section .match-card img { /* Specific adjustment for suggested match images */
-        height: clamp(80px, 28vw, 120px) !important; /* Shorter height for suggested cards */
+        height: clamp(70px, 25vw, 110px) !important; /* Further reduced height for suggested cards */
         object-fit: cover !important;
     }
     .suggested-matches-section .match-card .match-card-content {
-        padding: 0.4rem !important; /* Reduce padding to make content area smaller */
-        min-height: auto !important; /* Allow height to shrink */
-        gap: 0.2rem !important;
+        padding: 0.3rem !important; /* Reduce padding to make content area smaller */
+        min-height: auto !important;
+        gap: 0.1rem !important;
     }
     .suggested-matches-section .match-card h3 { /* Shorter title for suggested cards */
-        font-size: clamp(0.75rem, 2.8vw, 0.9rem) !important;
+        font-size: clamp(0.7rem, 2.5vw, 0.85rem) !important;
         -webkit-line-clamp: 1 !important; /* Single line title */
         margin-bottom: 0.1rem !important;
     }
@@ -1611,16 +1557,16 @@ a:hover {
     .suggested-matches-section .match-card .match-league,
     .suggested-matches-section .match-card .match-date,
     .suggested-matches-section .match-card .match-status {
-        font-size: clamp(0.6rem, 2.2vw, 0.75rem) !important; /* Smaller text for better fit */
+        font-size: clamp(0.55rem, 2vw, 0.7rem) !important; /* Even smaller text for better fit */
         margin: 0 !important;
         padding: 0 !important;
     }
     .suggested-matches-section .match-card .team-logo {
-        width: clamp(18px, 5vw, 26px) !important; /* Smaller team logos for suggested cards */
-        height: clamp(18px, 5vw, 26px) !important;
+        width: clamp(16px, 4.5vw, 24px) !important; /* Smaller team logos for suggested cards */
+        height: clamp(16px, 4.5vw, 24px) !important;
     }
     .suggested-matches-section .match-card .teams-logos .vs-text {
-        font-size: clamp(0.6rem, 2.5vw, 0.8rem) !important;
+        font-size: clamp(0.55rem, 2.2vw, 0.75rem) !important;
     }
 
 
