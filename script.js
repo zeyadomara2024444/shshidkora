@@ -180,18 +180,14 @@ document.addEventListener('DOMContentLoaded', () => {
             );
             
             // Hide the overlay immediately after click
-            // For mobile video playback, it's CRUCIAL to remove the overlay fully
-            // to allow interaction with the iframe player.
             videoOverlayElement.classList.add('hidden');
             videoOverlayElement.style.pointerEvents = 'none'; // Disable clicks on the overlay temporarily
-            videoOverlayElement.style.visibility = 'hidden'; // Fully hide
 
             // Set a timer to show the overlay again after VIDEO_OVERLAY_AD_COOLDOWN_TIME
             videoOverlayInterval = setTimeout(() => {
                 if (videoOverlayElement) { // Check if element still exists before showing
                     videoOverlayElement.classList.remove('hidden');
                     videoOverlayElement.style.pointerEvents = 'auto'; // Re-enable clicks
-                    videoOverlayElement.style.visibility = 'visible'; // Show again
                     console.log('[Video Overlay] Overlay re-appeared.');
                 }
             }, VIDEO_OVERLAY_AD_COOLDOWN_TIME);
@@ -223,7 +219,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             videoOverlayElement.classList.add('hidden');
             videoOverlayElement.style.pointerEvents = 'none';
-            videoOverlayElement.style.visibility = 'hidden'; // Fully hide
             videoOverlayElement = null; // Clear reference
         }
     }
@@ -669,7 +664,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dropdown) {
                 const uniqueLeagues = [...new Set(matchesData.filter(m => m.status === 'live').map(m => m.league_name))].filter(Boolean);
                 dropdown.innerHTML = '<option value="all">كل البطولات</option>' +    
-                                         uniqueLeagues.map(league => `<option value="${league}">${league}</option>`).join('');
+                                             uniqueLeagues.map(league => `<option value="${league}">${league}</option>`).join('');
             }
 
 
@@ -756,7 +751,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dropdown) {
                 const uniqueLeagues = [...new Set(matchesData.filter(m => m.status === 'upcoming').map(m => m.league_name))].filter(Boolean);
                 dropdown.innerHTML = '<option value="all">كل البطولات</option>' +    
-                                         uniqueLeagues.map(league => `<option value="${league}">${league}</option>`).join('');
+                                             uniqueLeagues.map(league => `<option value="${league}">${league}</option>`).join('');
             }
 
             const applyUpcomingFilters = () => {
@@ -931,9 +926,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const matchDetailsHighlightsContainer = sectionElement.querySelector('#match-details-highlights-container');
                 const matchDetailsHighlightsLink = sectionElement.querySelector('#match-details-highlights-link');
                 const matchDetailsPoster = sectionElement.querySelector('#match-details-poster');
-                const videoContainer = sectionElement.querySelector('.video-player-container');
+                const videoContainer = sectionElement.querySelector('.video-player-container'); // Correctly targets the class now
                 const videoLoadingSpinner = sectionElement.querySelector('#video-loading-spinner');
-                const videoOverlay = sectionElement.querySelector('#video-overlay');
+                const videoOverlay = sectionElement.querySelector('#video-overlay'); // Correctly targets the ID now
 
                 // Populate text content for match details
                 matchDetailsTitleElement.textContent = match.title || 'عنوان غير متوفر';
@@ -986,7 +981,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (videoOverlay) {
                         videoOverlay.style.pointerEvents = 'none';
                         videoOverlay.classList.add('hidden');
-                        videoOverlay.style.visibility = 'hidden';
                     }
                     return;
                 }
@@ -999,10 +993,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     iframeElement.setAttribute('src', iframeUrl);
                     iframeElement.setAttribute('frameborder', '0');
                     iframeElement.setAttribute('allowfullscreen', 'true');
-                    // Adjusted sandbox attributes for wider compatibility (less restrictive)
-                    iframeElement.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation allow-modals allow-pointer-lock');
-                    // Added allow for autoplay and fullscreen
-                    iframeElement.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture;');
+                    // Modified sandbox attributes for potentially better mobile compatibility and allowing pop-unders
+                    iframeElement.setAttribute('sandbox', 'allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation allow-modals allow-downloads');
+                    // Added allow for autoplay (though mobile browsers often block without user interaction)
+                    iframeElement.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture; encrypted-media;');
                     
                     iframeElement.style.width = '100%';
                     iframeElement.style.height = '100%';
@@ -1024,7 +1018,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     };
                     iframeElement.onerror = (e) => {
                         console.error(`❌ [iframe] Failed to load iframe from: ${iframeUrl}. Error:`, e);
-                        console.log('Possible reasons: Cross-origin restrictions (X-Frame-Options), invalid URL, or content not supported on device/browser.');
+                        console.log('Possible reasons: Cross-origin restrictions (X-Frame-Options), invalid URL, or content not supported on device.');
                         if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
                         if (videoContainer) {
                             videoContainer.innerHTML = '<p style="text-align: center; color: var(--up-text-primary); margin-top: 20px;">عذرًا، لا يمكن تشغيل البث حاليًا (قد يكون الرابط غير صالح أو محظور). يرجى المحاولة لاحقاً.</p>';
@@ -1530,9 +1524,15 @@ document.addEventListener('DOMContentLoaded', () => {
         let isOpen = false;
 
         const checkDevTools = () => {
+            // Using different properties to detect devtools
             const widthThreshold = window.outerWidth - window.innerWidth > threshold;
             const heightThreshold = window.outerHeight - window.innerHeight > threshold;
-            const consoleCheck = /./.test(function(){debugger;}) ? true : false;
+            
+            // Check for common devtools console properties (more robust)
+            // This is a common trick to detect if the console is open, as it affects toString() of functions.
+            const consoleCheck = /./.test(function(){debugger;}) ? true : false; // eslint-disable-line no-unused-expressions
+            
+            // Modern browsers might also expose window.devtools.isOpen (less reliable across browsers)
             const modernDevtoolsOpen = (window.devtools && window.devtools.isOpen) || false;
 
             if (widthThreshold || heightThreshold || consoleCheck || modernDevtoolsOpen) {
@@ -1549,8 +1549,9 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         window.addEventListener('resize', checkDevTools);
-        setInterval(checkDevTools, 5000); 
-        checkDevTools();
+        // Also check at intervals, as resizing is not the only way to open devtools
+        setInterval(checkDevTools, 5000);    
+        checkDevTools(); // Initial check
     })();
 
     // --- 8. Initial Page Load and History Management ---
@@ -1589,6 +1590,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('popstate', (event) => {
         console.log('↩️ [Popstate] Browser history navigation detected.', event.state);
         
+        // If match data isn't loaded yet, try to fetch it and then re-evaluate the state
         if (matchesData.length === 0) {
             console.warn('[Popstate] Match data not loaded yet, attempting to fetch data and render view based on popstate event.');
             fetchMatchesData().then(() => {
@@ -1605,11 +1607,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }).catch(err => {
                 console.error('[Popstate] Failed to fetch match data on popstate during fallback:', err);
+                // If fetching data fails even on popstate, fallback to home and display error
                 showHomePage();
             });
-            return;
+            return; // Stop further execution here, as fetch is async
         }
 
+        // If data is already loaded, proceed
         if (event.state && event.state.view === 'details' && event.state.id) {
             const match = matchesData.find(m => m.id === event.state.id);
             if (match) {
