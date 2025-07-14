@@ -893,7 +893,7 @@ a:hover {
     width: 100%;
     max-width: 900px;
     height: 0;
-    padding-bottom: 40%; /* هذا هو العرض إلى الارتفاع الافتراضي (مثال: 16:9 هو 56.25%) */
+    padding-bottom: 56.25%; /* Standard 16:9 aspect ratio (9 / 16 = 0.5625) */
     margin: 0 auto 2vw auto;
     background-color: #000;
     border-radius: var(--border-radius-card);
@@ -926,29 +926,33 @@ a:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0); /* تم جعلها شفافة بالكامل */
-    opacity: 1;
-    display: flex;
+    background-color: rgba(0, 0, 0, 0) !important; /* تم جعلها شفافة بالكامل وإجباري */
+    opacity: 1; /* تأكد أنها مرئية لكي تلتقط النقرات */
+    display: flex; /* لضمان تغطية كاملة ومنطقية */
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    z-index: 50;
+    z-index: 50; /* تأكد أنها فوق الـ iframe */
     visibility: visible;
-    transition: opacity var(--transition-medium), background-color var(--transition-medium);
+    transition: none; /* مهم جدًا لعدم وجود أي تأثيرات بصرية */
 }
 .video-overlay.hidden {
     opacity: 0;
-    pointer-events: none;
+    pointer-events: none; /* تعطيل النقرات عندما تكون مخفية */
 }
 
-/* إخفاء زر "شاهد الآن" (أو أي محتوى آخر) داخل الـ overlay */
-.video-overlay .video-play-btn {
-    display: none;
+/* إخفاء أي نص أو محتوى داخلي في الطبقة الشفافة */
+.video-overlay .video-play-text { /* تم استهداف فئة النص داخل الطبقة الشفافة */
+    display: none !important; /* إخفاء النص لضمان شفافية الطبقة تمامًا */
 }
-/* إزالة الـ spinner أيضاً */
-.video-loading-spinner {
-    display: none;
+.loading-spinner { /* هذه الفئة موجودة في HTML الذي أرسلته */
+    display: none !important; /* إزالة الـ spinner أيضاً إذا كان جزءاً من الطبقة الشفافة */
 }
+/* إذا كان الـ spinner لديه ID #video-loading-spinner، تأكد من إخفائه أيضًا */
+#video-loading-spinner {
+    display: none !important;
+}
+
 
 /* NEW: Hide Match Info Box (Description Section) */
 .match-info-box {
@@ -1258,7 +1262,7 @@ a:hover {
     .video-player-wrapper {
         margin-bottom: 2.5vw;
         max-width: 800px;
-        padding-bottom: 45%;
+        padding-bottom: 56.25%; /* Keep 16:9 for tablets */
     }
     /* .ad-banner-center specific styles here, not hidden */
 
