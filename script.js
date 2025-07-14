@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
         videoOverlayElement.classList.remove('hidden'); // Ensure it's visible if hidden by default
         videoOverlayElement.style.pointerEvents = 'auto'; // Enable clicks
         videoOverlayElement.style.cursor = 'pointer'; // Show pointer to indicate clickable area
-        videoOverlayElement.innerHTML = ''; // Clear any visible content (like the <p> tag in HTML) to make it truly invisible
+        videoOverlayElement.innerHTML = ''; // Clear any visible content to make it truly invisible
 
         // Clear any existing interval to prevent multiple intervals running
         if (videoOverlayInterval) {
@@ -200,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
         videoOverlayElement.addEventListener('click', handleOverlayClick);
         videoOverlayElement._adOverlayHandler = handleOverlayClick; // Store reference to the handler
 
-        console.log('[Video Overlay] Video overlay ad setup complete.');
+        console.log('[Video Overlay] Video overlay ad setup complete. Overlay is initially visible and clickable.');
     }
 
     /**
@@ -220,6 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
             videoOverlayElement.classList.add('hidden');
             videoOverlayElement.style.pointerEvents = 'none';
             videoOverlayElement = null; // Clear reference
+            console.log('[Video Overlay] Overlay hidden and disabled.');
         }
     }
 
@@ -987,46 +988,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (videoContainer) {
                     videoContainer.innerHTML = ''; // Clear any previous video player content
+                    if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'block'; // Show spinner before iframe load attempt
 
-                    const iframeElement = document.createElement('iframe');
-                    iframeElement.id = 'match-iframe-player';
-                    iframeElement.setAttribute('src', iframeUrl);
-                    iframeElement.setAttribute('frameborder', '0');
-                    iframeElement.setAttribute('allowfullscreen', 'true');
-                    // Modified sandbox attributes for potentially better mobile compatibility and allowing pop-unders
-                    iframeElement.setAttribute('sandbox', 'allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation allow-modals allow-downloads');
-                    // Added allow for autoplay (though mobile browsers often block without user interaction)
-                    iframeElement.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture; encrypted-media;');
-                    
-                    iframeElement.style.width = '100%';
-                    iframeElement.style.height = '100%';
-                    iframeElement.style.position = 'absolute';
-                    iframeElement.style.top = '0';
-                    iframeElement.style.left = '0';
-                    
-                    iframeElement.setAttribute('title', `مشغل بث مباشر لمباراة ${match.title}`);
+                    // Add a small delay before inserting the iframe
+                    setTimeout(() => {
+                        const iframeElement = document.createElement('iframe');
+                        iframeElement.id = 'match-iframe-player';
+                        iframeElement.setAttribute('src', iframeUrl);
+                        iframeElement.setAttribute('frameborder', '0');
+                        iframeElement.setAttribute('allowfullscreen', 'true');
+                        // Crucial sandbox attributes to control iframe behavior and prevent autoplay
+                        // 'allow-top-navigation-by-user-activation' allows navigation *initiated by user click*
+                        iframeElement.setAttribute('sandbox', 'allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation allow-modals allow-downloads');
+                        // 'allow' attribute for browser features (autoplay might still be restricted by browser policy)
+                        iframeElement.setAttribute('allow', 'fullscreen; picture-in-picture; encrypted-media;'); // Removed autoplay from here
 
-                    if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'block';
+                        iframeElement.style.width = '100%';
+                        iframeElement.style.height = '100%';
+                        iframeElement.style.position = 'absolute';
+                        iframeElement.style.top = '0';
+                        iframeElement.style.left = '0';
+                        
+                        iframeElement.setAttribute('title', `مشغل بث مباشر لمباراة ${match.title}`);
 
-                    iframeElement.onload = () => {
-                        console.log(`[iframe] iframe loaded successfully from: ${iframeUrl}`);
-                        if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
-                        // Setup the transparent video overlay ad *after* the iframe loads
-                        if (videoOverlay) {
-                            setupVideoOverlayAd(videoOverlay);
-                        }
-                    };
-                    iframeElement.onerror = (e) => {
-                        console.error(`❌ [iframe] Failed to load iframe from: ${iframeUrl}. Error:`, e);
-                        console.log('Possible reasons: Cross-origin restrictions (X-Frame-Options), invalid URL, or content not supported on device.');
-                        if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
-                        if (videoContainer) {
-                            videoContainer.innerHTML = '<p style="text-align: center; color: var(--up-text-primary); margin-top: 20px;">عذرًا، لا يمكن تشغيل البث حاليًا (قد يكون الرابط غير صالح أو محظور). يرجى المحاولة لاحقاً.</p>';
-                        }
-                        clearVideoOverlayAd(); // Clear overlay ad if iframe fails
-                    };
-                    videoContainer.appendChild(iframeElement);
-                    console.log('[Stream Player] iframe element created and appended.');
+                        iframeElement.onload = () => {
+                            console.log(`[iframe] iframe loaded successfully from: ${iframeUrl}`);
+                            if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
+                            // Setup the transparent video overlay ad *after* the iframe loads
+                            if (videoOverlay) {
+                                setupVideoOverlayAd(videoOverlay);
+                            }
+                        };
+                        iframeElement.onerror = (e) => {
+                            console.error(`❌ [iframe] Failed to load iframe from: ${iframeUrl}. Error:`, e);
+                            console.log('Possible reasons: Cross-origin restrictions (X-Frame-Options), invalid URL, or content not supported on device.');
+                            if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
+                            if (videoContainer) {
+                                videoContainer.innerHTML = '<p style="text-align: center; color: var(--up-text-primary); margin-top: 20px;">عذرًا، لا يمكن تشغيل البث حاليًا (قد يكون الرابط غير صالح أو محظور). يرجى المحاولة لاحقاً.</p>';
+                            }
+                            clearVideoOverlayAd(); // Clear overlay ad if iframe fails
+                        };
+                        videoContainer.appendChild(iframeElement);
+                        console.log('[Stream Player] iframe element created and appended with slight delay.');
+                    }, 100); // Small delay before iframe insertion
                 } else {
                     console.error('❌ Critical error: ".video-player-container" not found in details view. Cannot create stream player.');
                     return;
