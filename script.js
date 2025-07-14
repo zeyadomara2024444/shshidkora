@@ -1,5 +1,3 @@
-
-
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🏁 DOM Content Loaded. Shahid Kora script execution started.');
 
@@ -87,9 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 2. Adsterra Configuration & Ad Logic (UPDATED FOR SEPARATE COOLDOWNS AND POP-UNDER MECHANISM) ---
 
     // Adsterra JS Sync codes and Direct Link
-    // IMPORTANT: JS Sync codes (like the first two) are designed to be injected into the current page's DOM,
-    // and THEY THEMSELVES handle opening the pop-under tab.
-    // Direct Links (like the third one) should be explicitly opened in a new tab.
     const adCodes = [
         "//pl27154379.profitableratecpm.com/a3/0f/2d/a30f2d8b70097467fa7c1b724f6ef1f2.js", // JS Sync Pop-under
         "//pl27154400.profitableratecpm.com/1c/2a/d6/1c2ad63f897e5c1d4c27840dc634efd4.js", // JS Sync Pop-under
@@ -106,6 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * Generic function to trigger an Adsterra ad (Pop-under via JS Sync or Direct Link).
+     * Ensures ads open in new tabs and respects cooldowns.
      * @param {number} cooldownTime - The cooldown duration in milliseconds.
      * @param {number} currentLastInteractionTime - The current timestamp of the last ad interaction for this type.
      * @param {string} adTriggerContext - A string for logging context (e.g., "Match Card", "Video Overlay").
@@ -120,15 +116,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const adTarget = adCodes[Math.floor(Math.random() * adCodes.length)]; // Select a random ad URL
 
-        // Attempt to open in a new tab if it's a Direct Link.
-        // If it's a JS Sync script, just append it; it will handle the pop-under itself.
-        if (adTarget.includes('key=')) { // Heuristic for Adsterra Direct Link
-            // For Direct Links, explicitly open in a new tab. Browsers might block if not directly user-initiated.
+        // Always attempt to open in a new tab (_blank) to prevent current page replacement.
+        if (adTarget.includes('key=')) { // Heuristic for Adsterra Direct Link (contains 'key=')
             window.open(adTarget, "_blank");
             console.log(`⚡ [Ad - ${adTriggerContext}] Adsterra Direct Link triggered (explicit new tab): ${adTarget}`);
         } else { // Assume it's a JS Sync pop-under script
             // For JS Sync scripts, inject them into the current document.
-            // These scripts are designed to open pop-unders themselves (often immediately after injection).
+            // These scripts are designed to open pop-unders themselves.
             const script = document.createElement('script');
             script.type = 'text/javascript';
             script.src = (adTarget.startsWith('//') ? 'https:' : '') + adTarget; // Ensure absolute URL
@@ -158,10 +152,9 @@ document.addEventListener('DOMContentLoaded', () => {
      * This function is called when a match details page is loaded.
      * It ensures the overlay is completely transparent and positioned correctly.
      * @param {HTMLElement} overlayElement - The DOM element for the transparent overlay.
-     * @param {HTMLElement} videoPlayerContainer - The container holding the video iframe. (Not directly used for positioning here, handled by CSS)
      */
-    function setupVideoOverlayAd(overlayElement, videoPlayerContainer) { // videoPlayerContainer is not directly used for positioning here
-        if (!overlayElement) { // Only check for overlayElement as positioning is CSS-based now
+    function setupVideoOverlayAd(overlayElement) { 
+        if (!overlayElement) { 
             console.error('❌ Cannot set up video overlay ad: Missing overlayElement.');
             return;
         }
@@ -169,14 +162,12 @@ document.addEventListener('DOMContentLoaded', () => {
         videoOverlayElement = overlayElement; // Store the reference
         videoOverlayElement.classList.remove('hidden'); // Ensure it's visible if hidden by default
         videoOverlayElement.style.pointerEvents = 'auto'; // Enable clicks
-        // Make the overlay completely transparent and cover the video
-        videoOverlayElement.style.backgroundColor = 'rgba(0, 0, 0, 0)'; // Fully transparent
         videoOverlayElement.style.cursor = 'pointer'; // Show pointer to indicate clickable area
-        videoOverlayElement.innerHTML = ''; // Clear any visible content to make it truly invisible (like the <p> tag in HTML)
+        videoOverlayElement.innerHTML = ''; // Clear any visible content (like the <p> tag in HTML) to make it truly invisible
 
         // Clear any existing interval to prevent multiple intervals running
         if (videoOverlayInterval) {
-            clearInterval(videoOverlayInterval);
+            clearTimeout(videoOverlayInterval); // Use clearTimeout for setTimeout
             console.log('[Video Overlay] Previous interval cleared.');
         }
 
@@ -217,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function clearVideoOverlayAd() {
         if (videoOverlayInterval) {
-            clearInterval(videoOverlayInterval);
+            clearTimeout(videoOverlayInterval); // Use clearTimeout for setTimeout
             videoOverlayInterval = null;
             console.log('[Video Overlay] Ad interval cleared.');
         }
@@ -490,6 +481,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         } else {
+            // Fallback for browsers that don't support IntersectionObserver
             let lazyLoadImages = container.querySelectorAll('img.lazyload, source.lazyload');
             lazyLoadImages.forEach(function(element) {
                 if (element.tagName === 'IMG') {
@@ -663,16 +655,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const prevPageBtn = section.querySelector('#live-prev-page-btn');
             const nextPageBtn = section.querySelector('#live-next-page-btn');
             const filterButtons = section.querySelectorAll('.filter-btn');
-            const dropdown = section.querySelector('.filter-dropdown');
+            const dropdown = section.querySelector('.filter-dropdown'); // This might be null if not added to HTML
             const sectionTitle = section.querySelector('#live-matches-title');
 
             if (sectionTitle) sectionTitle.textContent = 'مباريات كرة القدم مباشرة الآن';
 
-            const uniqueLeagues = [...new Set(matchesData.filter(m => m.status === 'live').map(m => m.league_name))].filter(Boolean);
+            // Check if dropdown exists before trying to populate it
             if (dropdown) {
+                const uniqueLeagues = [...new Set(matchesData.filter(m => m.status === 'live').map(m => m.league_name))].filter(Boolean);
                 dropdown.innerHTML = '<option value="all">كل البطولات</option>' +    
-                                             uniqueLeagues.map(league => `<option value="${league}">${league}</option>`).join('');
+                                         uniqueLeagues.map(league => `<option value="${league}">${league}</option>`).join('');
             }
+
 
             const applyLiveFilters = () => {
                 const activeFilterBtn = section.querySelector('.filter-btn.active');
@@ -748,15 +742,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const prevPageBtn = section.querySelector('#upcoming-prev-page-btn');
             const nextPageBtn = section.querySelector('#upcoming-next-page-btn');
             const filterButtons = section.querySelectorAll('.filter-btn');
-            const dropdown = section.querySelector('.filter-dropdown');
+            const dropdown = section.querySelector('.filter-dropdown'); // This might be null if not added to HTML
             const sectionTitle = section.querySelector('#upcoming-matches-title');
 
             if (sectionTitle) sectionTitle.textContent = 'مواعيد مباريات كرة القدم القادمة';
 
-            const uniqueLeagues = [...new Set(matchesData.filter(m => m.status === 'upcoming').map(m => m.league_name))].filter(Boolean);
+            // Check if dropdown exists before trying to populate it
             if (dropdown) {
+                const uniqueLeagues = [...new Set(matchesData.filter(m => m.status === 'upcoming').map(m => m.league_name))].filter(Boolean);
                 dropdown.innerHTML = '<option value="all">كل البطولات</option>' +    
-                                             uniqueLeagues.map(league => `<option value="${league}">${league}</option>`).join('');
+                                         uniqueLeagues.map(league => `<option value="${league}">${league}</option>`).join('');
             }
 
             const applyUpcomingFilters = () => {
@@ -851,7 +846,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (sectionTitle) sectionTitle.textContent = 'أهداف وملخصات المباريات';
 
             currentFilteredMatches = matchesData.filter(m => m.type === 'highlight' && m.embed_url)
-                                                    .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime());
+                                             .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime());
 
             currentPage = 1;
             paginateMatches(currentFilteredMatches, currentPage, 'highlights-grid', 'highlights-prev-page-btn', 'highlights-next-page-btn', 'highlights-empty-state');
@@ -894,7 +889,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (sectionTitle) sectionTitle.textContent = 'آخر أخبار كرة القدم';
 
             currentFilteredMatches = matchesData.filter(m => m.type === 'news')
-                                                        .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime());
+                                             .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime());
 
             displayMatches(currentFilteredMatches, newsGridElement, emptyStateElement, null);
             
@@ -1016,7 +1011,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
                         // Setup the transparent video overlay ad *after* the iframe loads
                         if (videoOverlay) {
-                            setupVideoOverlayAd(videoOverlay, videoContainer);
+                            setupVideoOverlayAd(videoOverlay); // Removed videoContainer as it's not needed for positioning now
                         }
                     };
                     iframeElement.onerror = () => {
@@ -1314,6 +1309,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentMatchTeams = [currentDetailedMatch.home_team, currentDetailedMatch.away_team].filter(Boolean);
         let suggested = [];
 
+        // Prioritize matches in the same league (upcoming or live)
         if (currentMatchLeague) {
             suggested = matchesData.filter(match =>
                 match.id !== currentMatchId &&
@@ -1322,6 +1318,7 @@ document.addEventListener('DOMContentLoaded', () => {
             );
         }
 
+        // Add team-related matches if not enough suggested matches
         if (suggested.length < 12) {
             const teamRelated = matchesData.filter(match =>
                 match.id !== currentMatchId &&
@@ -1329,29 +1326,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 ([match.home_team, match.away_team].filter(Boolean).some(team => currentMatchTeams.includes(team))) &&
                 !suggested.some(s => s.id === match.id)
             );
-            suggested = [...new Set([...suggested, ...teamRelated])];
+            suggested = [...new Set([...suggested, ...teamRelated])]; // Use Set for uniqueness
         }
 
+        // Fill up with other live/upcoming matches if still not enough
         if (suggested.length < 12) {
             const otherRelevantMatches = matchesData.filter(match =>    
                 match.id !== currentMatchId &&    
                 match.status !== 'finished' &&
                 !suggested.some(s => s.id === match.id)
-            ).sort(() => 0.5 - Math.random());
+            ).sort(() => 0.5 - Math.random()); // Randomize for variety
             const needed = 12 - suggested.length;
             suggested = [...suggested, ...otherRelevantMatches.slice(0, needed)];
         }
         
+        // As a last resort, add recent finished matches if still not enough
         if (suggested.length < 12) {
             const finishedMatches = matchesData.filter(match =>    
                 match.id !== currentMatchId &&    
                 !suggested.some(s => s.id === match.id)
-            ).sort((a,b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime());
+            ).sort((a,b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime()); // Most recent finished
             const needed = 12 - suggested.length;
             suggested = [...suggested, ...finishedMatches.slice(0, needed)];
         }
 
-        const finalSuggested = suggested.slice(0, 12);
+        const finalSuggested = suggested.slice(0, 12); // Limit to 12 suggestions
 
         if (finalSuggested.length === 0) {
             suggestedMatchGrid.innerHTML = '<p style="text-align: center; color: var(--up-text-muted);">لا توجد مباريات مقترحة حالياً.</p>';
@@ -1522,10 +1521,17 @@ document.addEventListener('DOMContentLoaded', () => {
         let isOpen = false;
 
         const checkDevTools = () => {
+            // Using different properties to detect devtools
             const widthThreshold = window.outerWidth - window.innerWidth > threshold;
             const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+            const isChromium = window.chrome;
+            const isFirefox = typeof InstallTrigger !== 'undefined'; // Firefox
+            const isEdge = isChromium && (navigator.userAgent.indexOf("Edg") != -1);
+            
+            // Check for common devtools console properties
+            const consoleCheck = /./.test(function(){debugger;}) ? true : false; // eslint-disable-line no-unused-expressions
 
-            if (widthThreshold || heightThreshold) {
+            if (widthThreshold || heightThreshold || consoleCheck) {
                 if (!isOpen) {
                     isOpen = true;
                     console.warn('🚨 [Security] Developer tools detected! This action is discouraged.');
@@ -1539,8 +1545,9 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         window.addEventListener('resize', checkDevTools);
-        setInterval(checkDevTools, 5000);
-        checkDevTools();
+        // Also check at intervals, as resizing is not the only way to open devtools
+        setInterval(checkDevTools, 5000); 
+        checkDevTools(); // Initial check
     })();
 
     // --- 8. Initial Page Load and History Management ---
