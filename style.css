@@ -370,7 +370,7 @@ a:hover {
 
 /* Mobile menu toggle (الثلاث شرط) */
 .menu-toggle {
-    display: none;
+    display: none; /* Hidden by default on desktop, will be shown on smaller screens if needed */
     font-size: 1.8rem;
     padding: 0.3rem 0.6rem;
     color: var(--up-accent-green);
@@ -514,6 +514,7 @@ a:hover {
 /* Grids for content cards */
 .match-grid, .news-grid {
     display: grid;
+    /* Default for desktop/larger screens: 3 columns, around 350px width each */
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 0.8vw;
     padding: 0 1vw;
@@ -568,11 +569,11 @@ a:hover {
     z-index: 10;
 }
 
-/* Card image - ADJUSTED */
+/* Card image - ADJUSTED for Desktop & General */
 .match-card img {
     width: 100%;
-    /* تم تعديل ارتفاع الصورة لكي تتناسب مع أحجام الشاشات المختلفة */
-    height: clamp(180px, 18vw, 250px); /* للدسكتوب والأجهزة اللوحية الكبيرة */
+    /* Keep desktop/tablet dimensions as requested (no change from before) */
+    height: clamp(180px, 18vw, 250px); 
     object-fit: cover;
     background-color: var(--up-bg-medium);
     display: block;
@@ -887,13 +888,13 @@ a:hover {
     transform: rotate(180deg);
 }
 
-/* Video Player Wrapper (holds the iframe) - ADJUSTED ASPECT RATIO */
+/* Video Player Wrapper (holds the iframe) - ADJUSTED ASPECT RATIO for ALL screens */
 .video-player-wrapper {
     position: relative;
     width: 100%;
-    max-width: 900px;
+    max-width: 900px; /* Keep max-width for desktop */
     height: 0;
-    padding-bottom: 56.25%; /* Standard 16:9 aspect ratio (9 / 16 = 0.5625) */
+    padding-bottom: 56.25%; /* Standard 16:9 aspect ratio for Desktop */
     margin: 0 auto 2vw auto;
     background-color: #000;
     border-radius: var(--border-radius-card);
@@ -926,29 +927,27 @@ a:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0) !important; /* تم جعلها شفافة بالكامل وإجباري */
-    opacity: 1; /* تأكد أنها مرئية لكي تلتقط النقرات */
-    display: flex; /* لضمان تغطية كاملة ومنطقية */
+    background-color: rgba(0, 0, 0, 0) !important; /* Fully transparent and forced */
+    opacity: 1; /* Ensure visible to capture clicks */
+    display: flex; /* To ensure full coverage and logical layout */
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    z-index: 50; /* تأكد أنها فوق الـ iframe */
+    z-index: 50; /* Ensure it's above the iframe */
     visibility: visible;
-    transition: none; /* مهم جدًا لعدم وجود أي تأثيرات بصرية */
+    transition: none; /* Crucial for no visual effects */
 }
 .video-overlay.hidden {
     opacity: 0;
-    pointer-events: none; /* تعطيل النقرات عندما تكون مخفية */
+    pointer-events: none; /* Disable clicks when hidden */
+    visibility: hidden; /* Also hide visually */
 }
 
-/* إخفاء أي نص أو محتوى داخلي في الطبقة الشفافة */
-.video-overlay .video-play-text { /* تم استهداف فئة النص داخل الطبقة الشفافة */
-    display: none !important; /* إخفاء النص لضمان شفافية الطبقة تمامًا */
+/* Hide any internal text/content in the transparent layer */
+.video-overlay .video-play-text { /* Target text class within transparent layer */
+    display: none !important; /* Hide text to ensure full transparency of the layer */
 }
-.loading-spinner { /* هذه الفئة موجودة في HTML الذي أرسلته */
-    display: none !important; /* إزالة الـ spinner أيضاً إذا كان جزءاً من الطبقة الشفافة */
-}
-/* إذا كان الـ spinner لديه ID #video-loading-spinner، تأكد من إخفائه أيضًا */
+/* If the spinner also has ID #video-loading-spinner, ensure it's hidden */
 #video-loading-spinner {
     display: none !important;
 }
@@ -956,16 +955,16 @@ a:hover {
 
 /* NEW: Hide Match Info Box (Description Section) */
 .match-info-box {
-    display: none !important; /* إخفاء هذا القسم بالكامل كما طلبت */
+    display: none !important; /* Hide this section completely as requested */
 }
 
 
 /* Ad Banner Center (under video) */
 .ad-banner-center {
-    /* تم إزالة display: none !important; للسماح بظهور هذا القسم */
-    text-align: center; /* لتوسيط البانر */
-    margin-top: 20px; /* مسافة أعلى البانر */
-    margin-bottom: 20px; /* مسافة أسفل البانر */
+    /* NO LONGER display: none !important; here */
+    text-align: center; /* To center the banner */
+    margin-top: 20px; /* Space above banner */
+    margin-bottom: 20px; /* Space below banner */
     position: relative;
     z-index: 1;
 }
@@ -1141,7 +1140,7 @@ a:hover {
         padding: 0.5rem 1.1rem;
     }
     .menu-toggle {
-        display: none !important;
+        display: none !important; /* Keep hidden for tablets as well, desktop nav is sufficient */
         font-size: 1.6rem;
         padding: 0.25rem 0.5rem;
     }
@@ -1176,9 +1175,9 @@ a:hover {
         padding: 0 1.5vw;
     }
 
-    /* Match Card Image Adjustment for Tablet */
+    /* Match Card Image Adjustment for Tablet - No change, same as desktop */
     .match-card img {
-        height: clamp(150px, 25vw, 220px); /* تم ضبط الارتفاع ليتناسب مع أحجام التابلت */
+        height: clamp(150px, 25vw, 220px); 
         object-fit: cover;
         background-color: var(--up-bg-medium);
     }
@@ -1338,7 +1337,7 @@ a:hover {
     }
 
     .menu-toggle {
-        display: none !important;
+        display: none !important; /* Ensure it's hidden */
     }
 
     .site-logo {
@@ -1350,8 +1349,9 @@ a:hover {
     .site-logo .logo-icon {
         font-size: 0.55em;
     }
+    /* Telegram button seems to be from an old version or removed, ensure no display issues */
     .telegram-btn {
-        display: none !important;
+        display: none !important; 
     }
 
     .main-nav {
@@ -1440,22 +1440,25 @@ a:hover {
         background-size: 0.75em;
     }
 
+    /* Main Match Grid for Mobile (Home, Live, Upcoming, Highlights, News) */
     .match-grid {
-        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-        gap: 1.5vw;
-        padding: 0 0.6rem !important;
+        /* Adjusted for mobile: more compact, fill width better */
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important; /* Allow smaller cards, 2-3 per row */
+        gap: 2vw !important; /* Slightly larger gap for readability */
+        padding: 0 0.8rem !important; /* Keep padding */
     }
     .news-grid {
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 3vw;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+        gap: 3vw !important;
         padding: 0 0.8rem !important;
     }
 
 
-    /* Match Card Image Adjustment for Smaller Mobile */
+    /* Match Card Image Adjustment for Smaller Mobile - CRITICAL ADJUSTMENT */
     .match-card img {
-        /* تم ضبط الارتفاع لكي يتناسب بشكل أفضل مع شاشات الموبايل الأصغر */
-        height: clamp(180px, 50vw, 250px) !important; /* للحفاظ على نسبة عرض إلى ارتفاع جيدة */
+        /* Increase width, decrease height for mobile cards to be 'wider and shorter' */
+        height: clamp(100px, 35vw, 160px) !important; /* Shorter height, still responsive */
+        width: 100% !important; /* Ensure it fills card width */
         object-fit: cover !important;
         background-color: var(--up-bg-medium) !important;
         display: block !important;
@@ -1465,7 +1468,7 @@ a:hover {
         min-height: clamp(60px, 10vw, 80px);
     }
     .match-card h3 {
-        font-size: clamp(0.85rem, 3.5vw, 1.05rem) !important;
+        font-size: clamp(0.8rem, 3vw, 1rem) !important; /* Slightly smaller for mobile */
         line-height: 1.3 !important;
         -webkit-line-clamp: 2 !important;
         max-width: 98% !important;
@@ -1508,7 +1511,7 @@ a:hover {
     }
 
     .match-card .teams-logos span {
-        font-size: clamp(0.7rem, 3.5vw, 0.85rem) !important;
+        font-size: clamp(0.65rem, 3vw, 0.8rem) !important; /* Adjusted font size */
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -1566,21 +1569,60 @@ a:hover {
         font-size: clamp(0.85rem, 2.5vw, 1rem);
         padding: 0.5rem 1.2rem;
     }
+    
+    /* Video Player Wrapper for Smaller Mobile - CRITICAL ADJUSTMENT */
     .video-player-wrapper {
         margin-bottom: 3vw;
         max-width: 100% !important;
-        padding-bottom: 80% !important; /* تم زيادة هذه القيمة لتكبير المشغل */
+        /* Increase padding-bottom to make it shorter and wider (more 'filled' in height) */
+        /* Adjusted from 80% to 65% for a slightly shorter, wider look */
+        padding-bottom: 65% !important; /* Adjusted to optimize for mobile wider/shorter */
         border-width: 1px !important;
     }
-    /* .ad-banner-center specific styles here, not hidden */
 
-    /* Suggested Matches Grid for Smaller Mobile - Changed to show 2 posters */
+    /* Suggested Matches Grid for Smaller Mobile - Changed to show 2 posters and shorter/wider */
     .suggested-matches-section .match-grid {
-        grid-template-columns: repeat(auto-fit, minmax(45%, 1fr)) !important; /* Adjust to show 2 columns */
+        grid-template-columns: repeat(auto-fit, minmax(46%, 1fr)) !important; /* Adjust to show 2 columns, slightly more space per item */
         gap: 2vw !important; /* Adjust gap */
         padding: 0 1vw !important; /* Adjust padding if needed */
         justify-content: center; /* Center items if less than 2 full columns */
     }
+
+    .suggested-matches-section .match-card {
+        /* Ensure suggested cards themselves are a bit more compact */
+        border-radius: 8px !important;
+    }
+
+    .suggested-matches-section .match-card img { /* Specific adjustment for suggested match images */
+        height: clamp(80px, 28vw, 120px) !important; /* Shorter height for suggested cards */
+        object-fit: cover !important;
+    }
+    .suggested-matches-section .match-card .match-card-content {
+        padding: 0.4rem !important; /* Reduce padding to make content area smaller */
+        min-height: auto !important; /* Allow height to shrink */
+        gap: 0.2rem !important;
+    }
+    .suggested-matches-section .match-card h3 { /* Shorter title for suggested cards */
+        font-size: clamp(0.75rem, 2.8vw, 0.9rem) !important;
+        -webkit-line-clamp: 1 !important; /* Single line title */
+        margin-bottom: 0.1rem !important;
+    }
+    .suggested-matches-section .match-card .teams-logos span,
+    .suggested-matches-section .match-card .match-league,
+    .suggested-matches-section .match-card .match-date,
+    .suggested-matches-section .match-card .match-status {
+        font-size: clamp(0.6rem, 2.2vw, 0.75rem) !important; /* Smaller text for better fit */
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .suggested-matches-section .match-card .team-logo {
+        width: clamp(18px, 5vw, 26px) !important; /* Smaller team logos for suggested cards */
+        height: clamp(18px, 5vw, 26px) !important;
+    }
+    .suggested-matches-section .match-card .teams-logos .vs-text {
+        font-size: clamp(0.6rem, 2.5vw, 0.8rem) !important;
+    }
+
 
     .suggested-matches-section {
         margin-top: 4vw;
