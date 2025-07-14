@@ -1,1311 +1,576 @@
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🏁 DOM Content Loaded. Shahid Kora script execution started.');
+// script.js - هذا الكود محسن وواضح لمحركات البحث والمطورين
+// تم التركيز على أفضل أداء ممكن من جانب العميل مع الحفاظ على الوظائف والإعلانات
+// والتأكد من إزالة أي عناصر قد تؤثر سلباً على الفهم من قبل محركات البحث
+// تم تحديث هذا الإصدار لاستخدام iframe بدلاً من Video.js لمشغل الفيديو
 
-    // --- 1. DOM Element References (Initial Page Elements) ---
-    const mainContentDisplay = document.getElementById('content-display');
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🏁 DOM Content Loaded. Script execution started.');
+
+    // --- 1. DOM Element References ---
     const menuToggle = document.getElementById('menu-toggle');
     const mainNav = document.getElementById('main-nav');
     const homeNavLink = document.getElementById('home-nav-link-actual');
     const navLinks = document.querySelectorAll('.main-nav ul li a');
     const heroSection = document.getElementById('hero-section');
     const watchNowBtn = document.getElementById('watch-now-btn');
+    const movieGridSection = document.getElementById('movie-grid-section');
+    const movieDetailsSection = document.getElementById('movie-details-section');
+    const movieGrid = document.getElementById('movie-grid');
+    const suggestedMovieGrid = document.getElementById('suggested-movie-grid');
+    const suggestedMoviesSection = document.getElementById('suggested-movies-section');
+    const backToHomeBtn = document.getElementById('back-to-home-btn');
+    const videoContainer = document.getElementById('movie-player-container'); // هذا سيحتوي على الـ iframe الآن
+    const videoOverlay = document.getElementById('video-overlay'); // سيبقى لإظهار الإعلانات
+    const homeLogoLink = document.getElementById('home-logo-link');
+    const videoLoadingSpinner = document.getElementById('video-loading-spinner'); // قد لا يكون ضرورياً جداً مع iframe
+    const movieDetailsPoster = document.getElementById('movie-details-poster');
+    const prevPageBtn = document.getElementById('prev-page-btn');
+    const nextPageBtn = document.getElementById('next-page-btn');
     
+    // ****** تحسين الأداء على الموبايل: عدد الأفلام المعروضة لكل صفحة ******
+    const moviesPerPage = 30; // القيمة الموصى بها لأداء أفضل على الموبايل
+
+    let currentPage = 1;
     const searchInput = document.getElementById('search-input');
     const searchButton = document.getElementById('search-button');
-
-    // Reference to templates
-    const homeViewTemplate = document.getElementById('home-view-template');
-    const liveMatchesTemplate = document.getElementById('live-matches-template');
-    const upcomingMatchesTemplate = document.getElementById('upcoming-matches-template');
-    const highlightsTemplate = document.getElementById('highlights-template');
-    const newsTemplate = document.getElementById('news-template');
-    const matchDetailsTemplate = document.getElementById('match-details-view-template');
-
-    // Constants
-    const matchesPerPage = 20;    
-    let currentActiveViewElement = null; // Holds the currently active view element (the cloned section)
-
-    let matchesData = []; // All loaded match data
-    let currentFilteredMatches = []; // Matches currently selected for display/pagination
-    let currentPage = 1;
-    let currentDetailedMatch = null; // The match currently displayed in details view
+    const sectionTitleElement = movieGridSection ? movieGridSection.querySelector('h2') : null;
 
     // --- 1.1. Critical DOM Element Verification ---
     const requiredElements = {
-        '#content-display': mainContentDisplay,
-        '#home-logo-link': document.getElementById('home-logo-link'),
-        '#menu-toggle': menuToggle,
-        '#main-nav': mainNav,
-        '#home-nav-link-actual': homeNavLink,
+        '#movie-grid': movieGrid,
+        '#movie-grid-section': movieGridSection,
+        '#movie-details-section': movieDetailsSection,
         '#hero-section': heroSection,
-        '#watch-now-btn': watchNowBtn,
-        '#search-input': searchInput,
-        '#search-button': searchButton,
-        '#json-ld-schema': document.getElementById('json-ld-schema'),
-        '#dynamic-title': document.getElementById('dynamic-title'),
-        '#dynamic-description': document.getElementById('dynamic-description'),
-        '#dynamic-keywords': document.getElementById('dynamic-keywords'),
-        '#dynamic-canonical': document.getElementById('dynamic-canonical'),
-        '#dynamic-og-type': document.getElementById('dynamic-og-type'),
-        '#dynamic-og-url': document.getElementById('dynamic-og-url'),
-        '#dynamic-og-title': document.getElementById('dynamic-og-title'),
-        '#dynamic-og-description': document.getElementById('dynamic-og-description'),
-        '#dynamic-og-image': document.getElementById('dynamic-og-image'),
-        '#dynamic-og-image-alt': document.getElementById('dynamic-og-image-alt'),
-        '#dynamic-twitter-card': document.getElementById('dynamic-twitter-card'),
-        '#dynamic-twitter-url': document.getElementById('dynamic-twitter-url'),
-        '#dynamic-twitter-title': document.getElementById('dynamic-twitter-title'),
-        '#dynamic-twitter-description': document.getElementById('dynamic-twitter-description'),
-        '#dynamic-twitter-image': document.getElementById('dynamic-twitter-image'),
-        '#home-view-template': homeViewTemplate,
-        '#live-matches-template': liveMatchesTemplate,
-        '#upcoming-matches-template': upcomingMatchesTemplate,
-        '#highlights-template': highlightsTemplate,
-        '#news-template': newsTemplate,
-        '#match-details-view-template': matchDetailsTemplate
+        '#movie-player-container': videoContainer,
+        '#video-overlay': videoOverlay,
+        '#suggested-movie-grid': suggestedMovieGrid,
+        '#suggested-movies-section': suggestedMoviesSection,
+        '#video-loading-spinner': videoLoadingSpinner,
+        '#movie-details-title': document.getElementById('movie-details-title'),
+        '#movie-details-description': document.getElementById('movie-details-description'),
+        '#movie-details-release-date': document.getElementById('movie-details-release-date'),
+        '#movie-details-genre': document.getElementById('movie-details-genre'),
+        '#movie-details-director': document.getElementById('movie-details-director'),
+        '#movie-details-cast': document.getElementById('movie-details-cast'),
+        '#movie-details-duration': document.getElementById('movie-details-duration'),
+        '#movie-details-rating': document.getElementById('movie-details-rating'),
+        '#home-nav-link-actual': homeNavLink
     };
 
     let criticalError = false;
     for (const [id, element] of Object.entries(requiredElements)) {
         if (!element) {
-            console.error(`❌ Critical Error: Required DOM element with ID "${id}" not found. Please check your HTML file.`);
+            console.error(`❌ خطأ فادح: العنصر بالمعرّف "${id}" غير موجود. يرجى التحقق من ملف HTML الخاص بك.`);
             criticalError = true;
         }
     }
     if (criticalError) {
-        console.error('🛑 Script execution halted due to missing critical DOM elements. Please fix your HTML!');
+        console.error('🛑 لن يتم تنفيذ السكريبت بالكامل بسبب عناصر DOM الأساسية المفقودة. قم بإصلاح HTML الخاص بك!');
         document.body.innerHTML = '<div style="text-align: center; margin-top: 100px; color: #f44336; font-size: 20px;">' +
-                                   'عذرًا، حدث خطأ فني. يرجاء تحديث الصفحة أو المحاولة لاحقًا.' +
-                                   '<p style="font-size: 14px; color: #ccc;">(عناصر الصفحة الرئيسية مفقودة)</p></div>';
-        return; // Stop script execution
+                                    'عذرًا، حدث خطأ فني. يرجى تحديث الصفحة أو المحاولة لاحقًا.' +
+                                    '<p style="font-size: 14px; color: #ccc;">(عناصر الصفحة الرئيسية مفقودة)</p></div>';
+        return;
     } else {
-        console.log('✅ All critical DOM elements found.');
+        console.log('✅ تم العثور على جميع عناصر DOM الأساسية.');
     }
 
-    // --- 2. Adsterra Configuration & Ad Logic (UPDATED FOR SEPARATE COOLDOWNS AND POP-UNDER MECHANISM) ---
+    // --- 2. Adsterra Configuration ---
+    const ADSTERRA_DIRECT_LINK_URL = 'https://www.profitableratecpm.com/spqbhmyax?key=2469b039d4e7c471764bd04c57824cf2';
+    const DIRECT_LINK_COOLDOWN_MOVIE_CARD = 3 * 60 * 1000;
+    const DIRECT_LINK_COOLDOWN_VIDEO_INTERACTION = 10 * 1000;
 
-    // Adsterra JS Sync codes and Direct Link
-    const adCodes = [
-        "//pl27154379.profitableratecpm.com/a3/0f/2d/a30f2d8b70097467fa7c1b724f6ef1f2.js", // JS Sync Pop-under
-        "//pl27154400.profitableratecpm.com/1c/2a/d6/1c2ad63f897e5c1d4c27840dc634efd4.js", // JS Sync Pop-under
-        "https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec"  // Direct Link
-    ];
+    let lastDirectLinkClickTimeMovieCard = 0;
+    let lastDirectLinkClickTimeVideoInteraction = 0;
 
-    // --- Cooldown settings for Match Card Clicks (4 minutes) ---
-    const MATCH_CARD_AD_COOLDOWN_TIME = 4 * 60 * 1000; // 4 minutes
-    let lastMatchCardAdTime = 0;
+    function openAdLink(cooldownDuration, type) {
+        let lastClickTime;
+        let setLastClickTime;
 
-    // --- Cooldown settings for Video Overlay Clicks (8 seconds) ---
-    const VIDEO_OVERLAY_AD_COOLDOWN_TIME = 8 * 1000; // 8 seconds
-    let lastVideoOverlayAdTime = 0;
+        if (type === 'movieCard' || type === 'movieDetailsPoster') {
+            lastClickTime = lastDirectLinkClickTimeMovieCard;
+            setLastClickTime = (time) => lastDirectLinkClickTimeMovieCard = time;
+        } else if (type === 'videoOverlay' || type === 'videoSeek' || type === 'videoPause' || type === 'videoEndedRestart') {
+            lastClickTime = lastDirectLinkClickTimeVideoInteraction;
+            setLastClickTime = (time) => lastDirectLinkClickTimeVideoInteraction = time;
+        } else {
+            console.error('نوع إعلان غير صالح لـ openAdLink:', type);
+            return false;
+        }
 
-    /**
-     * Generic function to trigger an Adsterra ad (Pop-under via JS Sync or Direct Link).
-     * Ensures ads open in new tabs and respects cooldowns.
-     * @param {number} cooldownTime - The cooldown duration in milliseconds.
-     * @param {number} currentLastInteractionTime - The current timestamp of the last ad interaction for this type.
-     * @param {string} adTriggerContext - A string for logging context (e.g., "Match Card", "Video Overlay").
-     * @returns {number} The updated lastInteractionTime (current timestamp if ad triggered, or previous if on cooldown).
-     */
-    function triggerAdsterraAd(cooldownTime, currentLastInteractionTime, adTriggerContext) {
         const currentTime = Date.now();
-        if (currentTime - currentLastInteractionTime < cooldownTime) {
-            console.log(`🚫 [Ad - ${adTriggerContext}] Cooldown active (${(cooldownTime / 1000)}s). Skipping ad.`);
-            return currentLastInteractionTime; // Return unchanged time if on cooldown
-        }
-
-        const adTarget = adCodes[Math.floor(Math.random() * adCodes.length)]; // Select a random ad URL
-
-        // Always attempt to open in a new tab (_blank) to prevent current page replacement.
-        if (adTarget.includes('key=')) { // Heuristic for Adsterra Direct Link (contains 'key=')
-            window.open(adTarget, "_blank");
-            console.log(`⚡ [Ad - ${adTriggerContext}] Adsterra Direct Link triggered (explicit new tab): ${adTarget}`);
-        } else { // Assume it's a JS Sync pop-under script
-            // For JS Sync scripts, inject them into the current document.
-            // These scripts are designed to open pop-unders themselves.
-            const script = document.createElement('script');
-            script.type = 'text/javascript';
-            script.src = (adTarget.startsWith('//') ? 'https:' : '') + adTarget; // Ensure absolute URL
-            script.async = true; // Use async to not block rendering of the current page
-
-            // Append the script to the body to trigger the ad
-            document.body.appendChild(script);
-
-            // Remove the script after a short delay to keep the DOM clean
-            setTimeout(() => {
-                if (document.body.contains(script)) {
-                    document.body.removeChild(script);
-                }
-            }, 500); // Remove after 0.5 seconds
-            console.log(`⚡ [Ad - ${adTriggerContext}] Adsterra JS Sync triggered (injected into current page): ${adTarget}`);
-        }
-        
-        return currentTime; // Update last interaction time for successful trigger
-    }
-
-    // Interval for the video overlay ad
-    let videoOverlayInterval = null;
-    let videoOverlayElement = null; // Reference to the overlay element
-
-    /**
-     * Manages the video overlay for ads.
-     * This function is called when a match details page is loaded.
-     * It ensures the overlay is completely transparent and positioned correctly.
-     * @param {HTMLElement} overlayElement - The DOM element for the transparent overlay.
-     */
-    function setupVideoOverlayAd(overlayElement) { 
-        if (!overlayElement) { 
-            console.error('❌ Cannot set up video overlay ad: Missing overlayElement.');
-            return;
-        }
-
-        videoOverlayElement = overlayElement; // Store the reference
-        videoOverlayElement.classList.remove('hidden'); // Ensure it's visible if hidden by default
-        videoOverlayElement.style.pointerEvents = 'auto'; // Enable clicks
-        videoOverlayElement.style.cursor = 'pointer'; // Show pointer to indicate clickable area
-        videoOverlayElement.innerHTML = ''; // Clear any visible content to make it truly invisible
-
-        // Clear any existing interval to prevent multiple intervals running
-        if (videoOverlayInterval) {
-            clearTimeout(videoOverlayInterval); // Use clearTimeout for setTimeout
-            console.log('[Video Overlay] Previous interval cleared.');
-        }
-
-        // Click handler for the overlay
-        const handleOverlayClick = function() {
-            lastVideoOverlayAdTime = triggerAdsterraAd(
-                VIDEO_OVERLAY_AD_COOLDOWN_TIME,
-                lastVideoOverlayAdTime,
-                "Video Overlay"
-            );
-            
-            // Hide the overlay immediately after click
-            videoOverlayElement.classList.add('hidden');
-            videoOverlayElement.style.pointerEvents = 'none'; // Disable clicks on the overlay temporarily
-
-            // Set a timer to show the overlay again after VIDEO_OVERLAY_AD_COOLDOWN_TIME
-            videoOverlayInterval = setTimeout(() => {
-                if (videoOverlayElement) { // Check if element still exists before showing
-                    videoOverlayElement.classList.remove('hidden');
-                    videoOverlayElement.style.pointerEvents = 'auto'; // Re-enable clicks
-                    console.log('[Video Overlay] Overlay re-appeared.');
-                }
-            }, VIDEO_OVERLAY_AD_COOLDOWN_TIME);
-        };
-        
-        // Remove existing listener to prevent duplicates. Store the handler on the element.
-        if (videoOverlayElement._adOverlayHandler) { // Check if a handler was previously stored
-            videoOverlayElement.removeEventListener('click', videoOverlayElement._adOverlayHandler);
-        }
-        videoOverlayElement.addEventListener('click', handleOverlayClick);
-        videoOverlayElement._adOverlayHandler = handleOverlayClick; // Store reference to the handler
-
-        console.log('[Video Overlay] Video overlay ad setup complete. Overlay is initially visible and clickable.');
-    }
-
-    /**
-     * Clears the video overlay ad interval and hides the overlay.
-     */
-    function clearVideoOverlayAd() {
-        if (videoOverlayInterval) {
-            clearTimeout(videoOverlayInterval); // Use clearTimeout for setTimeout
-            videoOverlayInterval = null;
-            console.log('[Video Overlay] Ad interval cleared.');
-        }
-        if (videoOverlayElement) {
-            if (videoOverlayElement._adOverlayHandler) { // Remove the stored handler
-                videoOverlayElement.removeEventListener('click', videoOverlayElement._adOverlayHandler);
-                delete videoOverlayElement._adOverlayHandler; // Clean up the stored handler
-            }
-            videoOverlayElement.classList.add('hidden');
-            videoOverlayElement.style.pointerEvents = 'none';
-            videoOverlayElement = null; // Clear reference
-            console.log('[Video Overlay] Overlay hidden and disabled.');
-        }
-    }
-
-
-    // --- 3. View Management (using Templates) ---
-
-    /**
-     * Dynamically loads content into the main display area from a specified template.
-     * @param {string} viewId - The ID of the template element (e.g., 'home', 'live', 'details').
-     * @param {Function} [callback] - An optional callback function to execute after the view is loaded, receives the cloned section element as argument.
-     */
-    function showView(viewId, callback = () => {}) {
-        // Hide hero section when switching to any view other than 'home'
-        if (heroSection) {
-            heroSection.style.display = (viewId === 'home') ? 'flex' : 'none';
-        }
-        
-        // Remove 'active' class from all navigation links
-        navLinks.forEach(link => link.classList.remove('active'));
-
-        // Clear previous content from the main display area
-        mainContentDisplay.innerHTML = '';
-        currentActiveViewElement = null; // Reset the reference to the currently active view element
-
-        let templateToLoad;
-        let navLinkToActivate;
-
-        // Map viewId to its corresponding template and navigation link
-        switch (viewId) {
-            case 'home':
-                templateToLoad = homeViewTemplate;
-                navLinkToActivate = document.querySelector('[data-target-view="home"]');
-                break;
-            case 'live':
-                templateToLoad = liveMatchesTemplate;
-                navLinkToActivate = document.querySelector('[data-target-view="live"]');
-                break;
-            case 'upcoming':
-                templateToLoad = upcomingMatchesTemplate;
-                navLinkToActivate = document.querySelector('[data-target-view="upcoming"]');
-                break;
-            case 'highlights':
-                templateToLoad = highlightsTemplate;
-                navLinkToActivate = document.querySelector('[data-target-view="highlights"]');
-                break;
-            case 'news':
-                templateToLoad = newsTemplate;
-                navLinkToActivate = document.querySelector('[data-target-view="news"]');
-                break;
-            case 'details': // Match details view is special, it doesn't activate a top nav link
-                templateToLoad = matchDetailsTemplate;
-                break;
-            default:
-                console.error(`Attempted to load unknown view with ID: "${viewId}". Falling back to home view.`);
-                showView('home'); // Fallback to home view
-                return;
-        }
-
-        // Check if the template exists and has content
-        if (templateToLoad && templateToLoad.content) {
-            const clonedContent = templateToLoad.content.cloneNode(true); // Clone the template content (deep copy)
-            const sectionElement = clonedContent.firstElementChild; // Get the root <section> element from the cloned content
-
-            if (sectionElement) {
-                sectionElement.classList.add('active-view'); // Add class for CSS animations/visibility
-                mainContentDisplay.appendChild(sectionElement); // Append the cloned section to the main display area
-                currentActiveViewElement = sectionElement; // Store reference to the active view element
-
-                // Activate the corresponding navigation link if found
-                if (navLinkToActivate) {
-                    navLinkToActivate.classList.add('active');
-                }
-                
-                console.log(`✅ View "${viewId}" loaded successfully from template.`);
-                callback(sectionElement); // Execute callback with the newly loaded section element
+        if (currentTime - lastClickTime > cooldownDuration) {
+            const newWindow = window.open(ADSTERRA_DIRECT_LINK_URL, '_blank');
+            if (newWindow) {
+                newWindow.focus();
+                setLastClickTime(currentTime);
+                console.log(`💰 [نقر إعلان - ${type}] تم فتح الرابط المباشر بنجاح.`);
+                return true;
             } else {
-                console.error(`Error: Template with ID "${viewId}" doesF not contain a valid root section element.`);
+                console.warn(`⚠️ [نقر إعلان - ${type}] تم حظر النافذة المنبثقة أو فشل فتح الرابط المباشر. تأكد من السماح بالنوافذ المنبثقة.`);
+                return false;
             }
         } else {
-            console.error(`Error: Template with ID "${viewId}" not found or its content is empty.`);
+            const timeLeft = (cooldownDuration - (currentTime - lastClickTime)) / 1000;
+            console.log(`⏳ [نقر إعلان - ${type}] التهدئة للرابط المباشر نشطة. لن يتم فتح علامة تبويب جديدة. الوقت المتبقي: ${timeLeft.toFixed(1)}ثانية`);
+            return false;
         }
     }
 
-    // --- 4. Match Data & iframe URL Handling ---
-
-    /**
-     * Fetches match data from 'matches.json'.
-     * Handles errors during fetch or JSON parsing.
-     * Sorts the data by status (live, upcoming, finished) and date.
-     */
-    async function fetchMatchesData() {
+    // --- 3. Movie Data & Video URL Handling ---
+    let moviesData = [];
+    let moviesDataForPagination = [];
+    let currentDetailedMovie = null;
+    
+    // دالة فك تشفير Base64 لم تعد مستخدمة لروابط الفيديو المباشرة (تم إزالتها في الإصدار السابق أيضاً)
+    function decodeBase64(encodedString) {
         try {
-            console.log('📡 Fetching match data from matches.json...');
-            const response = await fetch('matches.json');
+            if (!encodedString || typeof encodedString !== 'string') {
+                console.warn('تمت محاولة فك تشفير سلسلة Base64 غير صالحة:', encodedString);
+                return '';
+            }
+            return atob(encodedString);
+        } catch (e) {
+            console.error('خطأ في فك تشفير سلسلة Base64:', e);
+            return '';
+        }
+    }
+
+    // Helper to parse ISO 8601 duration (e.g., PT1H54M to seconds) - لا تزال مفيدة لـ Schema
+    function parseDurationToSeconds(isoDuration) {
+        if (!isoDuration || typeof isoDuration !== 'string') return 0;
+        const parts = isoDuration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+        if (!parts) return 0;
+        const hours = parseInt(parts[1] || 0);
+        const minutes = parseInt(parts[2] || 0);
+        const seconds = parseInt(parts[3] || 0);
+        return hours * 3600 + minutes * 60 + seconds;
+    }
+
+    async function fetchMoviesData() {
+        try {
+            console.log('📡 جلب بيانات الأفلام من movies.json...');
+            const response = await fetch('movies.json');
             if (!response.ok) {
-                // If response is not OK (e.g., 404, 500), throw an error
-                throw new Error(`HTTP error! Status: ${response.status} - Could not load matches.json. Check file path and server configuration.`);
+                throw new Error(`خطأ HTTP! الحالة: ${response.status} - تعذر تحميل movies.json. تحقق من مسار الملف وتكوين الخادم.`);
             }
-            matchesData = await response.json(); // Parse JSON response
-
-            if (!Array.isArray(matchesData)) {
-                console.error('❌ Fetched data is not an array. Please check matches.json format. Expected an array of match objects.');
-                matchesData = []; // Reset to empty array to prevent further errors
-            } else if (matchesData.length === 0) {
-                console.warn('⚠️ matches.json loaded, but it is empty.');
+            moviesData = await response.json();
+            if (!Array.isArray(moviesData)) {
+                console.error('❌ البيانات التي تم جلبها ليست مصفوفة. يرجى التحقق من تنسيق movies.json. المتوقع مصفوفة من كائنات الأفلام.');
+                moviesData = [];
+            } else if (moviesData.length === 0) {
+                console.warn('⚠️ تم تحميل movies.json، ولكنه فارغ.');
             }
-
-            // Standardize status to lowercase and combine team/logo fields for easier processing
-            matchesData = matchesData.map(match => ({
-                ...match, // Copy all existing properties
-                status: match.status ? match.status.toLowerCase() : 'unknown', // Ensure status is lowercase
-                // Create a 'teams' array for easier filtering/display in card functions
-                teams: [match.home_team, match.away_team].filter(Boolean),
-                // Create a 'team_logos' array for easier filtering/display in card functions
-                team_logos: [match.home_team_logo, match.away_team_logo].filter(Boolean)
-            }));
-
-            // Sort matches: live first, then upcoming by date (ascending), then finished by most recent date (descending)
-            matchesData.sort((a, b) => {
-                const statusOrder = { 'live': 1, 'upcoming': 2, 'finished': 3, 'news': 4, 'highlight': 5, 'unknown': 99 }; // Define a priority order for statuses
-                const statusDiff = statusOrder[a.status] - statusOrder[b.status];
-                if (statusDiff !== 0) return statusDiff; // Sort by status first
-
-                const dateA = new Date(a.date_time); // Use date_time from the new JSON structure
-                const dateB = new Date(b.date_time); // Use date_time from the new JSON structure
-
-                if (a.status === 'finished') {
-                    return dateB.getTime() - dateA.getTime(); // For finished matches, most recent first (descending date)
-                }
-                return dateA.getTime() - dateB.getTime(); // For live/upcoming, chronological order (ascending date)
-            });
-            
-            console.log('✅ Match data loaded successfully from matches.json', matchesData.length, 'matches found.');
-            initialPageLoadLogic(); // Proceed with initial page load logic after data is ready
+            console.log('✅ تم تحميل بيانات الأفلام بنجاح من movies.json', moviesData.length, 'فيلمًا تم العثور عليهم.');
+            initialPageLoadLogic();
         } catch (error) {
-            console.error('❌ Failed to load match data:', error.message);
-            // Display a user-friendly error message on the main content area
-            mainContentDisplay.innerHTML = '<section class="view-section active-view container">' +
-                                           '<p style="text-align: center; color: var(--up-text-primary); margin-top: 50px;">عذرًا، لم نتمكن من تحميل بيانات المباريات. يرجى المحاولة مرة أخرى لاحقًا أو التحقق من ملف matches.json.</p>' +
-                                           '</section>';
-            // Attempt to update the section title if it exists on the initial page load
-            const homeMatchesTitle = document.getElementById('home-matches-title');
-            if (homeMatchesTitle) {
-                homeMatchesTitle.textContent = 'خطأ في تحميل المباريات';
+            console.error('❌ فشل تحميل بيانات الأفلام:', error.message);
+            if (movieGrid) {
+                movieGrid.innerHTML = '<p style="text-align: center; color: var(--text-color); margin-top: 50px;">عذرًا، لم نتمكن من تحميل بيانات الأفلام. يرجى المحاولة مرة أخرى لاحقًا أو التحقق من ملف movies.json.</p>';
+            }
+            if (sectionTitleElement) {
+                sectionTitleElement.textContent = 'خطأ في تحميل الأفلام';
             }
         }
     }
 
-    /**
-     * Creates a match card DOM element for a given match object.
-     * @param {object} match - The match data object.
-     * @returns {HTMLElement} The created match card div element.
-     */
-    function createMatchCard(match) {
-        const matchCard = document.createElement('div');
-        matchCard.classList.add('match-card');
-        matchCard.dataset.matchId = match.id; // Store match ID for click handler
-        
-        // Prepare image sources for <picture> and lazy loading
-        const thumbnailSrc = match.thumbnail; // Default thumbnail
-        const webpSource = thumbnailSrc ? thumbnailSrc.replace(/\.(png|jpe?g)$/i, '.webp') : ''; // Generate .webp path
-        
-        // Format match date and time for display
-        const matchDate = match.date_time ? new Date(match.date_time).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short', year: 'numeric' }) : 'غير متوفر';
-        const matchTime = match.date_time ? new Date(match.date_time).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) : 'غير متوفر';
-
-        // Determine status class and text for styling
-        const statusClass = match.status === 'live' ? 'live-status' : (match.status === 'finished' ? 'finished-status' : 'upcoming-status');
-        const statusText = match.status === 'live' ? 'مباشر الآن' : (match.status === 'finished' ? 'انتهت' : 'قادمة');
-
-        // Generate HTML for team logos and names, handling cases where data might be missing
-        const teamsHtml = (match.home_team && match.away_team)
-            ? `
-                <div class="teams-logos">
-                    <div>
-                        <span>${match.home_team}</span>
-                        <img data-src="${match.home_team_logo || 'images/team-logos/default.png'}" src="${match.home_team_logo || 'images/team-logos/default.png'}" alt="${match.home_team} logo" class="team-logo lazyload" width="50" height="50" loading="lazy">
-                    </div>
-                    <span class="vs-text">VS</span>
-                    <div>
-                        <img data-src="${match.away_team_logo || 'images/team-logos/default.png'}" src="${match.away_team_logo || 'images/team-logos/default.png'}" alt="${match.away_team} logo" class="team-logo lazyload" width="50" height="50" loading="lazy">
-                        <span>${match.away_team}</span>
-                    </div>
-                </div>
-            `
-            : `<p class="match-teams">${match.title || 'الفرق غير متوفرة'}</p>`; // Fallback to title or generic text
-
-        const isLCPCandidate = (matchCard.tabIndex === 0);    
-
-        // Construct the inner HTML of the match card
-        matchCard.innerHTML = `
+    function createMovieCard(movie) {
+        const movieCard = document.createElement('div');
+        movieCard.classList.add('movie-card');
+        const webpSource = movie.poster.replace(/\.(png|jpe?g)/i, '.webp');
+        movieCard.innerHTML = `
             <picture>
-                ${webpSource ? `<source srcset="${webpSource}" type="image/webp" onerror="this.remove()">` : ''}
-                <img data-src="${thumbnailSrc || 'images/thumbnails/default.jpg'}" src="${thumbnailSrc || 'images/thumbnails/default.jpg'}" alt="${match.title}"
-                    class="lazyload" width="350" height="200" ${isLCPCandidate ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"'}>
+                <source srcset="${webpSource}" type="image/webp" onerror="this.remove()">
+                <img data-src="${movie.poster}" src="${movie.poster}" alt="${movie.title}" class="lazyload" width="200" height="300" loading="lazy">
             </picture>
-            <div class="match-card-content">
-                <h3>${match.title}</h3>
-                ${teamsHtml}
-                <p class="match-league">${match.league_name || 'غير محدد'}</p>
-                <p class="match-date">${matchDate} - ${matchTime}</p>
-                <span class="match-status ${statusClass}">${statusText}</span>
-                ${match.status === 'finished' && match.score ? `<p class="match-score">${match.score}</p>` : ''}
-            </div>
+            <h3>${movie.title}</h3>
         `;
-        
-        // Add click event listener to the match card for navigation AND ad
-        matchCard.addEventListener('click', (e) => {
-            e.preventDefault(); // Prevent default link behavior, we handle navigation manually
-            console.log(`⚡ [Interaction] Match card clicked for ID: ${match.id}.`);
-            
-            // Trigger the ad pop-under with 4-minute cooldown
-            lastMatchCardAdTime = triggerAdsterraAd(
-                MATCH_CARD_AD_COOLDOWN_TIME,
-                lastMatchCardAdTime,
-                "Match Card"
-            );
-
-            // Navigate to match details after a small delay to allow ad to load (optional, but good practice)
-            setTimeout(() => {
-                showMatchDetails(match.id);  
-            }, 100); // Small delay
+        movieCard.addEventListener('click', () => {
+            console.log(`⚡ [تفاعل] تم النقر على بطاقة الفيلم للمعّرف: ${movie.id}`);
+            openAdLink(DIRECT_LINK_COOLDOWN_MOVIE_CARD, 'movieCard');
+            showMovieDetails(movie.id);
         });
-        return matchCard;
+        return movieCard;
     }
 
-    /**
-     * Initializes lazy loading for images within a specified container.
-     * Uses IntersectionObserver for modern browsers and falls back to direct loading.
-     * @param {HTMLElement} [container=document] - The DOM element to observe for lazy load images. Defaults to the entire document.
-     */
-    function initializeLazyLoad(container = document) {
+    function initializeLazyLoad() {
         if ('IntersectionObserver' in window) {
-            let lazyLoadImages = container.querySelectorAll('img.lazyload, source.lazyload');
+            let lazyLoadImages = document.querySelectorAll('.lazyload');
             let imageObserver = new IntersectionObserver(function(entries, observer) {
                 entries.forEach(function(entry) {
                     if (entry.isIntersecting) {
-                        let element = entry.target;
-                        if (element.tagName === 'IMG') {
-                            if (element.dataset.src && (!element.src || element.src !== element.dataset.src)) {
-                                element.src = element.dataset.src;
-                            }
-                        } else if (element.tagName === 'SOURCE') {
-                            if (element.dataset.srcset && (!element.srcset || element.srcset !== element.dataset.srcset)) {
-                                element.srcset = element.dataset.srcset;
+                        let image = entry.target;
+                        if (image.dataset.src && (!image.src || image.src !== image.dataset.src)) {
+                            image.src = image.dataset.src;
+                            const pictureParent = image.closest('picture');
+                            if (pictureParent) {
+                                const sourceElement = pictureParent.querySelector('source');
+                                if (sourceElement && sourceElement.dataset.srcset) {
+                                    sourceElement.srcset = sourceElement.dataset.srcset;
+                                }
                             }
                         }
-                        element.classList.remove('lazyload'); // Remove lazyload class once loaded
-                        observer.unobserve(element); // Stop observing this image
+                        image.classList.remove('lazyload');
+                        observer.unobserve(image);
                     }
                 });
             }, {
-                rootMargin: '0px 0px 100px 0px' // Load images when they are 100px from viewport
+                rootMargin: '0px 0px 100px 0px'
             });
 
-            lazyLoadImages.forEach(function(element) {
-                if (element.dataset.src || element.dataset.srcset) {
-                    imageObserver.observe(element);
-                }
+            lazyLoadImages.forEach(function(image) {
+                imageObserver.observe(image);
             });
         } else {
-            // Fallback for browsers that don't support IntersectionObserver
-            let lazyLoadImages = container.querySelectorAll('img.lazyload, source.lazyload');
-            lazyLoadImages.forEach(function(element) {
-                if (element.tagName === 'IMG') {
-                    if (element.dataset.src) {
-                        element.src = element.dataset.src;
-                    }
-                } else if (element.tagName === 'SOURCE') {
-                    if (element.dataset.srcset) {
-                        element.srcset = element.dataset.srcset;
-                    }
-                    element.classList.remove('lazyload');
-                }
-            });
-        }
-        console.log('🖼️ [Lazy Load] IntersectionObserver initialized for images (or fallback used).');
-    }
-
-    /**
-     * Displays a given array of matches in a target grid element.
-     * Manages empty state and hides pagination if no matches.
-     * @param {Array<object>} matchesToDisplay - Array of match objects to render.
-     * @param {HTMLElement} targetGridElement - The DOM element (grid) where match cards will be appended.
-     * @param {HTMLElement} [emptyStateElement] - Optional. The element to show if no matches, hide otherwise.
-     * @param {HTMLElement} [paginationControlsElement] - Optional. The element containing pagination buttons, shown if matches, hidden otherwise.
-     */
-    function displayMatches(matchesToDisplay, targetGridElement, emptyStateElement = null, paginationControlsElement = null) {
-        if (!targetGridElement) {
-            console.error('❌ displayMatches: Target grid element is null or undefined.');
-            return;
-        }
-
-        targetGridElement.innerHTML = ''; // Clear any existing content in the grid
-        if (emptyStateElement) emptyStateElement.style.display = 'none'; // Hide empty state message initially
-        if (paginationControlsElement) paginationControlsElement.style.display = 'none'; // Hide pagination controls initially
-
-        if (!matchesToDisplay || matchesToDisplay.length === 0) {
-            if (emptyStateElement) emptyStateElement.style.display = 'block'; // Show empty state if no matches
-            console.log(`⚽ [Display] No matches to display in ${targetGridElement.id}.`);
-            return;
-        }
-
-        console.log(`⚽ [Display] Displaying ${matchesToDisplay.length} matches in ${targetGridElement.id}.`);
-        matchesToDisplay.forEach(match => {
-            targetGridElement.appendChild(createMatchCard(match)); // Append each match card to the grid
-        });
-        console.log(`⚽ [Display] Finished displaying ${matchesToDisplay.length} matches in ${targetGridElement.id}.`);
-        initializeLazyLoad(targetGridElement); // Re-initialize lazy load for the newly added elements
-    }
-
-    /**
-     * Handles pagination logic for a given array of matches.
-     * Updates the displayed matches and the state of pagination buttons.
-     * @param {Array<object>} matchesArray - The full array of matches to paginate.
-     * @param {number} page - The current page number to display.
-     * @param {string} targetGridId - The ID of the grid element for this pagination.
-     * @param {string} prevBtnId - The ID of the previous page button.
-     * @param {string} nextBtnId - The ID of the next page button.
-     * @param {string} emptyStateId - The ID of the empty state element.
-     */
-    function paginateMatches(matchesArray, page, targetGridId, prevBtnId, nextBtnId, emptyStateId) {
-        const targetGridElement = document.getElementById(targetGridId);
-        const prevPageBtn = document.getElementById(prevBtnId);
-        const nextPageBtn = document.getElementById(nextBtnId);
-        const emptyStateElement = document.getElementById(emptyStateId);
-        const paginationControlsElement = prevPageBtn ? prevPageBtn.closest('.pagination-controls') : null;
-
-        if (!targetGridElement) {
-            console.error(`Pagination failed: Target grid element "${targetGridId}" not found.`);
-            return;
-        }
-
-        if (!Array.isArray(matchesArray) || matchesArray.length === 0) {
-            displayMatches([], targetGridElement, emptyStateElement, paginationControlsElement);
-            if (prevPageBtn) prevPageBtn.disabled = true;
-            if (nextPageBtn) nextPageBtn.disabled = true;
-            return;
-        }
-
-        const startIndex = (page - 1) * matchesPerPage;
-        const endIndex = startIndex + matchesPerPage;
-        const paginatedMatches = matchesArray.slice(startIndex, endIndex);
-
-        displayMatches(paginatedMatches, targetGridElement, emptyStateElement, paginationControlsElement);
-        
-        const totalPages = Math.ceil(matchesArray.length / matchesPerPage);
-        if (paginationControlsElement) {
-            paginationControlsElement.style.display = 'flex';
-        }
-        if (prevPageBtn) prevPageBtn.disabled = (page === 1);
-        if (nextPageBtn) nextPageBtn.disabled = (page * matchesPerPage >= matchesArray.length);
-        
-        console.log(`➡️ [Pagination] Displaying page ${page} of ${totalPages}. Matches from index ${startIndex} to ${Math.min(endIndex, matchesArray.length)-1}.`);
-    }
-
-    // --- 5. View Specific Logic Functions ---
-
-    /**
-     * Handles the display and logic for the Home view.
-     * Displays a mix of live, upcoming, and recent finished matches.
-     */
-    function handleHomeView() {
-        showView('home', (section) => {
-            const matchGridElement = section.querySelector('#main-match-grid');
-            const prevPageBtn = section.querySelector('#home-prev-page-btn');
-            const nextPageBtn = section.querySelector('#home-next-page-btn');
-            const sectionTitle = section.querySelector('#home-matches-title');
-            const emptyStateElement = section.querySelector('#home-empty-state');
-
-            if (sectionTitle) sectionTitle.textContent = 'أبرز المباريات والجديد';
-
-            const homePageMatches = matchesData.filter(match => {
-                const matchDate = new Date(match.date_time);
-                const now = new Date();
-                const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-                return match.status === 'live' ||
-                                       match.status === 'upcoming' ||
-                                       (match.status === 'finished' && matchDate >= oneWeekAgo);
-            });
-
-            currentFilteredMatches = [...homePageMatches].sort((a, b) => {
-                const statusOrder = { 'live': 1, 'upcoming': 2, 'finished': 3 };
-                const statusDiff = statusOrder[a.status] - statusOrder[b.status];
-                if (statusDiff !== 0) return statusDiff;
-
-                const dateA = new Date(a.date_time);
-                const dateB = new Date(b.date_time);
-
-                if (a.status === 'finished') {
-                    return dateB.getTime() - dateA.getTime();    
-                }
-                return dateA.getTime() - dateB.getTime();    
-            });
-
-            currentPage = 1;
-            paginateMatches(currentFilteredMatches, currentPage, 'main-match-grid', 'home-prev-page-btn', 'home-next-page-btn', 'home-empty-state');
-            
-            if (prevPageBtn) {
-                prevPageBtn.onclick = () => {
-                    if (currentPage > 1) {
-                        currentPage--;
-                        paginateMatches(currentFilteredMatches, currentPage, 'main-match-grid', 'home-prev-page-btn', 'home-next-page-btn', 'home-empty-state');
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                };
-            }
-            if (nextPageBtn) {
-                nextPageBtn.onclick = () => {
-                    const totalPages = Math.ceil(currentFilteredMatches.length / matchesPerPage);
-                    if (currentPage < totalPages) {
-                        currentPage++;
-                        paginateMatches(currentFilteredMatches, currentPage, 'main-match-grid', 'home-prev-page-btn', 'home-next-page-btn', 'home-empty-state');
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                };
-            }
-            console.log('🏠 [View] Home view initialized with latest matches.');
-        });
-        updatePageMetadata();
-        generateAndInjectSchema();
-    }
-
-    /**
-     * Handles the display and logic for the Live Matches view.
-     * Filters and displays only live matches.
-     */
-    function handleLiveMatchesView() {
-        showView('live', (section) => {
-            const matchGridElement = section.querySelector('#live-match-grid');
-            const emptyStateElement = section.querySelector('#live-empty-state');
-            const prevPageBtn = section.querySelector('#live-prev-page-btn');
-            const nextPageBtn = section.querySelector('#live-next-page-btn');
-            const filterButtons = section.querySelectorAll('.filter-btn');
-            const dropdown = section.querySelector('.filter-dropdown'); // This might be null if not added to HTML
-            const sectionTitle = section.querySelector('#live-matches-title');
-
-            if (sectionTitle) sectionTitle.textContent = 'مباريات كرة القدم مباشرة الآن';
-
-            // Check if dropdown exists before trying to populate it
-            if (dropdown) {
-                const uniqueLeagues = [...new Set(matchesData.filter(m => m.status === 'live').map(m => m.league_name))].filter(Boolean);
-                dropdown.innerHTML = '<option value="all">كل البطولات</option>' +    
-                                             uniqueLeagues.map(league => `<option value="${league}">${league}</option>`).join('');
-            }
-
-
-            const applyLiveFilters = () => {
-                const activeFilterBtn = section.querySelector('.filter-btn.active');
-                const filterType = activeFilterBtn ? activeFilterBtn.dataset.filterType : 'status';    
-                const filterValue = activeFilterBtn ? activeFilterBtn.dataset.filterValue : 'live';
-                const selectedLeague = dropdown ? dropdown.value : 'all';
-
-                currentFilteredMatches = matchesData.filter(match => {
-                    let passesStatusFilter = false;
-
-                    if (filterType === 'status' && match.status === 'live') {
-                        passesStatusFilter = true;
-                    }
-                    
-                    let passesLeagueFilter = true;
-                    if (selectedLeague !== 'all' && match.league_name !== selectedLeague) {
-                        passesLeagueFilter = false;
-                    }
-                    
-                    return passesStatusFilter && passesLeagueFilter;
-                }).sort((a, b) => new Date(a.date_time).getTime() - new Date(b.date_time).getTime());
-
-                currentPage = 1;
-                paginateMatches(currentFilteredMatches, currentPage, 'live-match-grid', 'live-prev-page-btn', 'live-next-page-btn', 'live-empty-state');
-            };
-
-            filterButtons.forEach(btn => {
-                btn.onclick = () => {
-                    filterButtons.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    applyLiveFilters();
-                };
-            });
-            if (dropdown) {
-                dropdown.onchange = applyLiveFilters;
-            }
-
-            applyLiveFilters();
-
-            if (prevPageBtn) {
-                prevPageBtn.onclick = () => {
-                    if (currentPage > 1) {
-                        currentPage--;
-                        paginateMatches(currentFilteredMatches, currentPage, 'live-match-grid', 'live-prev-page-btn', 'live-next-page-btn', 'live-empty-state');
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                };
-            }
-            if (nextPageBtn) {
-                nextPageBtn.onclick = () => {
-                    const totalPages = Math.ceil(currentFilteredMatches.length / matchesPerPage);
-                    if (currentPage < totalPages) {
-                        currentPage++;
-                        paginateMatches(currentFilteredMatches, currentPage, 'live-match-grid', 'live-prev-page-btn', 'live-next-page-btn', 'live-empty-state');
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                };
-            }
-            console.log('⚽ [View] Live matches view initialized.');
-        });
-        updatePageMetadata({ title: 'المباريات المباشرة', description: 'شاهد بث مباشر لأهم مباريات كرة القدم الآن. لا تفوت أي لحظة من الإثارة!', keywords: 'مباريات مباشرة, بث مباشر, كورة لايف' });
-        generateAndInjectSchema();
-    }
-
-    /**
-     * Handles the display and logic for the Upcoming Matches view.
-     * Filters and displays upcoming matches by date (today, tomorrow) or league.
-     */
-    function handleUpcomingMatchesView() {
-        showView('upcoming', (section) => {
-            const matchGridElement = section.querySelector('#upcoming-match-grid');
-            const emptyStateElement = section.querySelector('#upcoming-empty-state');
-            const prevPageBtn = section.querySelector('#upcoming-prev-page-btn');
-            const nextPageBtn = section.querySelector('#upcoming-next-page-btn');
-            const filterButtons = section.querySelectorAll('.filter-btn');
-            const dropdown = section.querySelector('.filter-dropdown'); // This might be null if not added to HTML
-            const sectionTitle = section.querySelector('#upcoming-matches-title');
-
-            if (sectionTitle) sectionTitle.textContent = 'مواعيد مباريات كرة القدم القادمة';
-
-            // Check if dropdown exists before trying to populate it
-            if (dropdown) {
-                const uniqueLeagues = [...new Set(matchesData.filter(m => m.status === 'upcoming').map(m => m.league_name))].filter(Boolean);
-                dropdown.innerHTML = '<option value="all">كل البطولات</option>' +    
-                                             uniqueLeagues.map(league => `<option value="${league}">${league}</option>`).join('');
-            }
-
-            const applyUpcomingFilters = () => {
-                const activeFilterBtn = section.querySelector('.filter-btn.active');
-                const filterType = activeFilterBtn ? activeFilterBtn.dataset.filterType : 'status';    
-                const filterValue = activeFilterBtn ? activeFilterBtn.dataset.filterValue : 'upcoming';    
-                const selectedLeague = dropdown ? dropdown.value : 'all';
-                
-                const now = new Date();
-                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-
-                currentFilteredMatches = matchesData.filter(match => {
-                    let passesDateFilter = false;    
-                    const matchDateObj = new Date(match.date_time);
-                    const matchDay = new Date(matchDateObj.getFullYear(), matchDateObj.getMonth(), matchDateObj.getDate());
-
-                    if (match.status !== 'upcoming') return false;
-
-                    if (filterType === 'status' && filterValue === 'upcoming') {
-                        passesDateFilter = true;
-                    } else if (filterType === 'date') {
-                        if (filterValue === 'today') {
-                            passesDateFilter = matchDay.getTime() === today.getTime();
-                        } else if (filterValue === 'tomorrow') {
-                            passesDateFilter = matchDay.getTime() === tomorrow.getTime();    
+            let lazyLoadImages = document.querySelectorAll('.lazyload');
+            lazyLoadImages.forEach(function(image) {
+                if (image.dataset.src) {
+                    image.src = image.dataset.src;
+                    const pictureParent = image.closest('picture');
+                    if (pictureParent) {
+                        const sourceElement = pictureParent.querySelector('source');
+                        if (sourceElement && sourceElement.dataset.srcset) {
+                            sourceElement.srcset = sourceElement.dataset.srcset;
                         }
                     }
-                    
-                    let passesLeagueFilter = true;
-                    if (selectedLeague !== 'all' && match.league_name !== selectedLeague) {
-                        passesLeagueFilter = false;
-                    }
-
-                    return passesDateFilter && passesLeagueFilter;
-                }).sort((a, b) => new Date(a.date_time).getTime() - new Date(b.date_time).getTime());
-
-                currentPage = 1;
-                paginateMatches(currentFilteredMatches, currentPage, 'upcoming-match-grid', 'upcoming-prev-page-btn', 'upcoming-next-page-btn', 'upcoming-empty-state');
-            };
-
-            filterButtons.forEach(btn => {
-                btn.onclick = () => {
-                    filterButtons.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    applyUpcomingFilters();
-                };
-            });
-            if (dropdown) {
-                dropdown.onchange = applyUpcomingFilters;
-            }
-
-            applyUpcomingFilters();
-
-            if (prevPageBtn) {
-                prevPageBtn.onclick = () => {
-                    if (currentPage > 1) {
-                        currentPage--;
-                        paginateMatches(currentFilteredMatches, currentPage, 'upcoming-match-grid', 'upcoming-prev-page-btn', 'upcoming-next-page-btn', 'upcoming-empty-state');
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                };
-            }
-            if (nextPageBtn) {
-                nextPageBtn.onclick = () => {
-                    const totalPages = Math.ceil(currentFilteredMatches.length / matchesPerPage);
-                    if (currentPage < totalPages) {
-                        currentPage++;
-                        paginateMatches(currentFilteredMatches, currentPage, 'upcoming-match-grid', 'upcoming-prev-page-btn', 'upcoming-next-page-btn', 'upcoming-empty-state');
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                };
-            }
-            console.log('📅 [View] Upcoming matches view initialized.');
-        });
-        updatePageMetadata({ title: 'مواعيد المباريات', description: 'اكتشف جدول مباريات كرة القدم القادمة والبطولات الكبرى.', keywords: 'مواعيد مباريات, جدول مباريات, مباريات اليوم, مباريات الغد' });
-        generateAndInjectSchema();
-    }
-
-    /**
-     * Handles the display and logic for the Highlights view.
-     * Displays finished matches that have a highlight URL.
-     */
-    function handleHighlightsView() {
-        showView('highlights', (section) => {
-            const matchGridElement = section.querySelector('#highlights-grid');
-            const emptyStateElement = section.querySelector('#highlights-empty-state');
-            const prevPageBtn = section.querySelector('#highlights-prev-page-btn');
-            const nextPageBtn = section.querySelector('#highlights-next-page-btn');
-            const sectionTitle = section.querySelector('#highlights-title');
-
-            if (sectionTitle) sectionTitle.textContent = 'أهداف وملخصات المباريات';
-
-            currentFilteredMatches = matchesData.filter(m => m.type === 'highlight' && m.embed_url)
-                                             .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime());
-
-            currentPage = 1;
-            paginateMatches(currentFilteredMatches, currentPage, 'highlights-grid', 'highlights-prev-page-btn', 'highlights-next-page-btn', 'highlights-empty-state');
-
-            if (prevPageBtn) {
-                prevPageBtn.onclick = () => {
-                    if (currentPage > 1) {
-                        currentPage--;
-                        paginateMatches(currentFilteredMatches, currentPage, 'highlights-grid', 'highlights-prev-page-btn', 'highlights-next-page-btn', 'highlights-empty-state');
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                };
-            }
-            if (nextPageBtn) {
-                nextPageBtn.onclick = () => {
-                    const totalPages = Math.ceil(currentFilteredMatches.length / matchesPerPage);
-                    if (currentPage < totalPages) {
-                        currentPage++;
-                        paginateMatches(currentFilteredMatches, currentPage, 'highlights-grid', 'highlights-prev-page-btn', 'highlights-next-page-btn', 'highlights-empty-state');
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                };
-            }
-            console.log('🏆 [View] Highlights view initialized.');
-        });
-        updatePageMetadata({ title: 'أهداف وملخصات', description: 'شاهد أحدث أهداف وملخصات مباريات كرة القدم بجودة عالية. استمتع بأجمل اللقطات والأهداف الحاسمة.', keywords: 'أهداف, ملخصات, فيديو كرة قدم, أهداف اليوم, ملخصات المباريات, أجمل الأهداف' });
-        generateAndInjectSchema();
-    }
-
-    /**
-     * Handles the display and logic for the News view.
-     * This is currently a placeholder as actual news data is not in `matches.json`.
-     */
-    function handleNewsView() {
-        showView('news', (section) => {
-            const newsGridElement = section.querySelector('#news-grid');
-            const emptyStateElement = section.querySelector('#news-empty-state');
-            const sectionTitle = section.querySelector('#news-title');
-
-            if (sectionTitle) sectionTitle.textContent = 'آخر أخبار كرة القدم';
-
-            currentFilteredMatches = matchesData.filter(m => m.type === 'news')
-                                             .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime());
-
-            displayMatches(currentFilteredMatches, newsGridElement, emptyStateElement, null);
-            
-            console.log('📰 [View] News view initialized.');
-        });
-        updatePageMetadata({ title: 'آخر أخبار كرة القدم', description: 'تابع آخر أخبار كرة القدم المحلية والعالمية لحظة بلحظة. كل ما يخص الأندية واللاعبين والبطولات.', keywords: 'أخبار كرة قدم, آخر الأخبار, أخبار الرياضة, كرة القدم اليوم' });
-        generateAndInjectSchema();
-    }
-
-    /**
-     * Displays the detailed view of a specific match.
-     * Injects match data and the iframe player.
-     * @param {number} matchId - The ID of the match to display.
-     */
-    async function showMatchDetails(matchId) {
-        console.log(`🔍 [Navigation] Attempting to display match details for ID: ${matchId}`);
-        const match = matchesData.find(m => m.id === matchId);
-
-        if (match) {
-            currentDetailedMatch = match;
-
-            showView('details', (sectionElement) => {
-                const backToHomeBtn = sectionElement.querySelector('#back-to-home-btn');
-                const matchDetailsTitleElement = sectionElement.querySelector('#match-details-title-element');
-                const matchDetailsDescriptionElement = sectionElement.querySelector('#match-details-description');
-                const matchDetailsDateTimeElement = sectionElement.querySelector('#match-details-date-time');
-                const matchDetailsLeagueElement = sectionElement.querySelector('#match-details-league');
-                const matchDetailsCommentatorsElement = sectionElement.querySelector('#match-details-commentators');
-                const matchDetailsTeamsElement = sectionElement.querySelector('#match-details-teams');
-                const matchDetailsStadiumElement = sectionElement.querySelector('#match-details-stadium');
-                const matchDetailsStatusElement = sectionElement.querySelector('#match-details-status');
-                const matchDetailsScoreContainer = sectionElement.querySelector('#match-details-score-container');
-                const matchDetailsScoreElement = sectionElement.querySelector('#match-details-score');
-                const matchDetailsHighlightsContainer = sectionElement.querySelector('#match-details-highlights-container');
-                const matchDetailsHighlightsLink = sectionElement.querySelector('#match-details-highlights-link');
-                const matchDetailsPoster = sectionElement.querySelector('#match-details-poster');
-                const videoContainer = sectionElement.querySelector('.video-player-container'); 
-                const videoLoadingSpinner = sectionElement.querySelector('#video-loading-spinner');
-                const videoOverlay = sectionElement.querySelector('#video-overlay');
-                const playbackErrorMessage = sectionElement.querySelector('#playback-error-message'); // NEW: Error message element
-
-                // Populate text content for match details
-                matchDetailsTitleElement.textContent = match.title || 'عنوان غير متوفر';
-                matchDetailsDescriptionElement.textContent = match.short_description || 'لا يوجد وصف متاح لهذه المباراة.';
-                matchDetailsDateTimeElement.textContent = match.date_time ? new Date(match.date_time).toLocaleString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'غير متوفر';
-                matchDetailsLeagueElement.textContent = match.league_name || 'غير محدد';
-                matchDetailsCommentatorsElement.textContent = Array.isArray(match.commentators) ? match.commentators.join(', ') : match.commentators || 'غير متوفر';
-                matchDetailsTeamsElement.textContent = `${match.home_team || 'فريق غير معروف'} vs ${match.away_team || 'فريق غير معروف'}`;
-                matchDetailsStadiumElement.textContent = match.stadium || 'غير متوفر';
-                
-                if (matchDetailsStatusElement) {
-                    const statusText = match.status === 'live' ? 'مباشر الآن' : (match.status === 'finished' ? 'انتهت' : 'قادمة');
-                    matchDetailsStatusElement.className = '';    
-                    matchDetailsStatusElement.classList.add(match.status === 'live' ? 'live-status' : (match.status === 'finished' ? 'finished-status' : 'upcoming-status'));
-                    matchDetailsStatusElement.textContent = statusText; // Set the status text
-                }
-
-                if (match.status === 'finished' && match.score) {
-                    if (matchDetailsScoreContainer) matchDetailsScoreContainer.classList.remove('hidden');
-                    if (matchDetailsScoreElement) matchDetailsScoreElement.textContent = match.score;
-                } else {
-                    if (matchDetailsScoreContainer) matchDetailsScoreContainer.classList.add('hidden');
-                }
-
-                if (match.highlight_url && match.type === 'highlight') {
-                    if (matchDetailsHighlightsContainer) matchDetailsHighlightsContainer.classList.remove('hidden');
-                    if (matchDetailsHighlightsLink) matchDetailsHighlightsLink.href = match.highlight_url;
-                } else {
-                    if (matchDetailsHighlightsContainer) matchDetailsHighlightsContainer.classList.add('hidden');
-                }
-
-                if (matchDetailsPoster) {
-                    matchDetailsPoster.src = match.thumbnail || 'images/thumbnails/default.jpg';
-                    matchDetailsPoster.alt = match.title;
-                    matchDetailsPoster.setAttribute('width', '250');
-                    matchDetailsPoster.setAttribute('height', '180');
-                    matchDetailsPoster.setAttribute('fetchpriority', 'high');
-                    matchDetailsPoster.setAttribute('loading', 'eager');
-                    console.log(`[Details] Match poster set for ${match.title}`);
-                }
-                
-                // --- iframe Player Setup ---
-                const iframeUrl = match.embed_url;
-
-                if (playbackErrorMessage) playbackErrorMessage.classList.add('hidden'); // Hide any previous error messages
-
-                if (!iframeUrl) {
-                    console.error(`❌ Failed to get stream URL for match ID: ${matchId}. Cannot initialize player. (embed_url is null/empty)`);
-                    if (videoContainer) {
-                        videoContainer.innerHTML = ''; // Clear player area
-                        if (playbackErrorMessage) {
-                            playbackErrorMessage.textContent = 'عذرًا، لا يمكن تشغيل البث حاليًا. رابط البث غير متوفر أو غير صالح.';
-                            playbackErrorMessage.classList.remove('hidden');
-                        }
-                    }
-                    if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
-                    if (videoOverlay) {
-                        videoOverlay.style.pointerEvents = 'none';
-                        videoOverlay.classList.add('hidden');
-                    }
-                    return;
-                }
-
-                if (videoContainer) {
-                    videoContainer.innerHTML = ''; // Clear any previous video player content
-                    if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'block'; // Show spinner before iframe load attempt
-
-                    // Add a small delay before inserting the iframe
-                    setTimeout(() => {
-                        const iframeElement = document.createElement('iframe');
-                        iframeElement.id = 'match-iframe-player';
-                        iframeElement.setAttribute('src', iframeUrl);
-                        iframeElement.setAttribute('frameborder', '0');
-                        iframeElement.setAttribute('allowfullscreen', 'true');
-                        
-                        // *** CRITICAL SANDBOX ATTRIBUTES FOR MOBILE COMPATIBILITY & ADS ***
-                        // These attributes are designed to provide maximum compatibility while maintaining reasonable security.
-                        // allow-scripts: Essential for the iframe content (video player) to function.
-                        // allow-same-origin: Allows the iframe content to behave as if it's from the same origin, crucial for some player scripts.
-                        // allow-popups: Allows the iframe to open new windows (e.g., for ads like Adsterra pop-unders).
-                        // allow-popups-to-escape-sandbox: Extremely important for pop-unders to open outside the sandboxed iframe.
-                        // allow-top-navigation-by-user-activation: Allows the iframe to navigate the top-level window, but ONLY if triggered by a user gesture (a click). This is key for some players or ad interactions.
-                        // allow-forms: Allows form submissions within the iframe (less common for video players, but good for general compatibility).
-                        // allow-modals: Allows modal dialogs (alert, confirm, prompt) within the iframe.
-                        // allow-downloads: Allows downloads initiated by the iframe.
-                        iframeElement.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation allow-forms allow-modals allow-downloads');
-                        
-                        // 'allow' attribute for browser features. Autoplay is specifically OMITTED to comply with mobile browser policies.
-                        // Most mobile browsers will block autoplay with sound, forcing a user interaction.
-                        iframeElement.setAttribute('allow', 'fullscreen; picture-in-picture; encrypted-media;'); 
-
-                        iframeElement.style.width = '100%';
-                        iframeElement.style.height = '100%';
-                        iframeElement.style.position = 'absolute';
-                        iframeElement.style.top = '0';
-                        iframeElement.style.left = '0';
-                        
-                        iframeElement.setAttribute('title', `مشغل بث مباشر لمباراة ${match.title}`);
-
-                        let iframeLoadTimeout = setTimeout(() => {
-                            if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
-                            if (playbackErrorMessage) {
-                                playbackErrorMessage.textContent = 'البث يستغرق وقتًا طويلاً للتحميل، قد يكون هناك مشكلة في مصدر البث أو الاتصال. يرجى المحاولة لاحقاً.';
-                                playbackErrorMessage.classList.remove('hidden');
-                            }
-                            console.warn('[iframe] Iframe loading timeout. Displayed a message to the user.');
-                            clearVideoOverlayAd(); // Clear overlay ad if iframe fails to load
-                        }, 15000); // 15 seconds timeout
-
-                        iframeElement.onload = () => {
-                            clearTimeout(iframeLoadTimeout); // Clear timeout on successful load
-                            console.log(`[iframe] iframe loaded successfully from: ${iframeUrl}`);
-                            if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
-                            if (playbackErrorMessage) playbackErrorMessage.classList.add('hidden'); // Hide error on success
-                            
-                            // Setup the transparent video overlay ad *after* the iframe loads
-                            if (videoOverlay) {
-                                setupVideoOverlayAd(videoOverlay);
-                            }
-                        };
-                        iframeElement.onerror = (e) => {
-                            clearTimeout(iframeLoadTimeout); // Clear timeout on error
-                            console.error(`❌ [iframe] Failed to load iframe from: ${iframeUrl}. Error:`, e);
-                            console.log('Possible reasons: Cross-origin restrictions (X-Frame-Options), invalid URL, or content not supported on device. Check browser console for specifics.');
-                            if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
-                            if (videoContainer) {
-                                videoContainer.innerHTML = ''; // Clear player area
-                                if (playbackErrorMessage) {
-                                    playbackErrorMessage.textContent = 'عذرًا، لا يمكن تشغيل البث حاليًا (قد يكون الرابط غير صالح أو محظور). يرجى المحاولة لاحقاً.';
-                                    playbackErrorMessage.classList.remove('hidden');
-                                }
-                            }
-                            clearVideoOverlayAd(); // Clear overlay ad if iframe fails
-                        };
-                        videoContainer.appendChild(iframeElement);
-                        console.log('[Stream Player] iframe element created and appended with slight delay.');
-                    }, 100); // Small delay before iframe insertion
-                } else {
-                    console.error('❌ Critical error: ".video-player-container" not found in details view. Cannot create stream player.');
-                    if (playbackErrorMessage) {
-                        playbackErrorMessage.textContent = 'خطأ فني: لم يتم العثور على عنصر مشغل الفيديو في الصفحة.';
-                        playbackErrorMessage.classList.remove('hidden');
-                    }
-                    return;
-                }
-
-                const backToHomeBtnInDetails = sectionElement.querySelector('#back-to-home-btn');
-                if (backToHomeBtnInDetails) {
-                    backToHomeBtnInDetails.onclick = () => {
-                        console.log('🔙 [Interaction] "Back to Matches" button clicked from details view.');
-                        showHomePage();
-                    };
                 }
             });
-            
-            const matchSlug = match.title.toLowerCase().replace(/[^a-z0-9\u0600-\u06FF\s-]/g, '').replace(/\s+/g, '-');
-            const newUrl = new URL(window.location.origin);
-            newUrl.searchParams.set('view', 'details');
-            newUrl.searchParams.set('id', match.id);
-            newUrl.searchParams.set('title', matchSlug);
-            history.pushState({ view: 'details', id: match.id }, match.title, newUrl.toString());
-            console.log(`🔗 [URL] Browser URL updated to ${newUrl.toString()}`);
+        }
+        console.log('🖼️ [تحميل كسول] تم تهيئة IntersectionObserver للصور (أو العودة للخيار البديل).');
+    }
 
-            updatePageMetadata(match);
-            generateAndInjectSchema(match);
+    function displayMovies(moviesToDisplay, targetGridElement) {
+        if (!targetGridElement) {
+            console.error('❌ displayMovies: العنصر المستهدف للشبكة فارغ أو غير معرّف.');
+            return;
+        }
+        targetGridElement.innerHTML = ''; // مسح المحتوى القديم
 
-            displaySuggestedMatches(match.id); // Pass match.id, not currentDetailedMatch.id
-            console.log(`✨ [Suggestions] displaySuggestedMatches called for ID: ${match.id}.`);
+        if (!moviesToDisplay || moviesToDisplay.length === 0) {
+            targetGridElement.innerHTML = '<p style="text-align: center; color: var(--text-muted);">لا توجد أفلام مطابقة للبحث أو مقترحة.</p>';
+            console.log(`🎬 [عرض] لا توجد أفلام للعرض في ${targetGridElement.id}.`);
+            return;
+        }
+
+        console.log(`🎬 [عرض] جاري عرض ${moviesToDisplay.length} فيلم في ${targetGridElement.id}.`);
+        moviesToDisplay.forEach(movie => {
+            targetGridElement.appendChild(createMovieCard(movie));
+        });
+        console.log(`🎬 [عرض] تم عرض ${moviesToDisplay.length} فيلمًا في ${targetGridElement.id}.`);
+        initializeLazyLoad(); // إعادة تهيئة التحميل الكسول للعناصر الجديدة
+    }
+
+    function paginateMovies(moviesArray, page) {
+        if (!Array.isArray(moviesArray) || moviesArray.length === 0) {
+            displayMovies([], movieGrid);
+            updatePaginationButtons(0);
+            return;
+        }
+
+        const startIndex = (page - 1) * moviesPerPage;
+        const endIndex = startIndex + moviesPerPage;
+        const paginatedMovies = moviesArray.slice(startIndex, endIndex);
+
+        displayMovies(paginatedMovies, movieGrid);
+        updatePaginationButtons(moviesArray.length);
+        console.log(`➡️ [ترقيم الصفحات] يتم عرض الصفحة ${page}. الأفلام من الفهرس ${startIndex} إلى ${Math.min(endIndex, moviesArray.length)-1}.`);
+    }
+
+    function updatePaginationButtons(totalMovies) {
+        if (prevPageBtn) prevPageBtn.disabled = currentPage === 1;
+        if (nextPageBtn) nextPageBtn.disabled = currentPage * moviesPerPage >= totalMovies;
+        console.log(`🔄 [ترقيم الصفحات] تم تحديث الأزرار. الصفحة الحالية: ${currentPage}, إجمالي الأفلام: ${totalMovies}`);
+    }
+
+    function performSearch() {
+        const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        let filteredMovies = [];
+        if (query) {
+            filteredMovies = moviesData.filter(movie =>
+                movie.title.toLowerCase().includes(query) ||
+                (movie.director && movie.director.toLowerCase().includes(query)) ||
+                (Array.isArray(movie.cast) ? movie.cast.some(actor => actor.toLowerCase().includes(query)) : (movie.cast && String(movie.cast).toLowerCase().includes(query))) ||
+                (movie.genre && String(movie.genre).toLowerCase().includes(query))
+            );
+            if (sectionTitleElement) {
+                sectionTitleElement.textContent = `نتائج البحث عن "${query}"`;
+            }
+            console.log(`🔍 [بحث] تم إجراء بحث عن "${query}". تم العثور على ${filteredMovies.length} نتيجة.`);
+        } else {
+            filteredMovies = [...moviesData].sort(() => 0.5 - Math.random());
+            if (sectionTitleElement) {
+                sectionTitleElement.textContent = 'أحدث الأفلام';
+            }
+            console.log('🔍 [بحث] استعلام البحث فارغ، يتم عرض جميع الأفلام (عشوائياً).');
+        }
+        currentPage = 1;
+        moviesDataForPagination = filteredMovies;
+        paginateMovies(moviesDataForPagination, currentPage);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function showMovieDetails(movieId) {
+        console.log(`🔍 [توجيه] عرض تفاصيل الفيلم للمعّرف: ${movieId}`);
+        const movie = moviesData.find(m => m.id === movieId);
+
+        if (movie) {
+            currentDetailedMovie = movie;
+
+            if (heroSection) heroSection.style.display = 'none';
+            if (movieGridSection) movieGridSection.style.display = 'none';
+
+            // مسح أي محتوى سابق في حاوية الفيديو
+            if (videoContainer) {
+                videoContainer.innerHTML = '';
+                // إنشاء iframe جديد
+                const newIframeElement = document.createElement('iframe');
+                newIframeElement.id = 'movie-player-iframe'; // يمكنك إضافة ID لسهولة التعامل معه مستقبلاً
+                newIframeElement.setAttribute('src', movie.embed_url); // استخدام رابط التضمين مباشرةً
+                newIframeElement.setAttribute('frameborder', '0');
+                newIframeElement.setAttribute('allowfullscreen', '');
+                newIframeElement.setAttribute('scrolling', 'no');
+                // لمنع مشاكل النقر وتداخل الإعلانات، يجب أن يكون iframe معزولاً بقدر الإمكان
+                newIframeElement.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture'); 
+                newIframeElement.style.width = '100%';
+                newIframeElement.style.height = '100%';
+                videoContainer.appendChild(newIframeElement);
+                console.log('[مشغل الفيديو] تم إنشاء iframe جديد للمشغل.');
+            } else {
+                console.error('❌ خطأ فادح: movie-player-container غير موجود. لا يمكن إنشاء مشغل الفيديو.');
+                return;
+            }
+
+            if (movieDetailsSection) movieDetailsSection.style.display = 'block';
+            if (suggestedMoviesSection) suggestedMoviesSection.style.display = 'block';
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            console.log('[توجيه] تم التمرير للأعلى.');
+
+            document.getElementById('movie-details-title').textContent = movie.title || 'غير متوفر';
+            document.getElementById('movie-details-description').textContent = movie.description || 'لا يوجد وصف متاح.';
+            const releaseDate = movie.release_date ? new Date(movie.release_date).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }) : 'غير متوفر';
+            document.getElementById('movie-details-release-date').textContent = releaseDate;
+            document.getElementById('movie-details-genre').textContent = movie.genre || 'غير محدد';
+            document.getElementById('movie-details-director').textContent = movie.director || 'غير متوفر';
+            document.getElementById('movie-details-cast').textContent = Array.isArray(movie.cast) ? movie.cast.join(', ') : movie.cast || 'غير متوفر';
+            document.getElementById('movie-details-duration').textContent = movie.duration || 'غير متوفر';
+            document.getElementById('movie-details-rating').textContent = movie.rating || 'N/A';
+
+            if (movieDetailsPoster) {
+                movieDetailsPoster.src = movie.poster;
+                movieDetailsPoster.alt = movie.title;
+                movieDetailsPoster.setAttribute('width', '300');
+                movieDetailsPoster.setAttribute('height', '450');
+                console.log(`[تفاصيل] تم تعيين البوستر لـ ${movie.title}`);
+            }
+
+            const videoUrl = movie.embed_url; // هنا تم استخدام movie.embed_url مباشرةً
+
+            if (!videoUrl) {
+                console.error(`❌ فشل الحصول على رابط الفيديو لمعّرف الفيلم: ${movieId}. لا يمكن تهيئة المشغل.`);
+                if (videoContainer) {
+                    videoContainer.innerHTML = '<p style="text-align: center; color: var(--text-color); margin-top: 20px;">عذرًا، لا يمكن تشغيل الفيديو حاليًا (الرابط غير صالح).</p>';
+                }
+                if (videoOverlay) videoOverlay.style.display = 'none'; // إخفاء الغطاء إذا لم يكن هناك فيديو
+                if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
+                return;
+            }
+
+            // إظهار الغطاء الأولي إذا كان موجودًا
+            if (videoOverlay) {
+                videoOverlay.style.pointerEvents = 'auto'; // لتمكين النقر على الإعلان
+                videoOverlay.classList.remove('hidden');
+                if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'block'; // يمكن إظهاره إذا كنت تريد مؤشر تحميل أولي
+            }
+            
+            // بما أننا نستخدم iframe، لا توجد أحداث "playing", "waiting" وهكذا للتحكم المباشر
+            // يمكنك إخفاء الـ spinner بعد فترة قصيرة إذا كنت تعتقد أن iframe سيبدأ التحميل
+            setTimeout(() => {
+                if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
+                // يمكنك إبقاء الغطاء مرئياً لحين يضغط المستخدم على "تشغيل" داخل الـ iframe إذا كان المشغل يدعمه
+                // أو إخفائه هنا، حسب سياسة الإعلانات
+            }, 2000); // إخفاء spinner بعد ثانيتين، هذا تقديري
+
+            const movieSlug = movie.title.toLowerCase().replace(/[^a-z0-9\u0600-\u06FF\s-]/g, '').replace(/\s+/g, '-');
+            const newUrl = new URL(window.location.origin);
+            newUrl.searchParams.set('view', 'details');
+            newUrl.searchParams.set('id', movieId);
+            newUrl.searchParams.set('title', movieSlug);
+
+            history.pushState({ view: 'details', id: movieId }, movie.title, newUrl.toString());
+            console.log(`🔗 [URL] تم تحديث URL إلى ${newUrl.toString()}`);
+
+            // استدعاء الدوال المعدلة لـ SEO
+            updatePageMetadata(movie);
+            generateAndInjectSchema(movie);
+
+            displaySuggestedMovies(movieId);
+            console.log(`✨ [اقتراحات] استدعاء displaySuggestedMovies للمعّرف: ${movieId}`);
+
         } else {
-            console.error('❌ [Navigation] Match not found for the given ID:', matchId, '. Redirecting to home page.');
+            console.error('❌ [توجيه] الفيلم غير موجود للمعّرف:', movieId, 'يتم إعادة التوجيه إلى الصفحة الرئيسية.');
             showHomePage();
         }
     }
 
-
-    // --- 6. SEO Functions (Meta Tags & JSON-LD Schema) ---
-
-    /**
-     * Dynamically updates HTML meta tags and document title for SEO and social sharing.
-     * Sets default values for the homepage or specific match details.
-     * @param {object|null} match - The current match object if viewing details, or null for general views/homepage.
-     */
-    function updatePageMetadata(match = null) {
-        const canonicalLink = document.getElementById('dynamic-canonical');
-        const dynamicTitleElement = document.getElementById('dynamic-title');
-        const dynamicDescription = document.getElementById('dynamic-description');
-        const dynamicKeywords = document.getElementById('dynamic-keywords');
-        const dynamicOgType = document.getElementById('dynamic-og-type');
-        const dynamicOgUrl = document.getElementById('dynamic-og-url');
-        const dynamicOgTitle = document.getElementById('dynamic-og-title');
-        const dynamicOgDescription = document.getElementById('dynamic-og-description');
-        const dynamicOgImage = document.getElementById('dynamic-og-image');
-        const dynamicOgImageAlt = document.getElementById('dynamic-og-image-alt');
-        const dynamicTwitterCard = document.getElementById('dynamic-twitter-card');
-        const dynamicTwitterUrl = document.getElementById('dynamic-twitter-url');
-        const dynamicTwitterTitle = document.getElementById('dynamic-twitter-title');
-        const dynamicTwitterDescription = document.getElementById('dynamic-twitter-description');
-        const dynamicTwitterImage = document.getElementById('dynamic-twitter-image');
+    // START: Updated function for Meta Tags (Renamed from updateMetaTags)
+    function updatePageMetadata(movie = null) {
+        let canonicalLink = document.querySelector('link[rel="canonical"]');
+        if (!canonicalLink) {
+            canonicalLink = document.createElement('link');
+            canonicalLink.setAttribute('rel', 'canonical');
+            document.head.appendChild(canonicalLink);
+        }
 
         let pageTitle, pageDescription, pageKeywords, ogUrl, ogTitle, ogDescription, ogImage, ogType;
         let twitterTitle, twitterDescription, twitterImage, twitterCard;
 
-        if (match) {
-            // Case: Match Details Page
-            const matchSlug = match.title.toLowerCase().replace(/[^a-z0-9\u0600-\u06FF\s-]/g, '').replace(/\s+/g, '-');
-            const matchUrl = `${window.location.origin}/view/?details&id=${match.id}&title=${matchSlug}`;
-            
-            pageTitle = `${match.title} - بث مباشر أونلاين على شاهد كورة | Ultimate Pitch`;
-            const shortDescriptionContent = (match.short_description || `شاهد بث مباشر لمباراة ${match.home_team || 'فريق'} ضد ${match.away_team || 'فريق'} في ${match.league_name || 'بطولة كرة القدم'} بجودة عالية على شاهد كورة. تابع جميع مباريات كرة القدم مباشرة.`).substring(0, 155);
-            pageDescription = shortDescriptionContent + (match.short_description && match.short_description.length > 155 ? '...' : '');
-            
-            const matchTeams = `${match.home_team}, ${match.away_team}`.split(',').map(s => s.trim()).filter(Boolean).join(', ');    
-            const matchLeague = String(match.league_name || '').trim();
-            const commentators = Array.isArray(match.commentators) ? match.commentators.join(', ') : String(match.commentators || '').trim();
+        if (movie) {
+            const movieSlug = movie.title.toLowerCase().replace(/[^a-z0-9\u0600-\u06FF\s-]/g, '').replace(/\s+/g, '-');
+            const movieUrl = `${window.location.origin}/view/?details&id=${movie.id}&title=${movieSlug}`;
+            canonicalLink.setAttribute('href', movieUrl);
+
+            pageTitle = `${movie.title} - مشاهدة أونلاين على شاهد بلس بجودة عالية`;
+            const shortDescription = (movie.description || `شاهد فيلم ${movie.title} أونلاين بجودة عالية. استمتع بأحدث الأفلام والمسلسلات العربية والأجنبية بجودة 4K فائقة الوضوح.`).substring(0, 155);
+            pageDescription = shortDescription + (movie.description && movie.description.length > 155 ? '...' : '');
+
+            const movieGenres = Array.isArray(movie.genre) ? movie.genre.join(', ') : String(movie.genre || '').trim();
+            const movieCast = Array.isArray(movie.cast) ? movie.cast.join(', ') : String(movie.cast || '').trim();
             pageKeywords = [
-                match.title, matchTeams, matchLeague, commentators, 'شاهد كورة', 'بث مباشر', 'مشاهدة أونلاين',    
-                'مباريات اليوم', 'كرة القدم', 'جودة عالية', 'الدوري المصري', 'الدوري الإنجليزي',    
-                'الدوري الإسباني', 'دوري أبطال أوروبا', 'بث مباشر مجاني', 'Ultimate Pitch'
+                movie.title,
+                movieGenres,
+                movie.director,
+                movieCast,
+                'شاهد بلس', 'مشاهدة أونلاين', 'فيلم', 'بجودة عالية',
+                'أفلام عربية', 'أفلام أجنبية', 'مسلسلات حصرية', 'أفلام 4K'
             ].filter(Boolean).join(', ');
 
-            ogUrl = matchUrl;
-            ogTitle = `${match.title} - بث مباشر على شاهد كورة | Ultimate Pitch`;
+            ogUrl = movieUrl;
+            ogTitle = `${movie.title} - مشاهدة أونلاين على شاهد بلس`;
             ogDescription = pageDescription;
-            ogImage = match.thumbnail || 'https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png';
-            ogType = "video.other";
+            ogImage = movie.poster; // استخدم بوستر الفيلم كصورة OG
+            ogType = "video.movie"; // مهم جداً لتحديد نوع المحتوى كفيلم فيديو
 
             twitterTitle = ogTitle;
             twitterDescription = ogDescription;
             twitterImage = ogImage;
-            twitterCard = "summary_large_image";
+            twitterCard = "summary_large_image"; // غالباً ما يكون هذا ثابتاً
 
         } else {
-            const currentPath = window.location.pathname;
-            if (currentPath.includes('/live-matches') || currentPath.includes('/live')) {
-                pageTitle = 'شاهد كورة - المباريات المباشرة الآن | بث مباشر كرة القدم';
-                pageDescription = 'شاهد بث مباشر لأهم مباريات كرة القدم الجارية حالياً بجودة عالية ومجاناً على شاهد كورة. لا تفوت أي هدف!';
-                pageKeywords = 'مباريات مباشرة, بث مباشر, كورة لايف, شاهد الآن, مباريات جارية, الدوري الإنجليزي مباشر, الدوري الإسباني مباشر';
-            } else if (currentPath.includes('/upcoming-matches') || currentPath.includes('/upcoming')) {
-                pageTitle = 'شاهد كورة - مواعيد مباريات كرة القدم القادمة | جدول المباريات';
-                pageDescription = 'اكتشف جدول مباريات كرة القدم القادمة، مواعيد البطولات الكبرى، ومواعيد مباريات اليوم والغد على شاهد كورة.';
-                pageKeywords = 'مواعيد مباريات, جدول مباريات, مباريات اليوم, مباريات الغد, مباريات قادمة, شاهد كورة مواعيد';
-            } else if (currentPath.includes('/highlights')) {
-                pageTitle = 'شاهد كورة - أهداف وملخصات المباريات | فيديو كرة القدم';
-                pageDescription = 'شاهد أحدث أهداف وملخصات مباريات كرة القدم بجودة عالية. استمتع بأجمل اللقطات والأهداف الحاسمة من الدوريات العالمية.';
-                pageKeywords = 'أهداف, ملخصات, فيديو كرة قدم, أهداف اليوم, ملخصات المباريات, أجمل الأهداف';
-            } else if (currentPath.includes('/news')) {
-                pageTitle = 'شاهد كورة - آخر أخبار كرة القدم | عاجل وحصري';
-                pageDescription = 'تابع آخر أخبار كرة القدم المحلية والعالمية لحظة بلحظة. كل ما يخص الأندية واللاعبين والبطولات الكبرى حصرياً على شاهد كورة.';
-                pageKeywords = 'أخبار كرة قدم, آخر الأخبار, أخبار الرياضة, كرة القدم اليوم, انتقالات اللاعبين, عاجل كورة';
-            } else { // Default for homepage
-                pageTitle = 'شاهد كورة - Ultimate Pitch: بث مباشر لمباريات كرة القدم | مشاهدة مباريات اليوم بجودة عالية';
-                pageDescription = 'شاهد كورة: ملعبك النهائي لكرة القدم. بث مباشر بجودة فائقة، أهداف مجنونة، تحليلات عميقة، وآخر الأخبار من قلب الحدث. انغمس في عالم الكرة الحقيقية.';
-                pageKeywords = 'شاهد كورة، بث مباشر، مباريات اليوم، أهداف، ملخصات، أخبار كرة قدم، دوريات عالمية، كرة القدم، مشاهدة مجانية، تحليل كروي، Ultimate Pitch';
-            }
+            // بيانات الصفحة الرئيسية الافتراضية
+            pageTitle = 'شاهد بلس - بوابتك الفاخرة للترفيه السينمائي | أفلام ومسلسلات 4K أونلاين';
+            pageDescription = 'شاهد بلس: بوابتك الفاخرة للترفيه السينمائي. استمتع بأحدث الأفلام والمسلسلات العربية والأجنبية بجودة 4K فائقة الوضوح، مترجمة ومدبلجة، مع تجربة مشاهدة احترافية لا مثيل لها. اكتشف عالمًا من المحتوى الحصري والمتجدد.';
+            pageKeywords = 'شاهد بلس، أفلام، مسلسلات، مشاهدة أونلاين، 4K، أفلام عربية، أفلام أجنبية، مسلسلات حصرية، سينما، ترفيه فاخر، مترجم، دبلجة، أفلام 2025، مسلسلات جديدة، أكشن، دراما، خيال علمي، كوميديا';
 
             ogUrl = window.location.origin;
-            ogTitle = pageTitle;
+            canonicalLink.setAttribute('href', ogUrl + '/');
+            ogTitle = 'شاهد بلس - بوابتك الفاخرة للترفيه السينمائي | أفلام ومسلسلات 4K';
             ogDescription = pageDescription;
-            ogImage = 'https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png';
+            ogImage = 'https://shahidplus.online/images/your-site-logo-for-og.png'; // استبدل برابط شعار موقعك
             ogType = 'website';
 
             twitterTitle = ogTitle;
             twitterDescription = ogDescription;
-            twitterImage = 'https://shahidkora.online/images/shahidkora-ultimate-pitch-twitter.png';
+            twitterImage = 'https://shahidplus.online/images/your-site-logo-for-twitter.png'; // استبدل برابط شعار موقعك
             twitterCard = "summary_large_image";
         }
 
-        if (dynamicTitleElement) dynamicTitleElement.textContent = pageTitle;
+        // تحديث جميع الـ meta tags باستخدام الـ IDs
         document.title = pageTitle;
-        if (dynamicDescription) dynamicDescription.setAttribute('content', pageDescription);
-        if (dynamicKeywords) dynamicKeywords.setAttribute('content', pageKeywords);
+        document.getElementById('dynamic-title').textContent = pageTitle; // تحديث الـ title element
+        document.getElementById('dynamic-description').setAttribute('content', pageDescription);
+        document.querySelector('meta[name="keywords"]').setAttribute('content', pageKeywords); // لا يوجد ID لهذا، لذا نستخدم querySelector
 
-        if (dynamicOgUrl) dynamicOgUrl.setAttribute('content', ogUrl);
-        if (dynamicOgType) dynamicOgType.setAttribute('content', ogType);
-        if (dynamicOgTitle) dynamicOgTitle.setAttribute('content', ogTitle);
-        if (dynamicOgDescription) dynamicOgDescription.setAttribute('content', ogDescription);
-        if (dynamicOgImage) dynamicOgImage.setAttribute('content', ogImage);
-        if (dynamicOgImageAlt) dynamicOgImageAlt.setAttribute('content', ogTitle);    
-        
-        if (dynamicTwitterCard) dynamicTwitterCard.setAttribute('content', twitterCard);
-        if (dynamicTwitterUrl) dynamicTwitterUrl.setAttribute('content', ogUrl);    
-        if (dynamicTwitterTitle) dynamicTwitterTitle.setAttribute('content', twitterTitle);
-        if (dynamicTwitterDescription) dynamicTwitterDescription.setAttribute('content', twitterDescription);
-        if (dynamicTwitterImage) dynamicTwitterImage.setAttribute('content', twitterImage);
+        document.getElementById('dynamic-og-title').setAttribute('content', ogTitle);
+        document.getElementById('dynamic-og-description').setAttribute('content', ogDescription);
+        document.getElementById('dynamic-og-image').setAttribute('content', ogImage);
+        document.getElementById('dynamic-og-image-alt').setAttribute('content', ogTitle); // استخدم عنوان الـ OG كـ alt
+        document.getElementById('dynamic-og-url').setAttribute('content', ogUrl);
+        document.querySelector('meta[property="og:type"]').setAttribute('content', ogType); // لا يوجد ID لهذا، لذا نستخدم querySelector
 
-        if (canonicalLink) canonicalLink.setAttribute('href', ogUrl);
+        document.getElementById('dynamic-twitter-title').setAttribute('content', twitterTitle);
+        document.getElementById('dynamic-twitter-description').setAttribute('content', twitterDescription);
+        document.getElementById('dynamic-twitter-image').setAttribute('content', twitterImage);
+        document.querySelector('meta[property="twitter:card"]').setAttribute('content', twitterCard); // لا يوجد ID لهذا، لذا نستخدم querySelector
 
-        console.log('📄 [SEO] Meta tags updated.');
+        // تأكد من تحديث canonical link
+        document.getElementById('dynamic-canonical').setAttribute('href', canonicalLink.getAttribute('href'));
+
+        console.log('📄 [SEO] تم تحديث الميتا تاجز.');
     }
-    
-    /**
-     * Generates and injects JSON-LD structured data (Schema.org markup) into the page's <head>.
-     * Provides specific `SportsEvent` schema for match details or clears it for general views.
-     * @param {object|null} match - The current match object if viewing details, or null for general views/homepage.
-     */
-    function generateAndInjectSchema(match = null) {
-        const schemaScriptElement = document.getElementById('json-ld-schema');
+    // END: Updated function for Meta Tags
+
+    // START: Updated function for JSON-LD Schema (Renamed from addJsonLdSchema)
+    function generateAndInjectSchema(movie = null) {
+        let schemaScriptElement = document.getElementById('video-schema-markup');
         if (!schemaScriptElement) {
-            console.error('❌ JSON-LD schema script element (ID: "json-ld-schema") not found in HTML. Cannot inject schema.');
-            return;
+            schemaScriptElement = document.createElement('script');
+            schemaScriptElement.type = 'application/ld+json';
+            schemaScriptElement.id = 'video-schema-markup';
+            document.head.appendChild(schemaScriptElement);
         }
 
-        if (!match) {
+        if (!movie) {
+            // مسح أي schema إذا لم يكن هناك فيلم محدد (لصفحة الرئيسية)
             schemaScriptElement.textContent = '';
-            console.log('📄 [SEO] No specific JSON-LD schema for this general view (cleared).');
+            console.log('📄 [SEO] لا يوجد مخطط JSON-LD للصفحة الرئيسية.');
             return;
         }
 
-        const matchSlug = match.title.toLowerCase().replace(/[^a-z0-9\u0600-\u06FF\s-]/g, '').replace(/\s+/g, '-');
-        const matchUrl = `${window.location.origin}/view/?details&id=${match.id}&title=${matchSlug}`;
+        // استخدام رابط الصفحة الحالي لـ Movie URL
+        const movieSlug = movie.title.toLowerCase().replace(/[^a-z0-9\u0600-\u06FF\s-]/g, '').replace(/\s+/g, '-');
+        const movieUrl = `${window.location.origin}/view/?details&id=${movie.id}&title=${movieSlug}`;
 
-        let formattedDate;
-        if (match.date_time) {
+        let formattedUploadDate;
+        if (movie.release_date) {
             try {
-                const date = new Date(match.date_time);
+                const date = new Date(movie.release_date);
                 if (!isNaN(date.getTime())) {
-                    formattedDate = date.toISOString();
+                    formattedUploadDate = date.toISOString();
                 } else {
-                    formattedDate = new Date().toISOString();
+                    formattedUploadDate = new Date().toISOString(); // fallback
                 }
             } catch (e) {
-                formattedDate = new Date().toISOString();
+                formattedUploadDate = new Date().toISOString(); // fallback
             }
         } else {
-            formattedDate = new Date().toISOString();
+            formattedUploadDate = new Date().toISOString(); // fallback
         }
 
-        const teamsArray = [match.home_team, match.away_team].filter(Boolean);    
-        const commentatorsArray = Array.isArray(match.commentators) ? match.commentators : (match.commentators ? String(match.commentators).split(',').map(s => s.trim()).filter(s => s !== '') : []);
+        const castArray = Array.isArray(movie.cast) ? movie.cast : String(movie.cast || '').split(',').map(s => s.trim()).filter(s => s !== '');
+        const genreArray = Array.isArray(movie.genre) ? movie.genre : String(movie.genre || '').split(',').map(s => s.trim()).filter(s => s !== '');
         
-        const streamSourceUrl = match.embed_url;
+        // هنا نستخدم movie.embed_url مباشرةً، والذي يفترض أنه الرابط المباشر في JSON
+        const videoSourceUrl = movie.embed_url; // رابط التضمين الفعلي للـ iframe
 
         const schema = {
             "@context": "https://schema.org",
-            "@type": "SportsEvent",    
-            "name": match.title,
-            "description": match.short_description || `مشاهدة بث مباشر لمباراة ${teamsArray.join(' و ')} في ${match.league_name || 'بطولة كرة القدم'} على شاهد كورة.`,
-            "image": match.thumbnail || 'https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png',
-            "url": matchUrl,
-            "startDate": formattedDate,    
-            "location": {
-                "@type": "Place",
-                "name": match.stadium || "ملعب غير معروف"
-            },
-            "performer": teamsArray.map(teamName => ({ "@type": "SportsTeam", "name": teamName })),    
-            "sport": "Football",
-            "eventStatus": `https://schema.org/EventStatusType/${
-                match.status.toLowerCase() === 'live' ? 'EventScheduled' :
-                (match.status.toLowerCase() === 'finished' ? 'EventCompleted' : 'EventScheduled')
-            }`,    
+            "@type": "Movie", // تغيير النوع إلى Movie لأنه الأنسب
+            "name": movie.title,
+            "description": movie.description || `مشاهدة وتحميل فيلم ${movie.title} بجودة عالية على شاهد بلس. استمتع بمشاهدة أحدث الأفلام والمسلسلات الحصرية.`,
+            "image": movie.poster, // صورة الفيلم
+            "url": movieUrl, // رابط الصفحة الذي يحتوي على الفيلم
+            "datePublished": formattedUploadDate, // تاريخ نشر الفيلم
+            "director": { "@type": "Person", "name": movie.director || "غير متوفر" },
+            "actor": castArray.map(actor => ({ "@type": "Person", "name": actor })),
+            "genre": genreArray,
             
+            // إضافة VideoObject كخاصية لـ Movie (مهم جداً لجوجل لتفهم أن هناك فيديو هنا)
             "video": {
                 "@type": "VideoObject",
-                "name": `بث مباشر لمباراة ${match.title}`,
-                "description": `بث مباشر بجودة عالية لمباراة ${match.title} بين ${teamsArray.join(' و ')}.`,
-                "thumbnailUrl": match.thumbnail || 'https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png',
-                "uploadDate": formattedDate,
-                "contentUrl": streamSourceUrl,
-                "embedUrl": streamSourceUrl,
-                "interactionCount": "100000",
-                "liveBroadcast": {
-                    "@type": "BroadcastEvent",
-                    "isLiveBroadcast": match.status.toLowerCase() === 'live',
-                    "startDate": formattedDate,
-                    "endDate": new Date(new Date(match.date_time).getTime() + 105 * 60 * 1000).toISOString()
-                },
+                "name": movie.title,
+                "description": movie.description || `فيديو ${movie.title} بجودة عالية.`,
+                "thumbnailUrl": movie.thumbnailUrl || movie.poster,
+                "uploadDate": formattedUploadDate,
+                "duration": movie.duration || "PT1H30M", // تأكد من وجود المدة
+                "contentUrl": videoSourceUrl, // رابط الفيديو الفعلي (الرابط الأصلي المباشر)
+                "embedUrl": videoSourceUrl, // نفس الرابط إذا كان هو نفسه الذي يتم تضمينه
+                "interactionCount": "100000", // يمكنك استخدام عدد مشاهدات تقديري أو حقيقي
                 "publisher": {
                     "@type": "Organization",
-                    "@id": "https://shahidkora.online/#publisher", // Consistent ID for publisher
-                    "name": "شاهد كورة - Ultimate Pitch",
+                    "name": "شاهد بلس",
                     "logo": {
                         "@type": "ImageObject",
-                        "url": "https://shahidkora.online/images/shahed-plus-logo.png",
+                        "url": "https://shahidplus.online/images/shahed-plus-logo.png", // استبدل برابط شعار موقعك
                         "width": 200,
                         "height": 50
                     }
@@ -1316,7 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "@type": "WatchAction",
                 "target": {
                     "@type": "EntryPoint",
-                    "urlTemplate": matchUrl,
+                    "urlTemplate": movieUrl,
                     "inLanguage": "ar",
                     "actionPlatform": [
                         "http://schema.org/DesktopWebPlatform",
@@ -1325,138 +590,121 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 "expectsAcceptanceOf": {
                     "@type": "Offer",
-                    "name": "مشاهدة البث المباشر",
+                    "name": "مشاهدة الفيلم",
                     "price": "0",
                     "priceCurrency": "USD",
                     "availability": "http://schema.org/InStock",
-                    "url": matchUrl
+                    "url": movieUrl
                 }
             }
         };
 
-        if (commentatorsArray.length > 0) {
-            schema.commentator = commentatorsArray.map(name => ({ "@type": "Person", "name": name }));
+        // إضافة التقييم المجمع إذا كان متاحاً
+        const ratingValue = parseFloat(movie.rating);
+        if (!isNaN(ratingValue) && ratingValue >= 0 && ratingValue <= 10) {
+            schema.aggregateRating = {
+                "@type": "AggregateRating",
+                "ratingValue": ratingValue.toFixed(1),
+                "bestRating": "10",
+                "ratingCount": "10000" // استخدم عدد التقييمات الفعلي إذا كان لديك
+            };
         }
 
-        schemaScriptElement.textContent = JSON.stringify(schema, null, 2);
-        console.log('📄 [SEO] New JSON-LD schema added/updated.');
+        schemaScriptElement.textContent = JSON.stringify(schema, null, 2); // تنسيق JSON للقراءة
+        console.log('📄 [SEO] تم إضافة/تحديث مخطط JSON-LD الجديد.');
     }
+    // END: Updated function for JSON-LD Schema
 
-    /**
-     * Displays a list of suggested matches related to the currently detailed match.
-     * @param {number} currentMatchId - The ID of the match currently being viewed in detail.
-     */
-    function displaySuggestedMatches(currentMatchId) {
-        const suggestedMatchGrid = currentActiveViewElement ? currentActiveViewElement.querySelector('#suggested-match-grid') : null;
-        if (!suggestedMatchGrid || !currentDetailedMatch) {
-            console.error('❌ displaySuggestedMatches: "suggestedMatchGrid" or "currentDetailedMatch" not found. Cannot display suggested matches.');
+    function displaySuggestedMovies(currentMovieId) {
+        if (!suggestedMovieGrid || !currentDetailedMovie) {
+            console.error('❌ displaySuggestedMovies: suggestedMovieGrid أو currentDetailedMovie غير موجودين. لا يمكن عرض الأفلام المقترحة.');
             return;
         }
 
-        const currentMatchLeague = currentDetailedMatch.league_name;
-        const currentMatchTeams = [currentDetailedMatch.home_team, currentDetailedMatch.away_team].filter(Boolean);
+        const currentMovieGenre = currentDetailedMovie.genre;
         let suggested = [];
 
-        // Prioritize matches in the same league (upcoming or live)
-        if (currentMatchLeague) {
-            suggested = matchesData.filter(match =>
-                match.id !== currentMatchId &&
-                match.league_name === currentMatchLeague &&
-                match.status !== 'finished'
+        if (currentMovieGenre) {
+            const currentMovieGenresArray = Array.isArray(currentMovieGenre) ? currentMovieGenre.map(g => String(g).toLowerCase().trim()) : [String(currentMovieGenre).toLowerCase().trim()];
+
+            suggested = moviesData.filter(movie =>
+                movie.id !== currentMovieId &&
+                (Array.isArray(movie.genre)
+                    ? movie.genre.some(g => currentMovieGenresArray.includes(String(g).toLowerCase().trim()))
+                    : currentMovieGenresArray.includes(String(movie.genre || '').toLowerCase().trim())
+                )
             );
+            suggested = suggested.sort(() => 0.5 - Math.random());
         }
 
-        // Add team-related matches if not enough suggested matches
-        if (suggested.length < 12) {
-            const teamRelated = matchesData.filter(match =>
-                match.id !== currentMatchId &&
-                match.status !== 'finished' &&
-                ([match.home_team, match.away_team].filter(Boolean).some(team => currentMatchTeams.includes(team))) &&
-                !suggested.some(s => s.id === match.id)
-            );
-            suggested = [...new Set([...suggested, ...teamRelated])]; // Use Set for uniqueness
+        if (suggested.length < 24) {
+            const otherMovies = moviesData.filter(movie => movie.id !== currentMovieId && !suggested.includes(movie));
+            const shuffledOthers = otherMovies.sort(() => 0.5 - Math.random());
+            const needed = 24 - suggested.length;
+            suggested = [...suggested, ...shuffledOthers.slice(0, needed)];
         }
 
-        // Fill up with other live/upcoming matches if still not enough
-        if (suggested.length < 12) {
-            const otherRelevantMatches = matchesData.filter(match =>    
-                match.id !== currentMatchId &&    
-                match.status !== 'finished' &&
-                !suggested.some(s => s.id === match.id)
-            ).sort(() => 0.5 - Math.random()); // Randomize for variety
-            const needed = 12 - suggested.length;
-            suggested = [...suggested, ...otherRelevantMatches.slice(0, needed)];
-        }
-        
-        // As a last resort, add recent finished matches if still not enough
-        if (suggested.length < 12) {
-            const finishedMatches = matchesData.filter(match =>    
-                match.id !== currentMatchId &&    
-                !suggested.some(s => s.id === match.id)
-            ).sort((a,b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime()); // Most recent finished
-            const needed = 12 - suggested.length;
-            suggested = [...suggested, ...finishedMatches.slice(0, needed)];
-        }
-
-        const finalSuggested = suggested.slice(0, 12); // Limit to 12 suggestions
+        const finalSuggested = suggested.slice(0, 24);
 
         if (finalSuggested.length === 0) {
-            suggestedMatchGrid.innerHTML = '<p style="text-align: center; color: var(--up-text-muted);">لا توجد مباريات مقترحة حالياً.</p>';
-            console.log('✨ [Suggestions] No suggested matches available after filtering.');
+            suggestedMovieGrid.innerHTML = '<p style="text-align: center; color: var(--text-muted);">لا توجد أفلام مقترحة حالياً.</p>';
+            console.log('✨ [اقتراحات] لا توجد أفلام مقترحة متاحة بعد التصفية.');
             return;
         }
 
-        displayMatches(finalSuggested, suggestedMatchGrid);    
-        console.log(`✨ [Suggestions] Displayed ${finalSuggested.length} suggested matches in ${suggestedMatchGrid.id}.`);
+        displayMovies(finalSuggested, suggestedMovieGrid);
+        console.log(`✨ [اقتراحات] تم عرض ${finalSuggested.length} فيلمًا مقترحًا في ${suggestedMovieGrid.id}.`);
     }
 
-    /**
-     * Resets the view to the Home page, clears search, and updates URL/SEO.
-     */
     function showHomePage() {
-        console.log('🏠 [Navigation] Displaying home page.');
-        
+        console.log('🏠 [توجيه] عرض الصفحة الرئيسية.');
+        if (movieDetailsSection) movieDetailsSection.style.display = 'none';
+        if (suggestedMoviesSection) suggestedMoviesSection.style.display = 'none';
+
+        if (heroSection) heroSection.style.display = 'flex';
+        if (movieGridSection) movieGridSection.style.display = 'block';
+
         if (searchInput) searchInput.value = '';
-        
-        navLinks.forEach(link => {
-            link.classList.remove('active');
-            if (link.dataset.targetView === 'home') {
-                link.classList.add('active');
-            }
-        });
+        if (sectionTitleElement) sectionTitleElement.textContent = 'أحدث الأفلام';
 
-        handleHomeView();
-        
-        // Ensure the video overlay and spinner are hidden when navigating away from a match detail page
-        clearVideoOverlayAd(); // Call the specific clear function for ads
+        moviesDataForPagination = moviesData.length > 0 ? [...moviesData].sort(() => 0.5 - Math.random()) : [];
+        currentPage = 1;
+        paginateMovies(moviesDataForPagination, currentPage);
 
-        currentDetailedMatch = null;
+        if (videoOverlay) {
+            videoOverlay.style.pointerEvents = 'none';
+            videoOverlay.classList.add('hidden');
+            if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
+        }
+
+        // مسح محتوى iframe عند العودة للصفحة الرئيسية
+        if (videoContainer) {
+            videoContainer.innerHTML = '';
+            console.log('[مشغل الفيديو] تم مسح movie-player-container عند الانتقال للصفحة الرئيسية.');
+        }
+        currentDetailedMovie = null;
 
         const newUrl = new URL(window.location.origin);
-        history.pushState({ view: 'home' }, 'شاهد كورة - الصفحة الرئيسية', newUrl.toString());
-        console.log(`🔗 [URL] Browser URL updated to ${newUrl.toString()}`);
+        history.pushState({ view: 'home' }, 'شاهد بلس - الصفحة الرئيسية', newUrl.toString());
+        console.log(`🔗 [URL] تم تحديث URL إلى ${newUrl.toString()}`);
 
+        // استدعاء الدوال المعدلة للصفحة الرئيسية
         updatePageMetadata();
         generateAndInjectSchema();
     }
 
-
-    // --- 7. Event Listeners ---
-
-    // Mobile menu toggle
-    if (menuToggle) {
+    // --- 5. Event Listeners ---
+    if (menuToggle && mainNav) {
         menuToggle.addEventListener('click', () => {
             mainNav.classList.toggle('nav-open');
-            console.log('☰ [Interaction] Mobile menu toggled.');
+            console.log('☰ [تفاعل] تم تبديل القائمة.');
         });
     }
 
-    // Home logo link (always navigate to homepage)
-    const homeLogoLink = document.getElementById('home-logo-link');
-    if (homeLogoLink) {
-        homeLogoLink.addEventListener('click', (e) => {
+    if (homeNavLink) {
+        homeNavLink.addEventListener('click', (e) => {
             e.preventDefault();
-            console.log('🏠 [Interaction] Home logo link clicked.');
+            console.log('🏠 [تفاعل] تم النقر على رابط الرئيسية في قائمة التنقل.');
             showHomePage();
             if (mainNav && mainNav.classList.contains('nav-open')) {
                 mainNav.classList.remove('nav-open');
@@ -1464,91 +712,111 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Main navigation links (delegated using data-target-view)
     navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetView = link.dataset.targetView;
-            
-            if (targetView === 'home') {
-                showHomePage();
-            } else if (targetView === 'live') {
-                handleLiveMatchesView();
-            } else if (targetView === 'upcoming') {
-                handleUpcomingMatchesView();
-            } else if (targetView === 'highlights') {
-                handleHighlightsView();
-            } else if (targetView === 'news') {
-                handleNewsView();
-            }
-            console.log(`➡️ [Navigation] Navigation link clicked: "${targetView}".`);
-            
-            if (mainNav && mainNav.classList.contains('nav-open')) {
-                mainNav.classList.remove('nav-open');
-            }
-        });
+        if (link.id !== 'home-nav-link-actual') {
+            link.addEventListener('click', () => {
+                if (mainNav && mainNav.classList.contains('nav-open')) {
+                    mainNav.classList.remove('nav-open');
+                    console.log('📱 [تفاعل] تم النقر على رابط تنقل فرعي، تم إغلاق القائمة.');
+                } else {
+                    console.log('📱 [تفاعل] تم النقر على رابط تنقل فرعي.');
+                }
+            });
+        }
     });
 
-    // "Watch Matches Now" button on hero section
-    if (watchNowBtn) {
+    if (watchNowBtn && movieGridSection) {
         watchNowBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            console.log('🎬 [Interaction] "Watch Matches Now" button clicked.');
-            handleLiveMatchesView();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            console.log('🎬 [تفاعل] تم النقر على زر "شاهد الآن".');
+            movieGridSection.scrollIntoView({ behavior: 'smooth' });
         });
     }
-    
-    // Search functionality listeners
-    if (searchButton) {
-        searchButton.addEventListener('click', () => {
-            const query = searchInput.value.toLowerCase().trim();
-            console.log(`🔍 [Search] Search button clicked. Query: "${query}".`);
-            
-            let searchResults = [];
-            if (query) {
-                searchResults = matchesData.filter(match =>
-                    match.title.toLowerCase().includes(query) ||
-                    (match.league_name && match.league_name.toLowerCase().includes(query)) ||
-                    (match.home_team && match.home_team.toLowerCase().includes(query)) ||
-                    (match.away_team && match.away_team.toLowerCase().includes(query))
-                );
-            } else {
-                searchResults = matchesData;
-            }
 
-            showView('home', (section) => {
-                const matchGridElement = section.querySelector('#main-match-grid');
-                const prevPageBtn = section.querySelector('#home-prev-page-btn');
-                const nextPageBtn = section.querySelector('#home-next-page-btn');
-                const sectionTitle = section.querySelector('#home-matches-title');
-
-                if (sectionTitle) {
-                    sectionTitle.textContent = query ? `نتائج البحث عن "${query}"` : 'أبرز المباريات والجديد';
-                }
-
-                currentFilteredMatches = searchResults;
-                currentPage = 1;
-                paginateMatches(currentFilteredMatches, currentPage, 'main-match-grid', 'home-prev-page-btn', 'home-next-page-btn', 'home-empty-state');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
+    if (backToHomeBtn) {
+        backToHomeBtn.addEventListener('click', () => {
+            console.log('🔙 [تفاعل] تم النقر على زر العودة للصفحة الرئيسية.');
+            showHomePage();
         });
-        console.log('🔍 [Event] Search button listener attached.');
+    }
+
+    if (searchButton) {
+        searchButton.addEventListener('click', performSearch);
+        console.log('🔍 [حدث] تم إرفاق مستمع زر البحث.');
     }
     if (searchInput) {
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                searchButton.click();
+                performSearch();
                 searchInput.blur();
             }
         });
-        console.log('🔍 [Event] Search input keypress listener attached.');
+        console.log('🔍 [حدث] تم إرفاق مستمع ضغط مفتاح البحث.');
     }
 
-    // General Security Measures (Right-click and DevTools blocking)
+    if (prevPageBtn) {
+        prevPageBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                paginateMovies(moviesDataForPagination, currentPage);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            console.log(`⬅️ [ترقيم الصفحات] تم النقر على الصفحة السابقة. الصفحة الحالية: ${currentPage}`);
+        });
+    }
+    if (nextPageBtn) {
+        nextPageBtn.addEventListener('click', () => {
+            const totalPages = Math.ceil(moviesDataForPagination.length / moviesPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                paginateMovies(moviesDataForPagination, currentPage);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            console.log(`➡️ [ترقيم الصفحات] تم النقر على الصفحة التالية. الصفحة الحالية: ${currentPage}`);
+        });
+    }
+
+    if (homeLogoLink) {
+        homeLogoLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('🏠 [تفاعل] تم النقر على شعار الصفحة الرئيسية.');
+            showHomePage();
+        });
+    }
+
+    if (movieDetailsPoster) {
+        movieDetailsPoster.addEventListener('click', () => {
+            console.log('🖼️ [نقر إعلان] تم النقر على بوستر تفاصيل الفيلم. محاولة فتح الرابط المباشر.');
+            openAdLink(DIRECT_LINK_COOLDOWN_MOVIE_CARD, 'movieDetailsPoster');
+        });
+        console.log('[حدث] تم إرفاق مستمع النقر على بوستر تفاصيل الفيلم.');
+    }
+
+    if (videoOverlay) {
+        videoOverlay.addEventListener('click', async (e) => {
+            console.log('⏯️ [نقر إعلان] تم النقر على غطاء الفيديو. محاولة فتح الرابط المباشر.');
+            const adOpened = openAdLink(DIRECT_LINK_COOLDOWN_VIDEO_INTERACTION, 'videoOverlay');
+
+            if (adOpened) {
+                // إذا تم فتح الإعلان بنجاح، يمكن إخفاء الغطاء والسماح بالتفاعل مع الـ iframe
+                // لا يمكننا التحكم في تشغيل الفيديو داخل الـ iframe مباشرةً من هنا
+                if (videoOverlay) {
+                    videoOverlay.style.pointerEvents = 'none';
+                    videoOverlay.classList.add('hidden');
+                }
+                if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
+                console.log('[مشغل الفيديو] تم إخفاء الغطاء والسماح بالتعامل مع iframe بعد فتح الإعلان.');
+            } else {
+                console.log('[غطاء الفيديو] الإعلان لم يفتح بسبب التهدئة. سيظل الغطاء نشطًا.');
+            }
+            e.stopPropagation();
+        });
+        console.log('[غطاء الفيديو] تم إرفاق مستمع النقر لتفاعل الإعلان.');
+    }
+
     document.addEventListener('contextmenu', e => {
         e.preventDefault();
-        console.warn('🚫 [Security] Right-click context menu disabled.');
+        console.warn('🚫 [أمان] تم تعطيل النقر بالزر الأيمن.');
     });
 
     document.addEventListener('keydown', e => {
@@ -1559,112 +827,92 @@ document.addEventListener('DOMContentLoaded', () => {
             (e.metaKey && e.altKey && e.key === 'I')
         ) {
             e.preventDefault();
-            console.warn(`🚫 [Security] Developer tools/source shortcut blocked: ${e.key}.`);
+            console.warn(`🚫 [أمان] تم منع اختصار لوحة المفاتيح لأدوات المطور/المصدر: ${e.key}`);
         }
     });
 
-    // DevTools Detector (attempts to detect if developer tools are open)
     const devtoolsDetector = (() => {
         const threshold = 160;
         let isOpen = false;
-
         const checkDevTools = () => {
-            // Using different properties to detect devtools
             const widthThreshold = window.outerWidth - window.innerWidth > threshold;
             const heightThreshold = window.outerHeight - window.innerHeight > threshold;
-            
-            // Check for common devtools console properties (more robust)
-            // This is a common trick to detect if the console is open, as it affects toString() of functions.
-            const consoleCheck = /./.test(function(){debugger;}) ? true : false; // eslint-disable-line no-unused-expressions
-            
-            // Modern browsers might also expose window.devtools.isOpen (less reliable across browsers)
-            const modernDevtoolsOpen = (window.devtools && window.devtools.isOpen) || false;
 
-            if (widthThreshold || heightThreshold || consoleCheck || modernDevtoolsOpen) {
+            if (widthThreshold || heightThreshold) {
                 if (!isOpen) {
                     isOpen = true;
-                    console.warn('🚨 [Security] Developer tools detected! This action is discouraged.');
+                    console.warn('🚨 [أمان] تم اكتشاف أدوات المطور! هذا الإجراء غير مشجع.');
                 }
             } else {
                 if (isOpen) {
                     isOpen = false;
-                    console.log('✅ [Security] Developer tools closed.');
+                    console.log('✅ [أمان] تم إغلاق أدوات المطور.');
                 }
             }
         };
 
         window.addEventListener('resize', checkDevTools);
-        // Also check at intervals, as resizing is not the only way to open devtools
-        setInterval(checkDevTools, 5000);    
-        checkDevTools(); // Initial check
+        setInterval(checkDevTools, 1000);
+        checkDevTools();
     })();
 
-    // --- 8. Initial Page Load and History Management ---
-
-    /**
-     * Determines which view to show on initial page load based on URL parameters.
-     * If 'view' and 'id' parameters are present, attempts to load match details.
-     * Otherwise, defaults to the home page.
-     */
     function initialPageLoadLogic() {
         const urlParams = new URLSearchParams(window.location.search);
         const viewParam = urlParams.get('view');
         const idParam = urlParams.get('id');
 
         if (viewParam === 'details' && idParam) {
-            const matchId = parseInt(idParam);
-            const match = matchesData.find(m => m.id === matchId);
+            const movieId = parseInt(idParam);
+            const movie = moviesData.find(m => m.id === movieId);
 
-            if (!isNaN(matchId) && match) {
-                console.log(`🚀 [Initial Load] Attempting to load match details from URL: ID ${matchId}.`);
-                showMatchDetails(matchId);
+            if (!isNaN(movieId) && movie) {
+                console.log(`🚀 [تحميل أولي] محاولة تحميل تفاصيل الفيلم من URL: المعّرف ${movieId}`);
+                updatePageMetadata(movie); // استدعاء الدالة المعدلة
+                generateAndInjectSchema(movie); // استدعاء الدالة المعدلة
+                showMovieDetails(movieId);
             } else {
-                console.warn('⚠️ [Initial Load] Invalid match ID in URL or match not found in data. Displaying home page as fallback.');
+                console.warn('⚠️ [تحميل أولي] معّرف الفيلم غير صالح في URL أو الفيلم غير موجود. يتم عرض الصفحة الرئيسية.');
                 showHomePage();
             }
         } else {
-            console.log('🚀 [Initial Load] No specific view parameters in URL. Displaying home page.');
+            console.log('🚀 [تحميل أولي] لا يوجد عرض محدد في URL. يتم عرض الصفحة الرئيسية.');
             showHomePage();
         }
     }
 
-    /**
-     * Handles browser popstate event (back/forward button clicks).
-     * Re-renders the appropriate view based on the history state.
-     */
     window.addEventListener('popstate', (event) => {
-        console.log('↩️ [Popstate] Browser history navigation detected.', event.state);
-        
-        // If match data isn't loaded yet, try to fetch it and then re-evaluate the state
-        if (matchesData.length === 0) {
-            console.warn('[Popstate] Match data not loaded yet, attempting to fetch data and render view based on popstate event.');
-            fetchMatchesData().then(() => {
+        console.log('↩️ [Popstate] تم اكتشاف تصفح سجل المتصفح.', event.state);
+        if (moviesData.length === 0) {
+            console.warn('[Popstate] لم يتم تحميل بيانات الفيلم، محاولة جلب البيانات وعرض الصفحة بناءً على الحالة.');
+            fetchMoviesData().then(() => {
                 if (event.state && event.state.view === 'details' && event.state.id) {
-                    const match = matchesData.find(m => m.id === event.state.id);
-                    if (match) {
-                        showMatchDetails(event.state.id);
+                    const movie = moviesData.find(m => m.id === event.state.id);
+                    if (movie) {
+                        updatePageMetadata(movie); // استدعاء الدالة المعدلة
+                        generateAndInjectSchema(movie); // استدعاء الدالة المعدلة
+                        showMovieDetails(event.state.id);
                     } else {
-                        console.warn('[Popstate] Match not found on popstate after data load. Displaying home page.');
+                        console.warn('[Popstate] الفيلم غير موجود عند popstate. يتم عرض الصفحة الرئيسية.');
                         showHomePage();
                     }
                 } else {
                     showHomePage();
                 }
             }).catch(err => {
-                console.error('[Popstate] Failed to fetch match data on popstate during fallback:', err);
-                // If fetching data fails even on popstate, fallback to home and display error
+                console.error('[Popstate] فشل جلب بيانات الأفلام عند popstate:', err);
                 showHomePage();
             });
-            return; // Stop further execution here, as fetch is async
+            return;
         }
 
-        // If data is already loaded, proceed
         if (event.state && event.state.view === 'details' && event.state.id) {
-            const match = matchesData.find(m => m.id === event.state.id);
-            if (match) {
-                showMatchDetails(event.state.id);
+            const movie = moviesData.find(m => m.id === event.state.id);
+            if (movie) {
+                updatePageMetadata(movie); // استدعاء الدالة المعدلة
+                generateAndInjectSchema(movie); // استدعاء الدالة المعدلة
+                showMovieDetails(event.state.id);
             } else {
-                console.warn('[Popstate] Match not found for state ID. Displaying home page.');
+                console.warn('[Popstate] الفيلم غير موجود عند popstate. يتم عرض الصفحة الرئيسية.');
                 showHomePage();
             }
         } else {
@@ -1672,6 +920,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Kick-off: Start fetching data when the DOM is fully loaded ---
-    fetchMatchesData();
+    fetchMoviesData();
 });
