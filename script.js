@@ -658,7 +658,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         "name": "شاهد كورة",
                         "logo": {
                             "@type": "ImageObject",
-                            "url": "https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png", // Your site's logo
+                            "url": "https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png",
                             "width": 200, "height": 50
                         }
                     }
@@ -1122,7 +1122,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             targetGrid = upcomingMatchGrid;
             prevBtn = upcomingPrevPageBtn;
-            nextBtn = upcomingUpcomingPageBtn; // Corrected: was upcomingNextPageBtn previously, but HTML uses upcoming-next-page-btn
+            nextBtn = upcomingNextPageBtn; 
             emptyStateElement = upcomingEmptyState;
         }
         currentDataForPagination = filteredMatches;
@@ -1143,10 +1143,12 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(`⚡ [Interaction] "Watch Now" button clicked for ID: ${watchBtn.dataset.matchId}`);
             openAdLink(DIRECT_LINK_COOLDOWN_CARD_CLICK, 'card');
             showMatchDetails(parseInt(watchBtn.dataset.matchId));
-        } else if (matchCard && !e.target.closest('.btn-read-more')) { // Ensure not clicking news read more link
-            // If the general card area is clicked, also trigger ad
-            console.log(`⚡ [Interaction] Match card clicked for ID (if available): ${matchCard.querySelector('.btn-watch')?.dataset.matchId || 'N/A'}`);
-            openAdLink(DIRECT_LINK_COOLDOWN_CARD_CLICK, 'card');
+        } else if (matchCard) { // If the general card area is clicked
+            // Ensure this click is not intended for a news card (if both types share the same parent and cause delegation issues)
+            if (!e.target.closest('.news-card')) { 
+                console.log(`⚡ [Interaction] Match card clicked for ID (if available): ${matchCard.querySelector('.btn-watch')?.dataset.matchId || 'N/A'}`);
+                openAdLink(DIRECT_LINK_COOLDOWN_CARD_CLICK, 'card');
+            }
         }
     }
 
