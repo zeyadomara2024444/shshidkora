@@ -944,6 +944,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const statusText = match.status === 'live' ? 'مباشر الآن' : (match.status === 'finished' ? 'انتهت' : 'قادمة');
                     matchDetailsStatusElement.className = '';    
                     matchDetailsStatusElement.classList.add(match.status === 'live' ? 'live-status' : (match.status === 'finished' ? 'finished-status' : 'upcoming-status'));
+                    matchDetailsStatusElement.textContent = statusText; // Set the status text
                 }
 
                 if (match.status === 'finished' && match.score) {
@@ -976,7 +977,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!iframeUrl) {
                     console.error(`❌ Failed to get stream URL for match ID: ${matchId}. Cannot initialize player. (embed_url is null/empty)`);
                     if (videoContainer) {
-                        videoContainer.innerHTML = '<p style="text-align: center; color: var(--up-text-primary); margin-top: 20px;">عذرًا، لا يمكن تشغيل البث حاليًا (الرابط غير صالح أو غير متوفر).</p>';
+                        videoContainer.innerHTML = '<p style="text-align: center; color: var(--up-text-primary); margin-top: 20px;">عذرًا، لا يمكن تشغيل البث حاليًا (الرابط غير صالح أو غير متوفر). يرجى التأكد من توفر الرابط.</p>';
                     }
                     if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
                     if (videoOverlay) {
@@ -997,11 +998,21 @@ document.addEventListener('DOMContentLoaded', () => {
                         iframeElement.setAttribute('src', iframeUrl);
                         iframeElement.setAttribute('frameborder', '0');
                         iframeElement.setAttribute('allowfullscreen', 'true');
-                        // Crucial sandbox attributes to control iframe behavior and prevent autoplay
-                        // 'allow-top-navigation-by-user-activation' allows navigation *initiated by user click*
-                        iframeElement.setAttribute('sandbox', 'allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation allow-modals allow-downloads');
-                        // 'allow' attribute for browser features (autoplay might still be restricted by browser policy)
-                        iframeElement.setAttribute('allow', 'fullscreen; picture-in-picture; encrypted-media;'); // Removed autoplay from here
+                        
+                        // *** IMPORTANT SANDBOX ATTRIBUTES FOR MOBILE COMPATIBILITY ***
+                        // These attributes are crucial.
+                        // 'allow-scripts': allows scripts to run within the iframe.
+                        // 'allow-same-origin': allows content to be treated as being from the same origin as the embedding document (if not set, all content is treated as unique origin, which can break functionality).
+                        // 'allow-popups': allows popups to be opened (important for player controls, ads).
+                        // 'allow-popups-to-escape-sandbox': allows popups to open new windows outside the sandbox (important for ads like Adsterra pop-unders).
+                        // 'allow-top-navigation-by-user-activation': allows the iframe to navigate the top-level Browse context, but only if initiated by a user gesture.
+                        // 'allow-forms': allows form submission.
+                        // 'allow-modals': allows modal dialogs (e.g., alert, confirm, prompt).
+                        // 'allow-downloads': allows downloads to occur.
+                        iframeElement.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation allow-forms allow-modals allow-downloads');
+                        
+                        // 'allow' attribute for browser features (autoplay is omitted here to comply with policies)
+                        iframeElement.setAttribute('allow', 'fullscreen; picture-in-picture; encrypted-media;'); 
 
                         iframeElement.style.width = '100%';
                         iframeElement.style.height = '100%';
