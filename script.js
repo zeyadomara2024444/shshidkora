@@ -895,7 +895,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             console.log('📰 [View] News view initialized.');
         });
-        updatePageMetadata({ title: 'آخر أخبار كرة القدم', description: 'تابع أحدث أخبار كرة القدم المحلية والعالمية لحظة بلحظة. كل ما يخص الأندية واللاعبين والبطولات.', keywords: 'أخبار كرة قدم, آخر الأخبار, أخبار الرياضة, كرة القدم اليوم' });
+        updatePageMetadata({ title: 'آخر أخبار كرة القدم', description: 'تابع آخر أخبار كرة القدم المحلية والعالمية لحظة بلحظة. كل ما يخص الأندية واللاعبين والبطولات.', keywords: 'أخبار كرة قدم, آخر الأخبار, أخبار الرياضة, كرة القدم اليوم' });
         generateAndInjectSchema();
     }
 
@@ -993,8 +993,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     iframeElement.setAttribute('src', iframeUrl);
                     iframeElement.setAttribute('frameborder', '0');
                     iframeElement.setAttribute('allowfullscreen', 'true');
-                    iframeElement.setAttribute('scrolling', 'no');
-                    iframeElement.setAttribute('sandbox', 'allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
+                    // Modified sandbox attributes for potentially better mobile compatibility
+                    iframeElement.setAttribute('sandbox', 'allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation allow-modals');
+                    // Added allow for autoplay (though mobile browsers often block without user interaction)
+                    iframeElement.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture;');
                     
                     iframeElement.style.width = '100%';
                     iframeElement.style.height = '100%';
@@ -1011,11 +1013,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
                         // Setup the transparent video overlay ad *after* the iframe loads
                         if (videoOverlay) {
-                            setupVideoOverlayAd(videoOverlay); // Removed videoContainer as it's not needed for positioning now
+                            setupVideoOverlayAd(videoOverlay);
                         }
                     };
-                    iframeElement.onerror = () => {
-                        console.error(`❌ [iframe] Failed to load iframe from: ${iframeUrl}. This might be due to security restrictions (X-Frame-Options) or an invalid URL.`);
+                    iframeElement.onerror = (e) => {
+                        console.error(`❌ [iframe] Failed to load iframe from: ${iframeUrl}. Error:`, e);
+                        console.log('Possible reasons: Cross-origin restrictions (X-Frame-Options), invalid URL, or content not supported on device.');
                         if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
                         if (videoContainer) {
                             videoContainer.innerHTML = '<p style="text-align: center; color: var(--up-text-primary); margin-top: 20px;">عذرًا، لا يمكن تشغيل البث حاليًا (قد يكون الرابط غير صالح أو محظور). يرجى المحاولة لاحقاً.</p>';
@@ -1524,14 +1527,16 @@ document.addEventListener('DOMContentLoaded', () => {
             // Using different properties to detect devtools
             const widthThreshold = window.outerWidth - window.innerWidth > threshold;
             const heightThreshold = window.outerHeight - window.innerHeight > threshold;
-            const isChromium = window.chrome;
-            const isFirefox = typeof InstallTrigger !== 'undefined'; // Firefox
-            const isEdge = isChromium && (navigator.userAgent.indexOf("Edg") != -1);
             
-            // Check for common devtools console properties
+            // Check for common devtools console properties (more robust)
+            // This is a common trick to detect if the console is open, as it affects toString() of functions.
+            // Note: This can sometimes trigger false positives or be optimized away by JS engines.
             const consoleCheck = /./.test(function(){debugger;}) ? true : false; // eslint-disable-line no-unused-expressions
+            
+            // Modern browsers might also expose window.devtools.isOpen
+            const modernDevtoolsOpen = (window.devtools && window.devtools.isOpen) || false;
 
-            if (widthThreshold || heightThreshold || consoleCheck) {
+            if (widthThreshold || heightThreshold || consoleCheck || modernDevtoolsOpen) {
                 if (!isOpen) {
                     isOpen = true;
                     console.warn('🚨 [Security] Developer tools detected! This action is discouraged.');
@@ -1586,6 +1591,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('popstate', (event) => {
         console.log('↩️ [Popstate] Browser history navigation detected.', event.state);
         
+        // If match data isn't loaded yet, try to fetch it and then re-evaluate the state
         if (matchesData.length === 0) {
             console.warn('[Popstate] Match data not loaded yet, attempting to fetch data and render view based on popstate event.');
             fetchMatchesData().then(() => {
@@ -1602,11 +1608,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }).catch(err => {
                 console.error('[Popstate] Failed to fetch match data on popstate during fallback:', err);
+                // If fetching data fails even on popstate, fallback to home and display error
                 showHomePage();
             });
-            return;
+            return; // Stop further execution here, as fetch is async
         }
 
+        // If data is already loaded, proceed
         if (event.state && event.state.view === 'details' && event.state.id) {
             const match = matchesData.find(m => m.id === event.state.id);
             if (match) {
