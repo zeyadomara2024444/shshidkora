@@ -1,9 +1,4 @@
-// script.js - كود محسن وواضح لموقع بث مباشر لمباريات كرة القدم 'شاهد كورة'
-// تم التركيز على أفضل أداء ممكن من جانب العميل مع الحفاظ على الوظائف
-// والتأكد من إزالة أي عناصر قد تؤثر سلباً على الفهم من قبل محركات البحث
-// تم التعديل لاستخدام iframe لروابط البث المباشر والتكامل مع نظام القوالب
-// **تم التكييف ليتوافق مع هيكل ملف JSON الجديد وإصلاح جميع أخطاء الطباعة**
-// **تمت إضافة منطق الإعلانات بناءً على طلب المستخدم، مع التركيز على تقليل الإزعاج.**
+
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🏁 DOM Content Loaded. Shahid Kora script execution started.');
@@ -89,73 +84,95 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('✅ All critical DOM elements found.');
     }
 
-    // --- 2. Adsterra Configuration & Ad Logic ---
-    let lastAdInteractionTime = 0; // Timestamp of the last ad interaction
-    const AD_COOLDOWN_TIME = 10 * 1000; // 10 seconds in milliseconds, as requested
+    // --- 2. Adsterra Configuration & Ad Logic (UPDATED FOR SEPARATE COOLDOWNS AND POP-UNDER MECHANISM) ---
 
-    // Adsterra JS Sync codes
-    // These will be dynamically added as script tags
+    // Adsterra JS Sync codes and Direct Link
+    // IMPORTANT: JS Sync codes (like the first two) are designed to be injected into the current page's DOM,
+    // and THEY THEMSELVES handle opening the pop-under tab.
+    // Direct Links (like the third one) should be explicitly opened in a new tab.
     const adCodes = [
-        "//pl27154379.profitableratecpm.com/a3/0f/2d/a30f2d8b70097467fa7c1b724f6ef1f2.js",
-        "//pl27154400.profitableratecpm.com/1c/2a/d6/1c2ad63f897e5c1d4c27840dc634efd4.js"
+        "//pl27154379.profitableratecpm.com/a3/0f/2d/a30f2d8b70097467fa7c1b724f6ef1f2.js", // JS Sync Pop-under
+        "//pl27154400.profitableratecpm.com/1c/2a/d6/1c2ad63f897e5c1d4c27840dc634efd4.js", // JS Sync Pop-under
+        "https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec"  // Direct Link
     ];
 
+    // --- Cooldown settings for Match Card Clicks (4 minutes) ---
+    const MATCH_CARD_AD_COOLDOWN_TIME = 4 * 60 * 1000; // 4 minutes
+    let lastMatchCardAdTime = 0;
+
+    // --- Cooldown settings for Video Overlay Clicks (8 seconds) ---
+    const VIDEO_OVERLAY_AD_COOLDOWN_TIME = 8 * 1000; // 8 seconds
+    let lastVideoOverlayAdTime = 0;
+
     /**
-     * Attempts to open an Adsterra JS Sync ad in a new tab, respecting cooldown.
-     * This function now replaces the `openAdLink` from original script.
+     * Generic function to trigger an Adsterra ad (Pop-under via JS Sync or Direct Link).
+     * @param {number} cooldownTime - The cooldown duration in milliseconds.
+     * @param {number} currentLastInteractionTime - The current timestamp of the last ad interaction for this type.
+     * @param {string} adTriggerContext - A string for logging context (e.g., "Match Card", "Video Overlay").
+     * @returns {number} The updated lastInteractionTime (current timestamp if ad triggered, or previous if on cooldown).
      */
-    function triggerAdsterraPopUnder() {
+    function triggerAdsterraAd(cooldownTime, currentLastInteractionTime, adTriggerContext) {
         const currentTime = Date.now();
-        if (currentTime - lastAdInteractionTime < AD_COOLDOWN_TIME) {
-            console.log('🚫 Ad cooldown active. Skipping ad pop-under.');
-            return;
+        if (currentTime - currentLastInteractionTime < cooldownTime) {
+            console.log(`🚫 [Ad - ${adTriggerContext}] Cooldown active (${(cooldownTime / 1000)}s). Skipping ad.`);
+            return currentLastInteractionTime; // Return unchanged time if on cooldown
         }
 
-        // Randomly pick one of the JS Sync ad scripts
-        const adScriptUrl = adCodes[Math.floor(Math.random() * adCodes.length)];
+        const adTarget = adCodes[Math.floor(Math.random() * adCodes.length)]; // Select a random ad URL
 
-        // Create a new script element
-        const script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = adScriptUrl;
-        script.async = true; // Use async to not block rendering
+        // Attempt to open in a new tab if it's a Direct Link.
+        // If it's a JS Sync script, just append it; it will handle the pop-under itself.
+        if (adTarget.includes('key=')) { // Heuristic for Adsterra Direct Link
+            // For Direct Links, explicitly open in a new tab. Browsers might block if not directly user-initiated.
+            window.open(adTarget, "_blank");
+            console.log(`⚡ [Ad - ${adTriggerContext}] Adsterra Direct Link triggered (explicit new tab): ${adTarget}`);
+        } else { // Assume it's a JS Sync pop-under script
+            // For JS Sync scripts, inject them into the current document.
+            // These scripts are designed to open pop-unders themselves (often immediately after injection).
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = (adTarget.startsWith('//') ? 'https:' : '') + adTarget; // Ensure absolute URL
+            script.async = true; // Use async to not block rendering of the current page
 
-        // Append the script to the body to trigger the ad
-        document.body.appendChild(script);
+            // Append the script to the body to trigger the ad
+            document.body.appendChild(script);
 
-        // Remove the script after a short delay to keep the DOM clean
-        setTimeout(() => {
-            if (document.body.contains(script)) {
-                document.body.removeChild(script);
-            }
-        }, 500); // Remove after 0.5 seconds
-
-        lastAdInteractionTime = currentTime;
-        console.log(`⚡ [Ad] Adsterra JS Sync triggered: ${adScriptUrl}`);
+            // Remove the script after a short delay to keep the DOM clean
+            setTimeout(() => {
+                if (document.body.contains(script)) {
+                    document.body.removeChild(script);
+                }
+            }, 500); // Remove after 0.5 seconds
+            console.log(`⚡ [Ad - ${adTriggerContext}] Adsterra JS Sync triggered (injected into current page): ${adTarget}`);
+        }
+        
+        return currentTime; // Update last interaction time for successful trigger
     }
 
     // Interval for the video overlay ad
     let videoOverlayInterval = null;
     let videoOverlayElement = null; // Reference to the overlay element
 
-
     /**
      * Manages the video overlay for ads.
      * This function is called when a match details page is loaded.
+     * It ensures the overlay is completely transparent and positioned correctly.
+     * @param {HTMLElement} overlayElement - The DOM element for the transparent overlay.
+     * @param {HTMLElement} videoPlayerContainer - The container holding the video iframe. (Not directly used for positioning here, handled by CSS)
      */
-    function setupVideoOverlayAd(overlayElement, videoPlayerContainer) {
-        if (!overlayElement || !videoPlayerContainer) {
-            console.error('❌ Cannot set up video overlay ad: Missing overlayElement or videoPlayerContainer.');
+    function setupVideoOverlayAd(overlayElement, videoPlayerContainer) { // videoPlayerContainer is not directly used for positioning here
+        if (!overlayElement) { // Only check for overlayElement as positioning is CSS-based now
+            console.error('❌ Cannot set up video overlay ad: Missing overlayElement.');
             return;
         }
 
         videoOverlayElement = overlayElement; // Store the reference
-        videoOverlayElement.classList.remove('hidden'); // Ensure it's visible initially
+        videoOverlayElement.classList.remove('hidden'); // Ensure it's visible if hidden by default
         videoOverlayElement.style.pointerEvents = 'auto'; // Enable clicks
-        // Make the overlay actually transparent so it's not "visible" in a disturbing way
+        // Make the overlay completely transparent and cover the video
         videoOverlayElement.style.backgroundColor = 'rgba(0, 0, 0, 0)'; // Fully transparent
         videoOverlayElement.style.cursor = 'pointer'; // Show pointer to indicate clickable area
-        videoOverlayElement.innerHTML = ''; // Clear any "انقر هنا للتشغيل" text to make it truly invisible to the user
+        videoOverlayElement.innerHTML = ''; // Clear any visible content to make it truly invisible (like the <p> tag in HTML)
 
         // Clear any existing interval to prevent multiple intervals running
         if (videoOverlayInterval) {
@@ -164,29 +181,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Click handler for the overlay
-        // We need to use a named function or bind it to remove correctly later
         const handleOverlayClick = function() {
-            triggerAdsterraPopUnder(); // Trigger the ad
-            videoOverlayElement.classList.add('hidden'); // Hide the overlay immediately after click
+            lastVideoOverlayAdTime = triggerAdsterraAd(
+                VIDEO_OVERLAY_AD_COOLDOWN_TIME,
+                lastVideoOverlayAdTime,
+                "Video Overlay"
+            );
+            
+            // Hide the overlay immediately after click
+            videoOverlayElement.classList.add('hidden');
             videoOverlayElement.style.pointerEvents = 'none'; // Disable clicks on the overlay temporarily
 
-            // Set a timer to show the overlay again after AD_COOLDOWN_TIME
+            // Set a timer to show the overlay again after VIDEO_OVERLAY_AD_COOLDOWN_TIME
             videoOverlayInterval = setTimeout(() => {
                 if (videoOverlayElement) { // Check if element still exists before showing
                     videoOverlayElement.classList.remove('hidden');
                     videoOverlayElement.style.pointerEvents = 'auto'; // Re-enable clicks
                     console.log('[Video Overlay] Overlay re-appeared.');
                 }
-            }, AD_COOLDOWN_TIME);
+            }, VIDEO_OVERLAY_AD_COOLDOWN_TIME);
         };
         
-        // Remove existing listener to prevent duplicates.
-        // Important: If an anonymous function was used previously, this won't work.
-        // Ensure that `videoOverlayElement` is cleared properly when navigating away.
-        // For robustness, consider adding a custom property to store the current handler or check if exists.
-        // For now, let's assume `clearVideoOverlayAd` correctly handles removal.
-        videoOverlayElement.removeEventListener('click', handleOverlayClick); // Attempt to remove previous, might not work if it was anonymous
+        // Remove existing listener to prevent duplicates. Store the handler on the element.
+        if (videoOverlayElement._adOverlayHandler) { // Check if a handler was previously stored
+            videoOverlayElement.removeEventListener('click', videoOverlayElement._adOverlayHandler);
+        }
         videoOverlayElement.addEventListener('click', handleOverlayClick);
+        videoOverlayElement._adOverlayHandler = handleOverlayClick; // Store reference to the handler
 
         console.log('[Video Overlay] Video overlay ad setup complete.');
     }
@@ -201,12 +222,12 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('[Video Overlay] Ad interval cleared.');
         }
         if (videoOverlayElement) {
+            if (videoOverlayElement._adOverlayHandler) { // Remove the stored handler
+                videoOverlayElement.removeEventListener('click', videoOverlayElement._adOverlayHandler);
+                delete videoOverlayElement._adOverlayHandler; // Clean up the stored handler
+            }
             videoOverlayElement.classList.add('hidden');
             videoOverlayElement.style.pointerEvents = 'none';
-            // It's crucial to remove the *specific* event listener function
-            // If `handleOverlayClick` was defined inside `setupVideoOverlayAd`, it's recreated each time.
-            // A more robust solution might involve `cloneNode(true)` for the overlay or storing the handler.
-            // For simplicity, we'll just hide and disable pointer events.
             videoOverlayElement = null; // Clear reference
         }
     }
@@ -364,6 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createMatchCard(match) {
         const matchCard = document.createElement('div');
         matchCard.classList.add('match-card');
+        matchCard.dataset.matchId = match.id; // Store match ID for click handler
         
         // Prepare image sources for <picture> and lazy loading
         const thumbnailSrc = match.thumbnail; // Default thumbnail
@@ -394,7 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `
             : `<p class="match-teams">${match.title || 'الفرق غير متوفرة'}</p>`; // Fallback to title or generic text
 
-        const isLCPCandidate = (matchCard.tabIndex === 0); 
+        const isLCPCandidate = (matchCard.tabIndex === 0);    
 
         // Construct the inner HTML of the match card
         matchCard.innerHTML = `
@@ -418,11 +440,16 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault(); // Prevent default link behavior, we handle navigation manually
             console.log(`⚡ [Interaction] Match card clicked for ID: ${match.id}.`);
             
-            triggerAdsterraPopUnder(); // Trigger the ad pop-under in a new tab
+            // Trigger the ad pop-under with 4-minute cooldown
+            lastMatchCardAdTime = triggerAdsterraAd(
+                MATCH_CARD_AD_COOLDOWN_TIME,
+                lastMatchCardAdTime,
+                "Match Card"
+            );
 
             // Navigate to match details after a small delay to allow ad to load (optional, but good practice)
             setTimeout(() => {
-                showMatchDetails(match.id); 
+                showMatchDetails(match.id);  
             }, 100); // Small delay
         });
         return matchCard;
@@ -824,7 +851,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (sectionTitle) sectionTitle.textContent = 'أهداف وملخصات المباريات';
 
             currentFilteredMatches = matchesData.filter(m => m.type === 'highlight' && m.embed_url)
-                                                     .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime());
+                                                    .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime());
 
             currentPage = 1;
             paginateMatches(currentFilteredMatches, currentPage, 'highlights-grid', 'highlights-prev-page-btn', 'highlights-next-page-btn', 'highlights-empty-state');
@@ -867,7 +894,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (sectionTitle) sectionTitle.textContent = 'آخر أخبار كرة القدم';
 
             currentFilteredMatches = matchesData.filter(m => m.type === 'news')
-                                                         .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime());
+                                                        .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime());
 
             displayMatches(currentFilteredMatches, newsGridElement, emptyStateElement, null);
             
@@ -904,9 +931,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const matchDetailsHighlightsContainer = sectionElement.querySelector('#match-details-highlights-container');
                 const matchDetailsHighlightsLink = sectionElement.querySelector('#match-details-highlights-link');
                 const matchDetailsPoster = sectionElement.querySelector('#match-details-poster');
-                const videoContainer = sectionElement.querySelector('#match-player-container');
+                const videoContainer = sectionElement.querySelector('.video-player-container'); // Correctly targets the class now
                 const videoLoadingSpinner = sectionElement.querySelector('#video-loading-spinner');
-                const videoOverlay = sectionElement.querySelector('#video-overlay');
+                const videoOverlay = sectionElement.querySelector('#video-overlay'); // Correctly targets the ID now
 
                 // Populate text content for match details
                 matchDetailsTitleElement.textContent = match.title || 'عنوان غير متوفر';
@@ -987,9 +1014,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     iframeElement.onload = () => {
                         console.log(`[iframe] iframe loaded successfully from: ${iframeUrl}`);
                         if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
-                        // Keep overlay active for ad interaction
+                        // Setup the transparent video overlay ad *after* the iframe loads
                         if (videoOverlay) {
-                            // Initial setup for the transparent overlay and its ad logic
                             setupVideoOverlayAd(videoOverlay, videoContainer);
                         }
                     };
@@ -1004,7 +1030,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     videoContainer.appendChild(iframeElement);
                     console.log('[Stream Player] iframe element created and appended.');
                 } else {
-                    console.error('❌ Critical error: "match-player-container" not found in details view. Cannot create stream player.');
+                    console.error('❌ Critical error: ".video-player-container" not found in details view. Cannot create stream player.');
                     return;
                 }
 
@@ -1028,8 +1054,8 @@ document.addEventListener('DOMContentLoaded', () => {
             updatePageMetadata(match);
             generateAndInjectSchema(match);
 
-            displaySuggestedMatches(matchId);
-            console.log(`✨ [Suggestions] displaySuggestedMatches called for ID: ${matchId}.`);
+            displaySuggestedMatches(match.id); // Pass match.id, not currentDetailedMatch.id
+            console.log(`✨ [Suggestions] displaySuggestedMatches called for ID: ${match.id}.`);
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
@@ -1232,6 +1258,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 "publisher": {
                     "@type": "Organization",
+                    "@id": "https://shahidkora.online/#publisher", // Consistent ID for publisher
                     "name": "شاهد كورة - Ultimate Pitch",
                     "logo": {
                         "@type": "ImageObject",
