@@ -370,7 +370,7 @@ a:hover {
 
 /* Mobile menu toggle (الثلاث شرط) */
 .menu-toggle {
-    display: none; /* Hidden by default on desktop, will be shown on smaller screens if needed */
+    display: none !important; /* Hidden for desktop and tablet, will show on very small screens if needed via JS */
     font-size: 1.8rem;
     padding: 0.3rem 0.6rem;
     color: var(--up-accent-green);
@@ -889,7 +889,7 @@ a:hover {
     transform: rotate(180deg);
 }
 
-/* Video Player Wrapper (holds the iframe) */
+/* Video Player Wrapper (holds the iframe) - Desktop remains 16:9 */
 .video-player-wrapper {
     position: relative;
     width: 100%;
@@ -1337,61 +1337,64 @@ a:hover {
     }
 
     .menu-toggle {
-        display: none !important; /* Ensure it's hidden */
+        /* Re-enable menu toggle for mobile as desktop nav won't fit */
+        display: flex !important;
+        order: 0 !important; /* Move to start */
+        margin-right: auto !important; /* Push it to the right (RTL) */
+        font-size: 1.5rem !important;
+        padding: 0.2rem 0.5rem !important;
+    }
+    /* Hide the desktop nav for smaller screens when mobile toggle is active */
+    .main-nav {
+        /* Initial state on mobile, can be toggled by JS */
+        flex-basis: 100% !important;
+        order: 3 !important; /* Move below search bar when collapsed */
+        display: none !important; /* Hidden by default until toggled */
+        flex-direction: column !important;
+        align-items: flex-end !important; /* Align to right in RTL */
+        padding: 0.5rem 0 !important;
+        background: var(--up-gradient-header);
+        position: absolute;
+        top: 100%; /* Position below header */
+        right: 0;
+        width: 100%;
+        box-shadow: var(--up-shadow-medium);
+        border-bottom: 1px solid var(--up-accent-blue);
+        border-top: 1px solid var(--up-bg-light);
+    }
+    .main-nav.nav-open {
+        display: flex !important; /* Show when open */
+    }
+    .main-nav ul {
+        flex-direction: column !important;
+        width: 100% !important;
+        align-items: flex-end !important; /* Align links to the right */
+        padding: 0.2rem 0.6rem !important;
+    }
+    .main-nav ul li {
+        margin: 0.2rem 0 !important;
+        width: 100%; /* Make links take full width */
+        text-align: right;
+    }
+    .main-nav ul li a {
+        font-size: clamp(0.8rem, 3.5vw, 1rem) !important;
+        padding: 0.6rem 0.8rem !important;
+        width: 100%; /* Make clickable area full width */
+        justify-content: flex-end; /* Align text to right */
     }
 
+
     .site-logo {
-        order: 0 !important;
-        margin-left: auto;
-        margin-right: 0.4rem;
-        font-size: clamp(1.4rem, 4.5vw, 1.8rem) !important;
+        order: 1 !important; /* Keep logo centered/left in RTL */
+        margin-left: 0 !important; /* Reset margin */
+        margin-right: auto !important; /* Push to left */
+        font-size: clamp(1.6rem, 5.5vw, 2rem) !important; /* Make logo bigger */
     }
     .site-logo .logo-icon {
         font-size: 0.55em;
     }
-    /* Telegram button seems to be from an old version or removed, ensure no display issues */
     .telegram-btn {
         display: none !important; 
-    }
-
-    .main-nav {
-        display: flex !important;
-        flex-basis: auto !important;
-        order: 1 !important;
-        flex-grow: 1;
-        justify-content: flex-start;
-        align-items: center;
-        padding: 0;
-        margin: 0;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        white-space: nowrap;
-        position: relative;
-        z-index: 10;
-    }
-
-    .main-nav ul {
-        flex-direction: row !important;
-        justify-content: flex-start !important;
-        width: auto !important;
-        gap: 0.6rem !important;
-        padding: 0 0.4rem !important;
-    }
-
-    .main-nav ul li {
-        margin: 0 !important;
-        flex-shrink: 0;
-    }
-
-    .main-nav ul li a {
-        font-size: clamp(0.7rem, 2.5vw, 0.85rem) !important;
-        padding: 0.4rem 0.7rem !important;
-        max-width: none !important;
-        display: inline-flex !important;
-        align-items: center;
-        justify-content: center;
-        height: auto;
-        white-space: nowrap;
     }
 
     .search-bar {
@@ -1440,61 +1443,54 @@ a:hover {
         background-size: 0.75em;
     }
 
-    /* Main Match Grid for Mobile (Home, Live, Upcoming, Highlights, News) */
+    /* Main Match Grid for Mobile (Home, Live, Upcoming, Highlights, News) - Single Column, Wider, Shorter */
     .match-grid {
-        /* Adjusted for mobile: 2 columns, fill available width, shorter height */
-        grid-template-columns: repeat(auto-fit, minmax(47%, 1fr)) !important; /* Slightly larger min-width for wider cards */
-        gap: 2vw !important; /* Keep gap */
-        padding: 0 0.6rem !important; /* Adjust padding to fill more width */
+        grid-template-columns: 1fr !important; /* Single column for all main grids */
+        gap: 3vw !important; /* More vertical space between single cards */
+        padding: 0 0.6rem !important; /* Ensure it uses full width */
     }
     .news-grid {
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+        grid-template-columns: 1fr !important; /* Single column for news */
         gap: 3vw !important;
         padding: 0 0.8rem !important;
     }
 
 
-    /* Match Card Image Adjustment for Smaller Mobile - CRITICAL ADJUSTMENT */
+    /* Match Card Image Adjustment for Smaller Mobile - CRITICAL ADJUSTMENT: Wider and Shorter */
     .match-card img {
-        /* Increase width, decrease height for mobile cards to be 'wider and shorter' */
-        height: clamp(90px, 30vw, 150px) !important; /* Further reduced height, still responsive */
-        width: 100% !important; /* Ensure it fills card width */
+        height: clamp(120px, 40vw, 200px) !important; /* Taller for single column, but still responsive */
+        width: 100% !important; /* Stretch to full width */
         object-fit: cover !important;
-        background-color: var(--up-bg-medium) !important;
-        display: block !important;
     }
     .match-card .match-card-content {
         padding: 0.6rem;
-        min-height: clamp(55px, 9vw, 75px); /* Adjusted min-height */
-        gap: 0.3rem; /* Slightly reduced gap */
+        min-height: clamp(60px, 10vw, 80px); /* Adjusted min-height */
+        gap: 0.3rem;
     }
     .match-card h3 {
-        font-size: clamp(0.75rem, 2.8vw, 0.95rem) !important; /* Slightly smaller for mobile */
-        line-height: 1.2 !important;
+        font-size: clamp(0.9rem, 3.8vw, 1.1rem) !important; /* Adjusted font size for single column */
+        line-height: 1.3 !important;
         -webkit-line-clamp: 2 !important;
-        max-width: 98% !important;
+        width: 100% !important; /* Ensure title uses full width */
         margin-left: auto !important;
-        -webkit-box-orient: vertical;
-        text-overflow: ellipsis;
-        overflow: hidden;
         margin-right: auto !important;
     }
 
     .match-card .teams-logos {
-        font-size: clamp(0.6rem, 2.5vw, 0.75rem) !important; /* Further adjusted font size */
-        gap: 0.05rem !important;
+        font-size: clamp(0.7rem, 3vw, 0.9rem) !important; /* Adjusted font size */
+        gap: 0.1rem !important;
     }
     .match-card .teams-logos .vs-text {
-        font-size: clamp(0.65rem, 2.8vw, 0.9rem) !important;
+        font-size: clamp(0.75rem, 3.5vw, 1rem) !important;
     }
     .match-card .team-logo {
-        width: clamp(18px, 5vw, 28px) !important; /* Adjusted team logo size */
-        height: clamp(18px, 5vw, 28px) !important;
+        width: clamp(24px, 7vw, 36px) !important; /* Adjusted team logo size for single column */
+        height: clamp(24px, 7vw, 36px) !important;
     }
     .match-card .match-league,
     .match-card .match-date,
     .match-card .match-status {
-        font-size: clamp(0.6rem, 2.2vw, 0.75rem) !important;
+        font-size: clamp(0.7rem, 2.8vw, 0.85rem) !important;
         padding: 0.3rem 0.6rem !important;
     }
 
@@ -1518,18 +1514,22 @@ a:hover {
         padding: 0.5rem 1.2rem;
     }
     
-    /* Video Player Wrapper for Smaller Mobile - CRITICAL ADJUSTMENT for wider/shorter */
+    /* Video Player Wrapper for Smaller Mobile - CRITICAL ADJUSTMENT: Wider and Shorter */
     .video-player-wrapper {
         margin-bottom: 3vw;
         max-width: 100% !important;
-        /* Increase padding-bottom to make it shorter (relative to its new width) and occupy more horizontal space */
-        padding-bottom: 60% !important; /* Changed from 65% for even shorter/wider aspect */
+        /* Make video much wider and shorter for mobile, to fit the screen better.
+           Increased padding-bottom means a larger aspect ratio (taller relative to width)
+           but for a "wider & shorter" *appearance* on a portrait phone, this value
+           should be higher (e.g., 75-85%) to utilize more horizontal space.
+           Let's try 70% for a good balance. */
+        padding-bottom: 70% !important; /* New value for "wider and shorter" video on mobile */
         border-width: 1px !important;
     }
 
     /* Suggested Matches Grid for Smaller Mobile - show 2 posters and shorter/wider */
     .suggested-matches-section .match-grid {
-        grid-template-columns: repeat(auto-fit, minmax(47%, 1fr)) !important; /* Adjusted for tighter fit for 2 columns */
+        grid-template-columns: repeat(auto-fit, minmax(47%, 1fr)) !important; /* Keep 2 columns for suggested */
         gap: 2vw !important; /* Keep gap */
         padding: 0 0.6rem !important; /* Adjusted padding to extend more */
         justify-content: center; 
