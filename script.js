@@ -194,8 +194,12 @@ document.addEventListener('DOMContentLoaded', () => {
             initialPageLoadLogic(); // استدعاء منطق التحميل الأولي بعد جلب البيانات
         } catch (error) {
             console.error('❌ Failed to load match data:', error.message);
-            if (mainMatchGrid) { // استخدام الاسم الجديد
-                mainMatchGrid.innerHTML = '<p style="text-align: center; color: var(--text-color); margin-top: 50px;">Sorry, we couldn\'t load match data. Please try again later or check your matches.json file.</p>';
+            // Fallback for when currentMatchGridElement is not yet assigned (e.g., if home template failed to load)
+            const fallbackGrid = document.getElementById('main-match-grid');
+            if (fallbackGrid) {
+                fallbackGrid.innerHTML = '<p style="text-align: center; color: var(--text-color); margin-top: 50px;">Sorry, we couldn\'t load match data. Please try again later or check your matches.json file.</p>';
+            } else if (currentMatchGridElement) { // If it was assigned but data load failed later
+                currentMatchGridElement.innerHTML = '<p style="text-align: center; color: var(--text-color); margin-top: 50px;">Sorry, we couldn\'t load match data. Please try again later or check your matches.json file.</p>';
             }
             if (currentSectionTitleElement) {
                 currentSectionTitleElement.textContent = 'Error Loading Matches';
@@ -206,8 +210,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function createMatchCard(match) {
         const matchCard = document.createElement('div');
         matchCard.classList.add('movie-card'); // للحفاظ على التنسيق CSS القديم
-        const webpSource = (match.thumbnail || match.poster || '').replace(/\.(png|jpe?g)/i, '.webp'); // استخدام thumbnail أولاً ثم poster
-        const imgSrc = match.thumbnail || match.poster || ''; // استخدام thumbnail أولاً ثم poster
+        
+        // **الإصلاح هنا: الأولوية لـ `match.thumbnail`**
+        const imgSrc = match.thumbnail || match.poster || ''; 
+        const webpSource = imgSrc.replace(/\.(png|jpe?g)/i, '.webp');
 
         matchCard.innerHTML = `
             <picture>
@@ -318,17 +324,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function filterMatchesByCategory(category) {
         let filtered = [];
         let title = '';
+        const now = new Date(); // Get current date/time once for consistent checks
+
         if (category === 'home') {
             // For home, display a mix or recent matches
             filtered = [...matchesData].sort((a, b) => new Date(b.date_time) - new Date(a.date_time)); // Sort by date descending
             title = 'أبرز المباريات والجديد';
             console.log(`⚽ [Filter] Displaying recent/all matches for home view.`);
         } else if (category === 'live') {
-            filtered = matchesData.filter(match => match.status && match.status.toLowerCase() === 'live');
+            filtered = matchesData.filter(match => match.status && match.status.toLowerCase() === 'live' && new Date(match.date_time) <= now);
             title = 'مباريات كرة القدم مباشرة الآن';
             console.log(`⚽ [Filter] Displaying live matches.`);
         } else if (category === 'upcoming') {
-            const now = new Date();
             filtered = matchesData.filter(match => match.status && match.status.toLowerCase() === 'upcoming' && new Date(match.date_time) > now);
             filtered.sort((a, b) => new Date(a.date_time) - new Date(b.date_time)); // Sort upcoming by date ascending
             title = 'مواعيد مباريات كرة القدم القادمة';
@@ -444,8 +451,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentPaginationNextBtn = homeNextPageBtn;
                 filterMatchesByCategory('home');
                 // Re-attach listeners for home pagination buttons
-                homePrevPageBtn.removeEventListener('click', handlePaginationClick); // Remove old if exists
-                homeNextPageBtn.removeEventListener('click', handlePaginationClick); // Remove old if exists
+                // Ensure to remove old listeners before adding new ones to prevent duplicates
+                homePrevPageBtn.removeEventListener('click', handlePaginationClick); 
+                homeNextPageBtn.removeEventListener('click', handlePaginationClick); 
                 homePrevPageBtn.addEventListener('click', () => handlePaginationClick('prev'));
                 homeNextPageBtn.addEventListener('click', () => handlePaginationClick('next'));
 
@@ -602,6 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (matchDetailsPoster) {
+                // **الإصلاح هنا: الأولوية لـ `match.thumbnail`**
                 const posterSrc = match.thumbnail || match.poster || '';
                 matchDetailsPoster.src = posterSrc;
                 matchDetailsPoster.alt = match.title;
@@ -707,12 +716,13 @@ document.addEventListener('DOMContentLoaded', () => {
             ogUrl = matchUrl;
             ogTitle = `${match.title} - شاهد أونلاين على شاهد كورة`;
             ogDescription = pageDescription;
-            ogImage = match.thumbnail || match.poster || 'https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png'; // استخدم صورة المباراة أو شعار الموقع
+            // **الإصلاح هنا: استخدام thumbnail أولاً لـ og:image و twitter:image**
+            ogImage = match.thumbnail || match.poster || 'https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png'; 
             ogType = "video.other"; // مناسب للفيديوهات الرياضية
 
             twitterTitle = ogTitle;
             twitterDescription = ogDescription;
-            twitterImage = match.thumbnail || match.poster || 'https://shahidkora.online/images/shahidkora-ultimate-pitch-twitter.png'; // استخدم صورة المباراة أو شعار الموقع
+            twitterImage = match.thumbnail || match.poster || 'https://shahidkora.online/images/shahidkora-ultimate-pitch-twitter.png'; 
             twitterCard = "summary_large_image";
 
         } else {
@@ -735,7 +745,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Update all meta tags using their IDs
-        document.title = pageTitle;
+        if (document.getElementById('dynamic-title')) document.title = pageTitle; // Also update document.title directly
         if (document.getElementById('dynamic-title')) document.getElementById('dynamic-title').textContent = pageTitle; 
         if (document.getElementById('dynamic-description')) document.getElementById('dynamic-description').setAttribute('content', pageDescription);
         if (document.getElementById('dynamic-keywords')) document.getElementById('dynamic-keywords').setAttribute('content', pageKeywords);
@@ -801,7 +811,7 @@ document.addEventListener('DOMContentLoaded', () => {
             "@type": "VideoObject", // Using VideoObject as it's a video of an event
             "name": match.title,
             "description": match.short_description || `شاهد فيديو ${match.title} بجودة عالية على شاهد كوره.`,
-            "thumbnailUrl": match.thumbnail || match.poster,
+            "thumbnailUrl": match.thumbnail || match.poster, // **الإصلاح هنا: استخدام thumbnail أولاً**
             "uploadDate": formattedUploadDate,
             "contentUrl": match.embed_url, // Actual video URL for direct playback/download
             "embedUrl": match.embed_url, // Same as contentUrl if it's the embed source
@@ -861,19 +871,17 @@ document.addEventListener('DOMContentLoaded', () => {
             "commentator": commentatorsArray.map(name => ({ "@type": "Person", "name": name }))
         };
 
-        // Add aggregateRating if available
-        // Note: Your JSON sample does not have a 'rating' field, but if you add it, uncomment this
-        /*
+        // Add aggregateRating if available (your JSON sample includes 'rating')
         const ratingValue = parseFloat(match.rating);
         if (!isNaN(ratingValue) && ratingValue >= 0 && ratingValue <= 10) {
             schema.aggregateRating = {
                 "@type": "AggregateRating",
                 "ratingValue": ratingValue.toFixed(1),
                 "bestRating": "10",
-                "ratingCount": "10000" // Use actual rating count if available
+                "ratingCount": "10000" // استخدم عدد التقييمات الفعلي إذا كان لديك
             };
         }
-        */
+        
 
         schemaScriptElement.textContent = JSON.stringify(schema, null, 2); // Pretty print JSON for readability
         console.log('📄 [SEO] New JSON-LD schema added/updated.');
@@ -988,10 +996,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Update URL and history state for category views
                     const newUrl = new URL(window.location.origin);
                     newUrl.searchParams.set('view', targetView);
-                    history.pushState({ view: targetView }, `شاهد كوره - ${e.target.textContent}`, newUrl.toString());
+                    history.pushState({ view: targetView }, `شاهد كورة - ${e.target.textContent}`, newUrl.toString());
                     console.log(`🔗 [URL] URL updated to ${newUrl.toString()}`);
                     // Update SEO for category pages (using default site meta for now, can be expanded)
-                    updatePageMetadata();
+                    updatePageMetadata(); 
                     generateAndInjectSchema();
                 }
                 if (mainNav && mainNav.classList.contains('nav-open')) {
