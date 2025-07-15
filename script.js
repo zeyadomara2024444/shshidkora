@@ -32,10 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('search-input');
     const searchButton = document.getElementById('search-button');
     const homeLogoLink = document.getElementById('home-logo-link');
-    // Removed watchNowBtn as it's no longer in HTML
 
-    const jsonLdSchema = document.getElementById('json-ld-schema');
-    const heroSection = document.getElementById('hero-section'); // Added reference to heroSection
+    // Removed heroSection reference as it's no longer in HTML
+    // const heroSection = document.getElementById('hero-section'); 
 
     // SEO Elements (Meta tags)
     const dynamicTitle = document.getElementById('dynamic-title');
@@ -53,6 +52,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const dynamicTwitterTitle = document.getElementById('dynamic-twitter-title');
     const dynamicTwitterDescription = document.getElementById('dynamic-twitter-description');
     const dynamicTwitterImage = document.getElementById('dynamic-twitter-image');
+
+    const jsonLdSchema = document.getElementById('json-ld-schema');
 
     // ======== Utility Functions ========
 
@@ -78,8 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (offsetString === '+03:00') {
              timezoneAbbreviation = '(بتوقيت جدة)'; // SAST (Saudi Arabia Standard Time)
         } else if (offsetString === '+02:00') {
-             // For +02:00 in July 2025, it's typically CEST for Europe (UTC+2) or EEST for Egypt (UTC+3) if they're still on summertime.
-             // Given the examples, the data uses +02:00 for European leagues.
              if (isoString.includes("الدوري الإسباني") || isoString.includes("الدوري الألماني") || isoString.includes("الدوري الفرنسي") || isoString.includes("دوري أبطال أوروبا")) {
                  timezoneAbbreviation = '(بتوقيت أوروبا/صيفي)'; // CEST for European leagues
              } else {
@@ -296,22 +295,17 @@ document.addEventListener('DOMContentLoaded', () => {
             statusText = 'مباشر';
             statusClass = 'live-status';
             timeDisplay = 'الآن';
-            // Removed buttonHtml
         } else if (match.status === 'Finished') {
             statusText = 'انتهت';
             statusClass = 'finished-status';
             timeDisplay = formatDateTime(match.date_time);
             scoreOrVs = match.score ? `<span>${match.score}</span>` : '<span>-</span>';
-            // Removed buttonHtml
         } else if (match.status === 'Upcoming') {
             statusText = 'قريباً';
             statusClass = 'upcoming-status';
             timeDisplay = formatDateTime(match.date_time);
-            // Removed buttonHtml
         }
 
-        // Use data-src for lazy loading and add 'lazy' class, along with native loading="lazy"
-        // Also added a tiny transparent gif as a placeholder src for better initial rendering and no broken image icons
         card.innerHTML = `
             <div class="match-header">
                 <span class="match-status ${statusClass}">${statusText}</span>
@@ -319,13 +313,13 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="match-teams">
                 <div class="team home-team">
-                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" data-src="${match.home_team_logo}" alt="شعار ${match.home_team}" class="lazy" loading="lazy" width="48" height="48">
                     <span>${match.home_team}</span>
+                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" data-src="${match.home_team_logo}" alt="شعار ${match.home_team}" class="lazy" loading="lazy" width="48" height="48">
                 </div>
                 <div class="vs">${scoreOrVs}</div>
                 <div class="team away-team">
-                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" data-src="${match.away_team_logo}" alt="شعار ${match.away_team}" class="lazy" loading="lazy" width="48" height="48">
                     <span>${match.away_team}</span>
+                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" data-src="${match.away_team_logo}" alt="شعار ${match.away_team}" class="lazy" loading="lazy" width="48" height="48">
                 </div>
             </div>
             <div class="match-league">
@@ -403,7 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Update pagination button states
+        // Update pagination button states (pagination controls are now display: none in CSS, so this won't be visible)
         if (paginationControlsElement) {
             const prevBtn = paginationControlsElement.querySelector('.btn-page.prev');
             const nextBtn = paginationControlsElement.querySelector('.btn-page.next');
@@ -432,18 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
             section.style.display = 'none';
         });
 
-        // Always hide hero section unless it's the home view
-        if (heroSection) { // Check if heroSection exists
-            heroSection.style.display = (viewName === 'home') ? 'flex' : 'none'; // Use flex for hero content centering
-            if (viewName === 'home') {
-                heroSection.classList.add('active-view'); // Add active class if it's the home view
-            } else {
-                heroSection.classList.remove('active-view');
-            }
-        } else {
-            console.error("Hero section element (#hero-section) not found.");
-        }
-
+        // No need to manage heroSection display, as it's removed from HTML
 
         // Deactivate all nav links and activate the current one
         navLinks.forEach(link => link.classList.remove('active'));
@@ -479,12 +462,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Clear previous content from contentDisplay (excluding heroSection)
-            Array.from(contentDisplay.children).forEach(child => {
-                if (child.id !== 'hero-section') {
-                    child.remove();
-                }
-            });
+            // Clear previous content from contentDisplay
+            contentDisplay.innerHTML = '';
             contentDisplay.appendChild(targetSectionClone);
             targetSectionClone.style.display = 'block';
             targetSectionClone.classList.add('active-view');
@@ -508,8 +487,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                          .slice(0, 2);
 
             const latestNews = DATA.filter(item => item.type === 'news')
-                                     .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
-                                     .slice(0, 2);
+                                   .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
+                                   .slice(0, 2);
 
             // Filter out any potential non-match/news items before passing to renderGrid
             const itemsToRender = [...liveMatches, ...upcomingMatchesTodayTomorrow, ...latestNews, ...finishedMatches].filter(item => item.type === 'match' || item.type === 'news');
@@ -535,12 +514,8 @@ document.addEventListener('DOMContentLoaded', () => {
             targetSectionClone = document.importNode(template.content, true).firstElementChild;
             if (!targetSectionClone) { console.error("ERROR: Cloned content of 'live-matches-template' is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب المباريات المباشرة فارغ.</p>'; return; }
 
-            // Clear all current children of contentDisplay except heroSection (if it exists)
-            Array.from(contentDisplay.children).forEach(child => {
-                if (child.id !== 'hero-section') {
-                    child.remove();
-                }
-            });
+            // Clear all current children of contentDisplay
+            contentDisplay.innerHTML = '';
             contentDisplay.appendChild(targetSectionClone);
             targetSectionClone.style.display = 'block';
             targetSectionClone.classList.add('active-view');
@@ -564,11 +539,7 @@ document.addEventListener('DOMContentLoaded', () => {
             targetSectionClone = document.importNode(template.content, true).firstElementChild;
             if (!targetSectionClone) { console.error("ERROR: Cloned content of 'upcoming-matches-template' is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب المباريات القادمة فارغ.</p>'; return; }
 
-            Array.from(contentDisplay.children).forEach(child => {
-                if (child.id !== 'hero-section') {
-                    child.remove();
-                }
-            });
+            contentDisplay.innerHTML = '';
             contentDisplay.appendChild(targetSectionClone);
             targetSectionClone.style.display = 'block';
             targetSectionClone.classList.add('active-view');
@@ -623,11 +594,7 @@ document.addEventListener('DOMContentLoaded', () => {
             targetSectionClone = document.importNode(template.content, true).firstElementChild;
             if (!targetSectionClone) { console.error("ERROR: Cloned content of 'highlights-template' is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب الملخصات فارغ.</p>'; return; }
 
-            Array.from(contentDisplay.children).forEach(child => {
-                if (child.id !== 'hero-section') {
-                    child.remove();
-                }
-            });
+            contentDisplay.innerHTML = '';
             contentDisplay.appendChild(targetSectionClone);
             targetSectionClone.style.display = 'block';
             targetSectionClone.classList.add('active-view');
@@ -652,11 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
             targetSectionClone = document.importNode(template.content, true).firstElementChild;
             if (!targetSectionClone) { console.error("ERROR: Cloned content of 'news-template' is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب الأخبار فارغ.</p>'; return; }
 
-            Array.from(contentDisplay.children).forEach(child => {
-                if (child.id !== 'hero-section') {
-                    child.remove();
-                }
-            });
+            contentDisplay.innerHTML = '';
             contentDisplay.appendChild(targetSectionClone);
             targetSectionClone.style.display = 'block';
             targetSectionClone.classList.add('active-view');
@@ -683,32 +646,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 targetSectionClone = document.importNode(template.content, true).firstElementChild;
                 if (!targetSectionClone) { console.error("ERROR: Cloned content of 'match-details-view-template' is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب تفاصيل المباراة فارغ.</p>'; return; }
 
-                // Clear all current children of contentDisplay except heroSection (if it exists)
-                Array.from(contentDisplay.children).forEach(child => {
-                    if (child.id !== 'hero-section') {
-                        child.remove();
-                    }
-                });
+                contentDisplay.innerHTML = ''; // Clear all current children of contentDisplay
                 contentDisplay.appendChild(targetSectionClone);
                 targetSectionClone.style.display = 'block';
                 targetSectionClone.classList.add('active-view');
 
                 const matchDetailsTitleElement = targetSectionClone.querySelector('#match-details-title-element');
-                const matchDetailsDescription = targetSectionClone.querySelector('#match-details-description');
-                const matchDetailsDateTime = targetSectionClone.querySelector('#match-details-date-time');
-                const matchDetailsLeague = targetSectionClone.querySelector('#match-details-league');
-                const matchDetailsCommentators = targetSectionClone.querySelector('#match-details-commentators');
-                const matchDetailsTeams = targetSectionClone.querySelector('#match-details-teams');
-                const matchDetailsStadium = targetSectionClone.querySelector('#match-details-stadium');
-                const matchDetailsStatus = targetSectionClone.querySelector('#match-details-status');
+                // The following elements are not in HTML after match-info-box removal, so we remove their references here to avoid errors
+                // const matchDetailsDescription = targetSectionClone.querySelector('#match-details-description');
+                // const matchDetailsDateTime = targetSectionClone.querySelector('#match-details-date-time');
+                // const matchDetailsLeague = targetSectionClone.querySelector('#match-details-league');
+                // const matchDetailsCommentators = targetSectionClone.querySelector('#match-details-commentators');
+                // const matchDetailsTeams = targetSectionClone.querySelector('#match-details-teams');
+                // const matchDetailsStadium = targetSectionClone.querySelector('#match-details-stadium');
+                // const matchDetailsStatus = targetSectionClone.querySelector('#match-details-status');
+                // const matchDetailsScoreContainer = targetSectionClone.querySelector('#match-details-score-container');
+                // const matchDetailsScore = targetSectionClone.querySelector('#match-details-score');
+                // const matchDetailsHighlightsContainer = targetSectionClone.querySelector('#match-details-highlights-container');
+                // const matchDetailsHighlightsLink = targetSectionClone.querySelector('#match-details-highlights-link');
+
                 const matchPlayerContainer = targetSectionClone.querySelector('#match-player-container');
                 const videoOverlay = targetSectionClone.querySelector('#video-overlay');
                 const overlayThumbnail = targetSectionClone.querySelector('#overlay-thumbnail');
                 const loadingSpinner = targetSectionClone.querySelector('#video-loading-spinner');
-                const matchDetailsScoreContainer = targetSectionClone.querySelector('#match-details-score-container');
-                const matchDetailsScore = targetSectionClone.querySelector('#match-details-score');
-                const matchDetailsHighlightsContainer = targetSectionClone.querySelector('#match-details-highlights-container');
-                const matchDetailsHighlightsLink = targetSectionClone.querySelector('#match-details-highlights-link');
+                
                 const suggestedMatchGrid = targetSectionClone.querySelector('#suggested-match-grid');
                 const backToHomeBtn = targetSectionClone.querySelector('#back-to-home-btn'); // Get the back button within the cloned template
 
@@ -723,13 +684,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
                 matchDetailsTitleElement.textContent = match.title;
-                matchDetailsDescription.textContent = match.short_description;
-                matchDetailsDateTime.textContent = formatDateTime(match.date_time);
-                matchDetailsLeague.textContent = match.league_name;
-                matchDetailsCommentators.textContent = match.commentators.join(', ') || 'غير متاح';
-                matchDetailsTeams.textContent = `${match.home_team} ضد ${match.away_team}`;
-                matchDetailsStadium.textContent = match.stadium;
-                matchDetailsStatus.textContent = match.status === 'Live' ? 'مباشرة' : match.status === 'Finished' ? 'انتهت' : 'قادمة';
+                // Since match-info-box is removed, these elements won't be found, removed their assignment
+                // matchDetailsDescription.textContent = match.short_description;
+                // matchDetailsDateTime.textContent = formatDateTime(match.date_time);
+                // matchDetailsLeague.textContent = match.league_name;
+                // matchDetailsCommentators.textContent = match.commentators.join(', ') || 'غير متاح';
+                // matchDetailsTeams.textContent = `${match.home_team} ضد ${match.away_team}`;
+                // matchDetailsStadium.textContent = match.stadium;
+                // matchDetailsStatus.textContent = match.status === 'Live' ? 'مباشرة' : match.status === 'Finished' ? 'انتهت' : 'قادمة';
 
                 // Video Player & Overlay logic
                 matchPlayerContainer.innerHTML = '';
@@ -776,19 +738,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 };
 
-                if (match.status === 'Finished' && match.score) {
-                    matchDetailsScoreContainer.classList.remove('hidden');
-                    matchDetailsScore.textContent = match.score;
-                } else {
-                    matchDetailsScoreContainer.classList.add('hidden');
-                }
+                // These elements were part of match-info-box, so they will not be found. Removed their conditional display logic.
+                // if (match.status === 'Finished' && match.score) {
+                //     matchDetailsScoreContainer.classList.remove('hidden');
+                //     matchDetailsScore.textContent = match.score;
+                // } else {
+                //     matchDetailsScoreContainer.classList.add('hidden');
+                // }
 
-                if (match.status === 'Finished' && match.highlights_url) {
-                    matchDetailsHighlightsContainer.classList.remove('hidden');
-                    matchDetailsHighlightsLink.href = match.highlights_url;
-                } else {
-                    matchDetailsHighlightsContainer.classList.add('hidden');
-                }
+                // if (match.status === 'Finished' && match.highlights_url) {
+                //     matchDetailsHighlightsContainer.classList.remove('hidden');
+                //     matchDetailsHighlightsLink.href = match.highlights_url;
+                // } else {
+                //     matchDetailsHighlightsContainer.classList.add('hidden');
+                // }
 
                 const suggestedMatches = DATA.filter(item =>
                     item.type === 'match' &&
@@ -819,12 +782,7 @@ document.addEventListener('DOMContentLoaded', () => {
             targetSectionClone = document.importNode(template.content, true).firstElementChild;
             if (!targetSectionClone) { console.error("ERROR: Cloned content of 'home-view-template' for search results is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب البحث فارغ.</p>'; return; }
 
-            // Clear all current children of contentDisplay except heroSection (if it exists)
-            Array.from(contentDisplay.children).forEach(child => {
-                if (child.id !== 'hero-section') {
-                    child.remove();
-                }
-            });
+            contentDisplay.innerHTML = '';
             contentDisplay.appendChild(targetSectionClone);
             targetSectionClone.style.display = 'block';
             targetSectionClone.classList.add('active-view');
@@ -864,7 +822,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Delegated event listener for general clicks on the body
     document.body.addEventListener('click', (e) => {
         const navLink = e.target.closest('.nav-link');
-        // Removed watchNow from here as it's no longer a button in HTML
         const homeLogo = e.target.closest('#home-logo-link');
 
         if (navLink) {
@@ -994,6 +951,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentSearchQuery = searchQuery;
                 switchView('search-results');
             } else {
+                // Default to home if no specific hash or search query
                 switchView('home');
             }
 
