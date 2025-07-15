@@ -1,17 +1,18 @@
-/* style.css - تصميم "شاهد كورة" - Ultimate Pitch UI - الإصدار الاحترافي والعصري (تعديل 2) */
+/* style.css - تصميم "شاهد كورة" - Ultimate Pitch UI - الإصدار الاحترافي والعصري (تعديل 3) */
 
-/* --- Root Variables for Theme Customization (Mid-tone & Trendy - Red Accent) --- */
+/* --- Root Variables for Theme Customization (Lighter & Trendy - Red Accent) --- */
 :root {
-    /* Backgrounds */
-    --up-bg-light: #E7EBF0; /* Very light gray for main background */
-    --up-bg-medium: #D3DBE2; /* Mid-light gray for cards/sections */
-    --up-bg-dark: #AAB7C4; /* Deeper gray for subtle depth/borders */
+    /* Backgrounds - Moved to warmer, slightly off-white tones */
+    --up-bg-light: #F7F9FA; /* Very light, almost white, subtle warmth */
+    --up-bg-medium: #EFF2F5; /* Light gray for cards/sections, softer than white */
+    --up-bg-dark: #E1E7ED; /* Deeper light gray for subtle depth/borders */
 
-    /* Accents - Red based primary */
+    /* Accents - Retained vibrant Red and Blue */
     --up-accent-primary: #FF3B3B; /* Vibrant Red - Main accent, powerful */
     --up-accent-secondary: #007BFF; /* Bright Blue - Secondary accent, contrasting */
     --up-accent-warning: #FFC107; /* Orange/Yellow - For upcoming/highlights */
     --up-accent-success: #28A745; /* Green - For positive elements/glows */
+    --up-accent-danger: #DC3545; /* Specific danger red for 'live' status */
 
     /* Text Colors */
     --up-text-dark: #2C3A47; /* Dark charcoal for primary text */
@@ -22,14 +23,14 @@
     /* Gradients & Shadows */
     --up-gradient-btn-primary: linear-gradient(45deg, var(--up-accent-primary) 0%, var(--up-accent-secondary) 100%);
     --up-gradient-btn-hover: linear-gradient(45deg, var(--up-accent-secondary) 0%, var(--up-accent-primary) 100%);
-    --up-gradient-header: linear-gradient(to bottom, rgba(231, 235, 240, 0.98), rgba(211, 219, 226, 0.95));
+    --up-gradient-header: linear-gradient(to bottom, rgba(247, 249, 250, 0.98), rgba(239, 242, 245, 0.95)); /* Adjusted for new light background */
     
-    --up-shadow-soft: 0 4px 10px rgba(0, 0, 0, 0.1);
-    --up-shadow-medium: 0 8px 20px rgba(0, 0, 0, 0.15);
-    --up-shadow-strong: 0 12px 30px rgba(0, 0, 0, 0.2);
-    --up-glow-primary: 0 0 15px rgba(255, 59, 59, 0.6), 0 0 25px rgba(255, 59, 59, 0.4);
-    --up-glow-secondary: 0 0 15px rgba(0, 123, 255, 0.6), 0 0 25px rgba(0, 123, 255, 0.4);
-    --up-inset-shadow: inset 0 0 6px rgba(0, 0, 0, 0.05);
+    --up-shadow-soft: 0 4px 10px rgba(0, 0, 0, 0.08); /* Lighter shadows */
+    --up-shadow-medium: 0 8px 20px rgba(0, 0, 0, 0.12);
+    --up-shadow-strong: 0 12px 30px rgba(0, 0, 0, 0.18);
+    --up-glow-primary: 0 0 15px rgba(255, 59, 59, 0.5), 0 0 25px rgba(255, 59, 59, 0.3); /* Slightly less intense glow */
+    --up-glow-secondary: 0 0 15px rgba(0, 123, 255, 0.5), 0 0 25px rgba(0, 123, 255, 0.3);
+    --up-inset-shadow: inset 0 0 6px rgba(0, 0, 0, 0.03); /* Very subtle inset shadow */
 
     /* Typography */
     --font-heading: 'Oswald', sans-serif;
@@ -95,7 +96,7 @@ i {
     border-radius: var(--border-radius-button);
 }
 
-/* Custom Scrollbar (Adjusted for mid-tone theme) */
+/* Custom Scrollbar (Adjusted for light theme) */
 body::-webkit-scrollbar {
     width: 8px;
 }
@@ -111,7 +112,7 @@ body::-webkit-scrollbar-thumb:hover {
     background: var(--up-accent-secondary); /* Blue hover */
 }
 
-/* Background texture overlay */
+/* Background texture overlay - Adjusted opacity and color for light theme */
 .pitch-texture-bg {
     position: fixed;
     top: 0;
@@ -119,11 +120,11 @@ body::-webkit-scrollbar-thumb:hover {
     width: 100%;
     height: 100%;
     background-image:
-        repeating-linear-gradient(45deg, rgba(0,0,0,0.02) 0, rgba(0,0,0,0.02) 1px, transparent 1px, transparent 60px),
-        repeating-linear-gradient(-45deg, rgba(0,0,0,0.02) 0, rgba(0,0,0,0.02) 1px, transparent 1px, transparent 60px);
-    background-color: var(--up-bg-light);
+        repeating-linear-gradient(45deg, rgba(0,0,0,0.01) 0, rgba(0,0,0,0.01) 1px, transparent 1px, transparent 60px),
+        repeating-linear-gradient(-45deg, rgba(0,0,0,0.01) 0, rgba(0,0,0,0.01) 1px, transparent 1px, transparent 60px);
+    background-color: var(--up-bg-light); /* Ensure it matches the light theme */
     background-size: 60px 60px;
-    opacity: 0.8;
+    opacity: 1; /* Keep it subtle */
     z-index: -2;
     filter: brightness(1.0);
 }
@@ -256,7 +257,7 @@ a:hover {
 }
 
 
-/* --- Header (Navbar) - Reverted mobile to original structure, kept desktop flexible --- */
+/* --- Header (Navbar) --- */
 .main-header {
     background: var(--up-gradient-header);
     backdrop-filter: blur(12px);
@@ -637,7 +638,7 @@ a:hover {
     border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-/* --- Team Logos & Names --- */
+/* --- Team Logos & Names - Adjusted for text before logo --- */
 .match-card .match-header {
     display: flex;
     justify-content: space-between;
@@ -650,8 +651,16 @@ a:hover {
     font-size: clamp(0.75rem, 2.2vw, 0.85rem);
 }
 
+/* Match Time - Added styling for the 'box' */
 .match-card .match-time {
     font-weight: 600;
+    background-color: var(--up-bg-dark); /* Background for the time box */
+    padding: 0.3rem 0.6rem;
+    border-radius: var(--border-radius-button); /* Rounded corners for the box */
+    border: 1px solid rgba(0,0,0,0.1); /* Subtle border */
+    color: var(--up-text-dark); /* Text color inside the box */
+    box-shadow: var(--up-inset-shadow);
+    white-space: nowrap; /* Prevent time from wrapping */
 }
 
 .match-card .match-teams {
@@ -688,7 +697,8 @@ a:hover {
 .match-card .team {
     display: flex;
     align-items: center;
-    /* Adjust flex-grow/shrink to make sure content fits, but logo/name is fluid */
+    /* Changed flex-direction to row-reverse for text before logo in RTL */
+    flex-direction: row-reverse; 
     flex-grow: 1; 
     flex-shrink: 1;
     gap: 0.3rem;
@@ -710,7 +720,6 @@ a:hover {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    /* Removed flex-grow on span to prevent name from stretching too much */
     flex-shrink: 1; 
     min-width: 0; /* Allow text to truncate */
 }
@@ -726,7 +735,7 @@ a:hover {
     transition: transform var(--transition-fast), box-shadow var(--transition-fast);
     padding: 2px;
     flex-shrink: 0;
-    margin: 0;
+    margin: 0; /* Reset margin from default img styles */
 }
 
 .match-card .team img:hover {
@@ -754,6 +763,7 @@ a:hover {
     padding: 0;
 }
 
+/* Match Status - Centered and 'live' is red */
 .match-card .match-status {
     font-family: var(--font-body);
     font-size: clamp(0.75rem, 0.85vw, 0.85rem);
@@ -767,10 +777,15 @@ a:hover {
     border: 1px solid rgba(0, 0, 0, 0.08);
     box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
     color: var(--up-text-dark);
+    /* Centering the status */
+    margin-left: auto;
+    margin-right: auto;
+    display: block; /* Ensures margin auto works horizontally */
+    width: fit-content; /* Ensures it only takes necessary width */
 }
 
 .match-card .live-status {
-    background-color: var(--up-accent-danger);
+    background-color: var(--up-accent-danger); /* Explicit Red for 'Live' */
     color: var(--up-text-on-accent);
     box-shadow: 0 0 12px rgba(220, 53, 69, 0.6), 0 0 20px rgba(220, 53, 69, 0.4);
     animation: pulse-danger 1.5s infinite alternate;
@@ -872,7 +887,7 @@ a:hover {
     padding: 6vw 3vw;
     background-color: var(--up-bg-light); 
     border-top: 2px solid var(--up-accent-primary);
-    box-shadow: 0 0 20px rgba(0,0,0,0.1) inset;
+    box-shadow: 0 0 20px rgba(0,0,0,0.05) inset; /* Lighter inset shadow */
     animation: fadeIn var(--transition-medium) ease-out;
     position: relative;
     z-index: 1;
@@ -1336,8 +1351,8 @@ a:hover {
         font-size: clamp(1rem, 1.5vw, 1.2rem);
     }
 
-    /* Hero section adjustments for desktop */
-    #hero-section {
+    /* Removed hero section media queries as the section is removed */
+    /* #hero-section {
         padding: 8vw 0;
     }
     #hero-section h1 {
@@ -1345,7 +1360,7 @@ a:hover {
     }
     #hero-section p {
         font-size: clamp(1.2rem, 2vw, 1.8rem);
-    }
+    } */
 
     /* Other sections */
     .view-section {
@@ -1357,20 +1372,20 @@ a:hover {
     }
 }
 
-/* Image frame for the "ultimate pitch" image in hero section */
-#hero-section img.ultimate-pitch-frame {
-    border: 5px solid var(--up-accent-secondary); /* A nice frame color */
-    border-radius: var(--border-radius-card); /* Rounded corners for the frame */
-    box-shadow: var(--up-shadow-medium), var(--up-glow-primary); /* Shadow and glow */
+/* Removed image frame for the "ultimate pitch" image in hero section */
+/* #hero-section img.ultimate-pitch-frame {
+    border: 5px solid var(--up-accent-secondary); 
+    border-radius: var(--border-radius-card);
+    box-shadow: var(--up-shadow-medium), var(--up-glow-primary);
     transition: all var(--transition-medium);
-    margin-bottom: 2rem; /* Space below image */
-    max-width: 80%; /* Ensure it fits */
+    margin-bottom: 2rem;
+    max-width: 80%;
     height: auto;
     object-fit: cover;
     animation: frame-glow 3s infinite alternate ease-in-out;
-}
+} */
 
-@keyframes frame-glow {
+/* @keyframes frame-glow {
     0% {
         box-shadow: var(--up-shadow-medium), 0 0 10px rgba(255, 59, 59, 0.4);
     }
@@ -1380,4 +1395,4 @@ a:hover {
     100% {
         box-shadow: var(--up-shadow-medium), 0 0 10px rgba(255, 59, 59, 0.4);
     }
-}
+} */
