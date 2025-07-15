@@ -59,7 +59,7 @@
 }
 
 html {
-    font-size: 13px; 
+    font-size: 13px; /* Base font size for smallest screens */
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -68,11 +68,11 @@ html {
 
 body {
     font-family: var(--font-body);
-    background-color: var(--up-bg-light); 
-    color: var(--up-text-dark); 
+    background-color: var(--up-bg-light); /* Lighter, warmer background */
+    color: var(--up-text-dark); /* Dark charcoal text */
     line-height: 1.6;
-    direction: rtl; 
-    text-align: right; 
+    direction: rtl; /* Right-to-Left for Arabic */
+    text-align: right; /* Default text alignment */
     overflow-x: hidden;
     min-height: 100vh;
     position: relative;
@@ -136,7 +136,7 @@ body::-webkit-scrollbar-thumb:hover {
 
 .container {
     width: 95vw;
-    max-width: 1280px; /* Kept max-width to allow content to spread */
+    max-width: 1280px;
     margin: auto;
     padding: 0 1rem;
 }
@@ -294,6 +294,9 @@ a:hover {
     position: relative;
     color: var(--up-accent-primary); /* Red accent for logo text */
     text-shadow: 0 0 8px rgba(255, 59, 59, 0.2), 0 0 15px rgba(0, 123, 255, 0.15);
+    /* Default desktop position */
+    margin-right: 0; 
+    margin-left: auto; /* Push to right in RTL */
 }
 
 .site-logo .logo-icon {
@@ -364,7 +367,7 @@ a:hover {
     border: 1px solid var(--up-accent-primary);
     transition: all var(--transition-fast);
     backdrop-filter: blur(6px);
-    order: 2;
+    order: 2; /* Default order for desktop */
 }
 .search-bar:focus-within {
     border-color: var(--up-accent-secondary);
@@ -417,13 +420,13 @@ a:hover {
     cursor: pointer;
     flex-shrink: 0;
     order: 0;
-    margin-right: auto;
+    margin-left: auto; /* Push to left for mobile RTL */
 }
 
 
 /* --- Main Content Display Area --- */
 .view-section {
-    padding: 4vw 0; /* Reduced padding to fit more content */
+    padding: 7vw 0;
     background-color: var(--up-bg-light); 
     min-height: 50vh;
     opacity: 0;
@@ -461,7 +464,7 @@ a:hover {
 .section-title {
     font-family: var(--font-heading);
     text-align: center;
-    margin-bottom: 3vw; /* Reduced margin */
+    margin-bottom: 4vw;
     font-size: clamp(1.8rem, 5vw, 2.7rem);
     color: var(--up-accent-primary);
     text-shadow: 0 0 12px rgba(255, 59, 59, 0.3), 0 0 25px rgba(0, 123, 255, 0.15);
@@ -482,7 +485,7 @@ a:hover {
     display: flex;
     justify-content: center;
     gap: 0.6rem;
-    margin-bottom: 3vw; /* Reduced margin */
+    margin-bottom: 4vw;
     flex-wrap: wrap;
     padding: 0.6rem 1rem;
     background: var(--up-bg-medium);
@@ -549,13 +552,12 @@ a:hover {
     transform: translateY(-1px);
 }
 
-/* Grids for content cards - Adjusted for more columns and full width */
+/* Grids for content cards */
 .match-grid, .news-grid {
     display: grid;
-    /* Allow more columns as screen size increases, flexible minmax */
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Min width for cards */
-    gap: 1.2vw; /* Slightly reduced gap */
-    padding: 0 0.5vw; /* Reduced padding on sides of grid */
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Adjusted minmax for mobile cards (wider) */
+    gap: 1.5vw;
+    padding: 0 1vw;
     position: relative;
     z-index: 1;
 }
@@ -607,10 +609,11 @@ a:hover {
     z-index: 10;
 }
 
-/* Card image (poster) - Reduced height */
+/* Card image (poster) */
 .match-card img {
     width: 100%;
-    height: clamp(120px, 25vw, 180px); /* Reduced height to make cards shorter */
+    /* Default height - will be adjusted by media queries */
+    height: clamp(150px, 20vw, 200px); /* Slightly reduced default height */
     object-fit: cover;
     background-color: var(--up-bg-dark); /* Darker background for image fallback */
     display: block;
@@ -686,10 +689,10 @@ a:hover {
     flex-shrink: 0;
     white-space: nowrap;
     font-family: var(--font-heading);
-    font-size: clamp(1.6rem, 4vw, 2.2rem); /* Slightly reduced VS size */
+    font-size: clamp(1.8rem, 4.5vw, 2.5rem); /* Significantly larger VS */
     color: var(--up-accent-danger); /* Danger red for VS */
     font-weight: 800;
-    margin: 0 0.4rem; /* Reduced margin around VS */
+    margin: 0 0.5rem; /* Larger margin around VS */
     text-shadow: 0 0 5px rgba(220, 53, 69, 0.6);
     text-align: center;
     line-height: 1;
@@ -726,8 +729,8 @@ a:hover {
 }
 
 .match-card .team img {
-    width: clamp(35px, 5vw, 50px); /* Slightly smaller team logos */
-    height: clamp(35px, 5vw, 50px); /* Slightly smaller team logos */
+    width: clamp(45px, 6vw, 60px); /* Larger team logos */
+    height: clamp(45px, 6vw, 60px); /* Larger team logos */
     object-fit: contain;
     border-radius: 50%;
     border: 1px solid rgba(0,0,0,0.1);
@@ -755,8 +758,8 @@ a:hover {
     margin-top: 0.2rem;
 }
 .match-card .match-league img {
-    width: clamp(24px, 2.2vw, 28px); /* Slightly smaller league logos */
-    height: clamp(24px, 2.2vw, 28px); /* Slightly smaller league logos */
+    width: clamp(28px, 2.5vw, 32px);
+    height: clamp(28px, 2.5vw, 32px);
     object-fit: contain;
     border-radius: 0;
     box-shadow: none;
@@ -767,9 +770,9 @@ a:hover {
 /* Match Status - Centered and 'live' is red */
 .match-card .match-status {
     font-family: var(--font-body);
-    font-size: clamp(0.7rem, 0.8vw, 0.8rem); /* Slightly smaller status text */
+    font-size: clamp(0.75rem, 0.85vw, 0.85rem);
     font-weight: 700;
-    padding: 0.3rem 0.6rem; /* Reduced padding */
+    padding: 0.4rem 0.8rem;
     border-radius: var(--border-radius-button);
     margin-top: 0.4rem;
     text-transform: uppercase;
@@ -824,7 +827,7 @@ a:hover {
 }
 .news-card img {
     width: 100%;
-    height: clamp(80px, 15vw, 120px); /* Reduced height for news images */
+    height: clamp(100px, 20vw, 150px);
     object-fit: cover;
     background-color: var(--up-bg-dark);
     display: block;
@@ -836,20 +839,20 @@ a:hover {
     filter: brightness(1.05) saturate(1.05);
 }
 .news-card .news-card-content {
-    padding: 0.8rem 1rem; /* Slightly reduced padding */
+    padding: 0.9rem 1.1rem;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    gap: 0.4rem; /* Reduced gap */
+    gap: 0.5rem;
     background-color: var(--up-bg-light);
 }
 .news-card h3 {
     font-family: var(--font-heading);
-    font-size: clamp(0.9rem, 1.1vw, 1.05rem); /* Slightly smaller heading */
+    font-size: clamp(0.95rem, 1.2vw, 1.15rem);
     font-weight: 700;
     line-height: 1.3;
     color: var(--up-text-dark);
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.3rem;
     text-shadow: 0 0 5px rgba(0,0,0,0.05);
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -859,10 +862,10 @@ a:hover {
 }
 .news-card p {
     font-family: var(--font-body);
-    font-size: clamp(0.75rem, 0.8vw, 0.85rem); /* Slightly smaller paragraph */
+    font-size: clamp(0.8rem, 0.85vw, 0.9rem);
     color: var(--up-text-medium);
     line-height: 1.5;
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.7rem;
     flex-grow: 1;
     display: -webkit-box;
     -webkit-line-clamp: 3;
@@ -871,7 +874,7 @@ a:hover {
     text-overflow: ellipsis;
 }
 .news-card .news-date {
-    font-size: 0.7rem; /* Slightly smaller date */
+    font-size: 0.75rem;
     color: var(--up-text-light);
     opacity: 0.9;
     text-align: left;
@@ -1147,28 +1150,33 @@ a:hover {
     /* Navbar specific adjustments for original mobile look */
     .main-header .header-content {
         flex-wrap: wrap; /* Allow wrapping */
-        justify-content: space-between;
+        justify-content: center; /* Center items for single column look */
         gap: 0.6rem;
-        padding: 0 0.8rem;
+        padding: 0.5rem 0.8rem; /* Adjusted padding */
     }
     .site-logo {
-        order: 0;
-        margin-right: auto;
-        font-size: clamp(1.6rem, 5vw, 2rem);
+        order: 0; /* Keep logo first */
+        margin-right: auto; /* Remove right margin */
+        margin-left: auto; /* Center logo by auto margins */
+        font-size: clamp(1.8rem, 6vw, 2.2rem); /* Slightly larger for central focus */
     }
     .menu-toggle {
         display: block; /* Show hamburger menu toggle */
+        order: -1; /* Place it at the very start (right in RTL) */
+        margin-right: auto; /* Push it to the far right */
+        margin-left: 0; /* Reset left margin */
     }
     .main-nav {
         display: none; /* Hide nav by default on mobile */
-        flex-basis: 100%;
-        order: 1;
+        flex-basis: 100%; /* Take full width */
+        order: 1; /* Place below logo/toggle */
         flex-direction: column;
         align-items: flex-end; /* Align links to right */
         background: var(--up-bg-medium);
         padding: 1rem 0;
         border-radius: var(--border-radius-card);
         box-shadow: var(--up-shadow-soft);
+        margin-top: 0.6rem; /* Space below header content */
     }
     .main-nav.active { /* Class added by JS for active mobile menu */
         display: flex;
@@ -1204,37 +1212,38 @@ a:hover {
         text-shadow: none;
     }
     .search-bar {
-        order: 2;
-        flex-basis: 100%;
-        margin: 0.6rem auto 0.4rem auto;
+        order: 2; /* Place search bar last */
+        flex-basis: 100%; /* Take full width */
+        margin: 0.6rem auto 0.4rem auto; /* Center with auto margins */
     }
     .search-bar input {
         width: 100%;
         font-size: clamp(0.8rem, 3.5vw, 0.9rem);
     }
 
-    /* Cards - 2 columns on small mobile */
+    /* Cards - wider on mobile (single column) */
     .match-grid, .news-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Allow 2 columns on small mobile */
-        gap: 2vw; /* Adjusted gap */
-        padding: 0 0.5rem; /* Adjusted padding */
+        grid-template-columns: 1fr; /* Single column */
+        gap: 3vw; /* Increased gap */
+        padding: 0 1rem;
     }
     .match-card img {
-        height: clamp(100px, 40vw, 150px); /* Adjust image height for 2 columns */
+        height: clamp(150px, 45vw, 220px); /* Adjust height to be shorter, but wider feeling */
+        max-height: 220px; /* Cap max height for very tall phones */
     }
     .match-card .match-teams .team img {
-        width: clamp(30px, 8vw, 45px); /* Make team logos smaller */
-        height: clamp(30px, 8vw, 45px);
+        width: clamp(40px, 12vw, 60px); /* Make team logos larger on small screens */
+        height: clamp(40px, 12vw, 60px);
     }
     .match-card .vs {
-        font-size: clamp(1.8rem, 6vw, 2.5rem); /* Adjusted VS for smaller cards */
-        margin: 0 0.5rem;
+        font-size: clamp(2.2rem, 8vw, 3rem); /* Even larger VS for mobile */
+        margin: 0 0.8rem;
     }
     .match-card .team {
-        font-size: clamp(0.8rem, 3.5vw, 1rem); /* Adjusted font size */
+        font-size: clamp(0.9rem, 4vw, 1.2rem);
     }
     .news-card img {
-        height: clamp(70px, 25vw, 100px); /* Adjust news card image height */
+        height: clamp(120px, 40vw, 200px); /* Adjust news card image height */
     }
 }
 
@@ -1248,12 +1257,14 @@ a:hover {
     }
     .main-header .header-content {
         flex-wrap: nowrap; /* No wrap on larger screens */
+        justify-content: space-between; /* Restore desktop justify */
         padding: 0 1rem;
         gap: 1.2rem;
     }
     .site-logo {
         font-size: clamp(2rem, 3.2vw, 2.4rem);
         margin-right: 0; /* Reset margin */
+        margin-left: auto; /* Push to right in RTL */
         order: 0;
     }
     .menu-toggle {
@@ -1268,6 +1279,7 @@ a:hover {
         background: transparent; /* Transparent background */
         padding: 0;
         box-shadow: none;
+        margin-top: 0; /* Reset margin */
     }
     .main-nav ul {
         flex-direction: row;
@@ -1305,17 +1317,14 @@ a:hover {
         max-width: none;
     }
 
-    /* Card grids start forming more columns */
+    /* Card grids start forming more columns (2 columns for tablets) */
     .match-grid, .news-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Allow 2-3 columns on medium devices */
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* At least 2 columns */
         gap: 1.5vw;
         padding: 0 1vw;
     }
-
-    /* Video player on larger mobile/tablet */
-    .video-player-wrapper {
-        margin-bottom: 2vw;
-        max-width: 800px;
+    .match-card img {
+        height: clamp(180px, 20vw, 250px); /* Moderate height for tablets */
     }
 }
 
@@ -1330,37 +1339,38 @@ a:hover {
     .main-header .header-content {
         padding: 0 1.5rem;
     }
+    .site-logo {
+        margin-right: 0; /* Push to right in RTL */
+        margin-left: auto; /* Reset */
+    }
 
-    /* Cards - 3 or more columns on desktop, adjusted height */
+    /* Cards - 2 columns on desktop, wider posters */
     .match-grid, .news-grid {
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* More columns on desktop */
-        gap: 1.5vw; /* Adjusted gap */
-        padding: 0 1.5vw; /* Adjusted padding */
+        grid-template-columns: repeat(2, 1fr); /* Exactly 2 columns */
+        gap: 2vw; /* Increased gap */
+        padding: 0 2vw;
     }
     .match-card img {
-        height: clamp(140px, 15vw, 200px); /* Adjusted height for desktop posters */
+        height: clamp(200px, 18vw, 250px); /* Shorter for desktop to maximize width feel */
     }
     .match-card .match-teams .team img {
-        width: clamp(40px, 4vw, 55px); /* Adjusted team logos on desktop */
-        height: clamp(40px, 4vw, 55px);
+        width: clamp(50px, 5vw, 70px); /* Larger team logos on desktop */
+        height: clamp(50px, 5vw, 70px);
     }
     .match-card .vs {
-        font-size: clamp(2rem, 3vw, 3rem); /* Adjusted VS */
-        margin: 0 0.8rem;
+        font-size: clamp(2.5rem, 3.5vw, 3.5rem); /* Even larger VS */
+        margin: 0 1rem;
     }
     .match-card .team span {
-        font-size: clamp(0.9rem, 1.2vw, 1.1rem); /* Adjusted team name font size */
-    }
-    .news-card img {
-        height: clamp(90px, 10vw, 140px); /* Adjusted news card image height */
+        font-size: clamp(1rem, 1.5vw, 1.2rem);
     }
 
     /* Other sections */
     .view-section {
-        padding: 3vw 0; /* Further reduced padding */
+        padding: 4vw 0;
     }
     .section-title {
         font-size: clamp(2.5rem, 3.5vw, 3.5rem);
-        margin-bottom: 2.5vw; /* Further reduced margin */
+        margin-bottom: 3vw;
     }
 }
