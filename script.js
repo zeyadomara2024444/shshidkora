@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const homeLogoLink = document.getElementById('home-logo-link');
     const watchNowBtn = document.getElementById('watch-now-btn');
     const jsonLdSchema = document.getElementById('json-ld-schema');
-    const heroSection = document.getElementById('hero-section');
+    const heroSection = document.getElementById('hero-section'); // Added reference to heroSection
 
     // SEO Elements (Meta tags)
     const dynamicTitle = document.getElementById('dynamic-title');
@@ -133,10 +133,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const generateJsonLdSchema = (data, viewName) => {
         let schema = {};
         const siteUrl = window.location.origin + '/';
-        const schemas = []; // Array to hold multiple schemas
 
         if (viewName === 'match-details' && data && data.type === 'match') {
-            const matchSchema = {
+            schema = {
                 "@context": "https://schema.org",
                 "@type": "SportsEvent",
                 "name": data.title,
@@ -160,59 +159,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 ],
                 "sport": "Football",
                 "eventStatus": `https://schema.org/EventStatus/${data.status === 'Live' ? 'EventScheduled' : data.status === 'Finished' ? 'EventEnded' : 'EventScheduled'}`,
-                "image": data.thumbnail, // Ensure this is a high-quality image (e.g., 1200px wide)
+                "image": data.thumbnail,
                 "url": `${siteUrl}#match-${data.id}`
             };
             if (data.score) {
-                matchSchema.result = data.score;
+                schema.result = data.score;
             }
             if (data.commentators && data.commentators.length > 0) {
-                matchSchema.performer = data.commentators.map(c => ({
+                schema.performer = data.commentators.map(c => ({
                     "@type": "Person",
                     "name": c
                 }));
             }
             if (data.channel_info && data.channel_info.length > 0) {
-                matchSchema.broadcastOfEvent = data.channel_info.map(channel => ({
+                schema.broadcastOfEvent = data.channel_info.map(channel => ({
                     "@type": "BroadcastService",
                     "name": channel.name,
-                    "url": channel.link // Assuming link is a valid URL for the channel
+                    "url": channel.link
                 }));
             }
-            schemas.push(matchSchema);
-
-            // Add BreadcrumbList schema for match details
-            schemas.push({
-                "@context": "https://schema.org",
-                "@type": "BreadcrumbList",
-                "itemListElement": [
-                    {
-                        "@type": "ListItem",
-                        "position": 1,
-                        "name": "الرئيسية",
-                        "item": siteUrl + '#home'
-                    },
-                    {
-                        "@type": "ListItem",
-                        "position": 2,
-                        "name": data.status === 'Live' ? "المباريات المباشرة" : "مواعيد المباريات",
-                        "item": siteUrl + (data.status === 'Live' ? '#live' : '#upcoming')
-                    },
-                    {
-                        "@type": "ListItem",
-                        "position": 3,
-                        "name": data.title,
-                        "item": `${siteUrl}#match-${data.id}`
-                    }
-                ]
-            });
-
         } else if (viewName === 'news-details' && data && data.type === 'news') { // Assuming a news details view might exist
-            const newsArticleSchema = {
+            schema = {
                 "@context": "https://schema.org",
                 "@type": "NewsArticle",
                 "headline": data.title,
-                "image": [data.article_image], // Ensure this is a high-quality image
+                "image": [data.article_image],
                 "datePublished": data.date_time,
                 "dateModified": data.date_time,
                 "author": {
@@ -230,92 +201,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 "description": data.short_description,
                 "mainEntityOfPage": {
                     "@type": "WebPage",
-                    "@id": data.article_url // Assuming news.article_url is the full canonical URL for the news
+                    "@id": data.article_url
                 }
             };
-            schemas.push(newsArticleSchema);
-
-            // Add BreadcrumbList schema for news details (if internal)
-            schemas.push({
-                "@context": "https://schema.org",
-                "@type": "BreadcrumbList",
-                "itemListElement": [
-                    {
-                        "@type": "ListItem",
-                        "position": 1,
-                        "name": "الرئيسية",
-                        "item": siteUrl + '#home'
-                    },
-                    {
-                        "@type": "ListItem",
-                        "position": 2,
-                        "name": "آخر الأخبار",
-                        "item": siteUrl + '#news'
-                    },
-                    {
-                        "@type": "ListItem",
-                        "position": 3,
-                        "name": data.title,
-                        "item": data.article_url // Use the external URL if it leads out
-                    }
-                ]
-            });
-
         } else if (viewName === 'home') {
-            schemas.push({
+            schema = {
                 "@context": "https://schema.org",
                 "@type": "WebSite",
                 "name": "شاهد كورة - Ultimate Pitch",
                 "url": siteUrl,
                 "potentialAction": {
                     "@type": "SearchAction",
-                    "target": `${siteUrl}search?q={search_term_string}`,
+                    "target": `${siteUrl}?q={search_term_string}`,
                     "queryInput": "required name=search_term_string"
                 }
-            });
-        } else if (['live', 'upcoming', 'highlights', 'news', 'search-results'].includes(viewName)) {
-            // General CollectionPage for category views
-            schemas.push({
+            };
+        } else if (['live', 'upcoming', 'highlights', 'search-results'].includes(viewName)) {
+            schema = {
                 "@context": "https://schema.org",
                 "@type": "CollectionPage",
                 "name": dynamicTitle.textContent,
                 "description": dynamicDescription.getAttribute('content'),
                 "url": dynamicCanonical.getAttribute('href')
-            });
-
-            // Add BreadcrumbList for category pages
-            let categoryName = '';
-            let categoryUrlFragment = '';
-            if (viewName === 'live') { categoryName = 'المباريات المباشرة'; categoryUrlFragment = '#live'; }
-            else if (viewName === 'upcoming') { categoryName = 'مواعيد المباريات'; categoryUrlFragment = '#upcoming'; }
-            else if (viewName === 'highlights') { categoryName = 'الأهداف والملخصات'; categoryUrlFragment = '#highlights'; }
-            else if (viewName === 'news') { categoryName = 'آخر الأخبار'; categoryUrlFragment = '#news'; }
-            else if (viewName === 'search-results') { categoryName = 'نتائج البحث'; categoryUrlFragment = `search?q=${encodeURIComponent(currentSearchQuery)}`; }
-
-            schemas.push({
-                "@context": "https://schema.org",
-                "@type": "BreadcrumbList",
-                "itemListElement": [
-                    {
-                        "@type": "ListItem",
-                        "position": 1,
-                        "name": "الرئيسية",
-                        "item": siteUrl + '#home'
-                    },
-                    {
-                        "@type": "ListItem",
-                        "position": 2,
-                        "name": categoryName,
-                        "item": siteUrl + categoryUrlFragment
-                    }
-                ]
-            });
+            };
         }
 
-        // Set the content of the single JSON-LD script tag as an array of schemas
-        jsonLdSchema.textContent = JSON.stringify(schemas, null, 2);
+        jsonLdSchema.textContent = JSON.stringify(schema, null, 2);
     };
-
 
     /**
      * Lazy loads images using Intersection Observer.
@@ -333,11 +245,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         lazyImage.removeAttribute('data-src'); // Remove data-src after loading
                         lazyImage.classList.remove('lazy');
                         lazyImage.onload = () => lazyImage.classList.add('loaded'); // Add 'loaded' class for fade-in effect (requires CSS transition)
-                        lazyImage.onerror = () => { // Added onerror for lazy images
-                            lazyImage.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ccc"%3E%3Cpath d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 11l4.5 6H5l3.5-4.5z"/%3E%3C/svg%3E'; // Simple SVG placeholder
-                            lazyImage.alt = 'صورة غير متوفرة';
-                            lazyImage.classList.add('error'); // Add error class for specific styling
-                        };
                         observer.unobserve(lazyImage); // Stop observing once loaded
                     }
                 });
@@ -354,12 +261,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 img.src = img.dataset.src;
                 img.removeAttribute('data-src');
                 img.classList.remove('lazy');
-                img.onload = () => img.classList.add('loaded');
-                img.onerror = () => { // Fallback onerror
-                    img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ccc"%3E%3Cpath d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 11l4.5 6H5l3.5-4.5z"/%3E%3C/svg%3E';
-                    img.alt = 'صورة غير متوفرة';
-                    img.classList.add('error');
-                };
             });
         }
     };
@@ -589,16 +490,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (item.type !== 'match' || item.status !== 'Upcoming') return false;
                 const matchDate = new Date(item.date_time);
                 return (matchDate >= TODAY_START && matchDate < TOMORROW_START) ||
-                               (matchDate >= TOMORROW_START && matchDate < DAY_AFTER_TOMORROW_START);
+                       (matchDate >= TOMORROW_START && matchDate < DAY_AFTER_TOMORROW_START);
             }).sort((a, b) => new Date(a.date_time) - new Date(b.date_time));
 
             const finishedMatches = DATA.filter(item => item.type === 'match' && item.status === 'Finished')
-                                             .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
-                                             .slice(0, 2);
+                                         .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
+                                         .slice(0, 2);
 
             const latestNews = DATA.filter(item => item.type === 'news')
-                                             .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
-                                             .slice(0, 2);
+                                        .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
+                                        .slice(0, 2);
 
             // Filter out any potential non-match/news items before passing to renderGrid
             const itemsToRender = [...liveMatches, ...upcomingMatchesTodayTomorrow, ...latestNews, ...finishedMatches].filter(item => item.type === 'match' || item.type === 'news');
@@ -832,27 +733,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const iframe = document.createElement('iframe');
                     iframe.src = match.embed_url;
-                    // Add more robust allow attributes for mobile compatibility and features
-                    iframe.allow = "autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer;";
+                    iframe.allow = "autoplay; fullscreen";
                     iframe.frameBorder = "0";
                     iframe.scrolling = "no";
                     iframe.setAttribute('referrerpolicy', 'origin');
-                    
-                    // Add a timeout for potential loading issues and better feedback
-                    const loadingTimeout = setTimeout(() => {
-                        if (loadingSpinner.style.display === 'block') { // Still spinning, assume issue
-                            loadingSpinner.style.display = 'none';
-                            matchPlayerContainer.innerHTML = '<p class="error-message">تعذر تحميل البث. قد يكون الرابط غير صالح أو توجد مشكلة في الشبكة. يرجى المحاولة لاحقاً.</p>';
-                        }
-                    }, 15000); // 15 seconds timeout
-
                     iframe.onload = () => {
                         loadingSpinner.style.display = 'none';
-                        clearTimeout(loadingTimeout); // Clear timeout on successful load
                     };
                     iframe.onerror = () => {
                         loadingSpinner.style.display = 'none';
-                        clearTimeout(loadingTimeout); // Clear timeout on error
                         matchPlayerContainer.innerHTML = '<p class="error-message">تعذر تحميل البث. يرجى المحاولة لاحقاً.</p>';
                     };
                     matchPlayerContainer.appendChild(iframe);
@@ -905,7 +794,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 pageUrl = `${window.location.origin}/#match-${match.id}`;
                 ogImage = match.thumbnail;
                 ogImageAlt = `ملصق مباراة ${match.title}`;
-                jsonLdData = match; // This will be handled by generateJsonLdSchema
+                jsonLdData = match;
+
             } else {
                 console.warn(`Match with ID ${dataId} not found. Redirecting to home.`);
                 switchView('home');
@@ -954,8 +844,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         updateSEO(pageTitle, pageDescription, pageKeywords, pageUrl, ogImage, ogImageAlt);
-        // Pass specific data to generateJsonLdSchema when applicable
-        generateJsonLdSchema(dataId ? DATA.find(item => item.id === parseInt(dataId)) : null, viewName); 
+        generateJsonLdSchema(jsonLdData, viewName);
     };
 
 
@@ -966,6 +855,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const navLink = e.target.closest('.nav-link');
         const watchNow = e.target.closest('#watch-now-btn');
         const homeLogo = e.target.closest('#home-logo-link');
+        // Removed backToHomeBtn check from here, as it's now handled within the match-details template's event listener
 
         if (navLink) {
             e.preventDefault();
@@ -993,6 +883,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 switchView('match-details', itemId);
                 window.history.pushState({ view: 'match-details', id: itemId }, '', `#match-${itemId}`);
             }
+            // Add handler for news cards if they also link to details page (though current news card links externally)
+            // else if (itemType === 'news' && itemId) {
+            //     // You would need a 'news-details' template and view logic for this
+            //     console.log('News card clicked, but no news-details view is implemented for internal linking yet.');
+            //     // switchView('news-details', itemId);
+            //     // window.history.pushState({ view: 'news-details', id: itemId }, '', `#news-${itemId}`);
+            // }
         }
 
         // Toggle mobile menu
@@ -1016,6 +913,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (prevBtn) {
                 currentPage[viewKey] = Math.max(1, currentPage[viewKey] - 1);
             } else if (nextBtn) {
+                // To calculate max page accurately, you'd need the total filtered items for the current view
+                // For simplicity, we'll just increment and let renderGrid disable 'next' button if no more items
                 currentPage[viewKey]++;
             }
             switchView(currentView, null); // Re-render the current view with updated page
