@@ -32,7 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('search-input');
     const searchButton = document.getElementById('search-button');
     const homeLogoLink = document.getElementById('home-logo-link');
-    const watchNowBtn = document.getElementById('watch-now-btn');
+    // Removed watchNowBtn as it's no longer in HTML
+
     const jsonLdSchema = document.getElementById('json-ld-schema');
     const heroSection = document.getElementById('hero-section'); // Added reference to heroSection
 
@@ -230,22 +231,32 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
-     * Lazy loads images using Intersection Observer.
+     * Lazy loads images using Intersection Observer or native loading.
      * Applied to images with data-src and 'lazy' class.
+     * Added placeholder src for better UX during loading.
      */
     const lazyLoadImages = () => {
         const lazyImages = document.querySelectorAll('img.lazy[data-src]');
 
-        if ('IntersectionObserver' in window) {
+        if ('loading' in HTMLImageElement.prototype) {
+            // Native lazy loading supported
+            lazyImages.forEach((img) => {
+                img.src = img.dataset.src;
+                img.removeAttribute('data-src');
+                img.classList.remove('lazy');
+                img.onload = () => img.classList.add('loaded');
+            });
+        } else if ('IntersectionObserver' in window) {
+            // Fallback to Intersection Observer
             let lazyImageObserver = new IntersectionObserver((entries, observer) => {
                 entries.forEach((entry) => {
                     if (entry.isIntersecting) {
                         const lazyImage = entry.target;
                         lazyImage.src = lazyImage.dataset.src;
-                        lazyImage.removeAttribute('data-src'); // Remove data-src after loading
+                        lazyImage.removeAttribute('data-src');
                         lazyImage.classList.remove('lazy');
-                        lazyImage.onload = () => lazyImage.classList.add('loaded'); // Add 'loaded' class for fade-in effect (requires CSS transition)
-                        observer.unobserve(lazyImage); // Stop observing once loaded
+                        lazyImage.onload = () => lazyImage.classList.add('loaded');
+                        observer.unobserve(lazyImage);
                     }
                 });
             }, {
@@ -279,28 +290,28 @@ document.addEventListener('DOMContentLoaded', () => {
         let statusText = '';
         let statusClass = '';
         let timeDisplay = '';
-        let buttonHtml = '';
         let scoreOrVs = '<span>vs</span>';
 
         if (match.status === 'Live') {
             statusText = 'مباشر';
             statusClass = 'live-status';
             timeDisplay = 'الآن';
-            buttonHtml = `<a href="#match-${match.id}" class="btn btn-primary" data-match-id="${match.id}" data-type="match">شاهد الآن <i class="fas fa-play-circle"></i></a>`;
+            // Removed buttonHtml
         } else if (match.status === 'Finished') {
             statusText = 'انتهت';
             statusClass = 'finished-status';
             timeDisplay = formatDateTime(match.date_time);
             scoreOrVs = match.score ? `<span>${match.score}</span>` : '<span>-</span>';
-            buttonHtml = `<a href="#match-${match.id}" class="btn btn-secondary" data-match-id="${match.id}" data-type="match">${match.highlights_url ? 'شاهد الملخص' : 'عرض التفاصيل'} <i class="fas ${match.highlights_url ? 'fa-video' : 'fa-info-circle'}"></i></a>`;
+            // Removed buttonHtml
         } else if (match.status === 'Upcoming') {
             statusText = 'قريباً';
             statusClass = 'upcoming-status';
             timeDisplay = formatDateTime(match.date_time);
-            buttonHtml = `<a href="#match-${match.id}" class="btn btn-secondary" data-match-id="${match.id}" data-type="match">عرض التفاصيل <i class="fas fa-info-circle"></i></a>`;
+            // Removed buttonHtml
         }
 
-        // Use data-src for lazy loading and add 'lazy' class
+        // Use data-src for lazy loading and add 'lazy' class, along with native loading="lazy"
+        // Also added a tiny transparent gif as a placeholder src for better initial rendering and no broken image icons
         card.innerHTML = `
             <div class="match-header">
                 <span class="match-status ${statusClass}">${statusText}</span>
@@ -308,23 +319,23 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="match-teams">
                 <div class="team home-team">
-                    <img data-src="${match.home_team_logo}" alt="شعار ${match.home_team}" class="lazy" width="48" height="48">
+                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" data-src="${match.home_team_logo}" alt="شعار ${match.home_team}" class="lazy" loading="lazy" width="48" height="48">
                     <span>${match.home_team}</span>
                 </div>
                 <div class="vs">${scoreOrVs}</div>
                 <div class="team away-team">
-                    <img data-src="${match.away_team_logo}" alt="شعار ${match.away_team}" class="lazy" width="48" height="48">
+                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" data-src="${match.away_team_logo}" alt="شعار ${match.away_team}" class="lazy" loading="lazy" width="48" height="48">
                     <span>${match.away_team}</span>
                 </div>
             </div>
             <div class="match-league">
-                <img data-src="${match.league_logo}" alt="شعار ${match.league_name}" class="lazy" width="32" height="32">
+                <img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" data-src="${match.league_logo}" alt="شعار ${match.league_name}" class="lazy" loading="lazy" width="32" height="32">
                 <span>${match.league_name}</span>
             </div>
             ${match.channel_info && match.channel_info.length > 0 && match.status !== 'Finished' ?
                 `<div class="match-channels"><span>القنوات: ${match.channel_info.map(c => c.name).join(', ')}</span></div>` : ''}
             <div class="match-details-btn">
-                ${buttonHtml}
+                <a href="#match-${match.id}" class="btn btn-tertiary" data-match-id="${match.id}" data-type="match">عرض التفاصيل <i class="fas fa-info-circle"></i></a>
             </div>
         `;
         return card;
@@ -340,9 +351,9 @@ document.addEventListener('DOMContentLoaded', () => {
         card.classList.add('news-card');
         card.dataset.newsId = news.id;
         card.dataset.type = 'news';
-        // Use data-src for lazy loading thumbnail
+        // Use data-src for lazy loading thumbnail, along with native loading="lazy"
         card.innerHTML = `
-            <img data-src="${news.thumbnail}" alt="صورة خبر ${news.title}" class="lazy" width="250" height="150">
+            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" data-src="${news.thumbnail}" alt="صورة خبر ${news.title}" class="lazy" loading="lazy" width="250" height="150">
             <div class="news-card-content">
                 <h3>${news.title}</h3>
                 <p>${news.short_description}</p>
@@ -423,7 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Always hide hero section unless it's the home view
         if (heroSection) { // Check if heroSection exists
-            heroSection.style.display = (viewName === 'home') ? 'block' : 'none';
+            heroSection.style.display = (viewName === 'home') ? 'flex' : 'none'; // Use flex for hero content centering
             if (viewName === 'home') {
                 heroSection.classList.add('active-view'); // Add active class if it's the home view
             } else {
@@ -469,7 +480,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Clear previous content from contentDisplay (excluding heroSection)
-            // Remove all children except heroSection
             Array.from(contentDisplay.children).forEach(child => {
                 if (child.id !== 'hero-section') {
                     child.remove();
@@ -498,8 +508,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                          .slice(0, 2);
 
             const latestNews = DATA.filter(item => item.type === 'news')
-                                        .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
-                                        .slice(0, 2);
+                                     .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
+                                     .slice(0, 2);
 
             // Filter out any potential non-match/news items before passing to renderGrid
             const itemsToRender = [...liveMatches, ...upcomingMatchesTodayTomorrow, ...latestNews, ...finishedMatches].filter(item => item.type === 'match' || item.type === 'news');
@@ -733,7 +743,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const iframe = document.createElement('iframe');
                     iframe.src = match.embed_url;
-                    iframe.allow = "autoplay; fullscreen";
+                    iframe.allow = "autoplay; fullscreen; picture-in-picture"; // Added picture-in-picture
                     iframe.frameBorder = "0";
                     iframe.scrolling = "no";
                     iframe.setAttribute('referrerpolicy', 'origin');
@@ -746,6 +756,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     };
                     matchPlayerContainer.appendChild(iframe);
 
+                    // Ad Banner Logic (already present and looks good)
                     const adBannerContainer = targetSectionClone.querySelector('#ad-banner-iframe-sync');
                     if (adBannerContainer && !adBannerContainer.hasChildNodes()) {
                         window.atOptions = {
@@ -853,44 +864,32 @@ document.addEventListener('DOMContentLoaded', () => {
     // Delegated event listener for general clicks on the body
     document.body.addEventListener('click', (e) => {
         const navLink = e.target.closest('.nav-link');
-        const watchNow = e.target.closest('#watch-now-btn');
+        // Removed watchNow from here as it's no longer a button in HTML
         const homeLogo = e.target.closest('#home-logo-link');
-        // Removed backToHomeBtn check from here, as it's now handled within the match-details template's event listener
 
         if (navLink) {
             e.preventDefault();
             const targetView = navLink.dataset.targetView;
             switchView(targetView);
-            // Update URL based on view for better direct linking/SEO
             window.history.pushState({ view: targetView }, '', `#${targetView}`);
-        } else if (watchNow) {
-            e.preventDefault();
-            switchView('live');
-            window.history.pushState({ view: 'live' }, '', '#live');
         } else if (homeLogo) {
             e.preventDefault();
             switchView('home');
             window.history.pushState({ view: 'home' }, '', '#home');
         }
 
-        const itemCardBtn = e.target.closest('.match-details-btn .btn');
-        if (itemCardBtn) {
-            e.preventDefault();
-            const itemId = itemCardBtn.dataset.matchId || itemCardBtn.dataset.newsId;
-            const itemType = itemCardBtn.dataset.type;
-
-            if (itemType === 'match' && itemId) {
-                switchView('match-details', itemId);
-                window.history.pushState({ view: 'match-details', id: itemId }, '', `#match-${itemId}`);
-            }
-            // Add handler for news cards if they also link to details page (though current news card links externally)
-            // else if (itemType === 'news' && itemId) {
-            //     // You would need a 'news-details' template and view logic for this
-            //     console.log('News card clicked, but no news-details view is implemented for internal linking yet.');
-            //     // switchView('news-details', itemId);
-            //     // window.history.pushState({ view: 'news-details', id: itemId }, '', `#news-${itemId}`);
-            // }
+        // Click event for the entire match card (or its detail button within)
+        const itemCard = e.target.closest('.match-card');
+        if (itemCard && itemCard.dataset.type === 'match') { // Ensure it's a match card click
+             e.preventDefault(); // Prevent default link behavior if any internal links are clicked
+             const itemId = itemCard.dataset.matchId;
+             if (itemId) {
+                 switchView('match-details', itemId);
+                 window.history.pushState({ view: 'match-details', id: itemId }, '', `#match-${itemId}`);
+             }
         }
+        // News cards link externally, so no special JS handler needed for them beyond their own <a> tag.
+
 
         // Toggle mobile menu
         if (e.target.closest('#menu-toggle')) {
@@ -913,8 +912,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (prevBtn) {
                 currentPage[viewKey] = Math.max(1, currentPage[viewKey] - 1);
             } else if (nextBtn) {
-                // To calculate max page accurately, you'd need the total filtered items for the current view
-                // For simplicity, we'll just increment and let renderGrid disable 'next' button if no more items
                 currentPage[viewKey]++;
             }
             switchView(currentView, null); // Re-render the current view with updated page
