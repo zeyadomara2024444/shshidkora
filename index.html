@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0F172A">
-    
+
     <title id="dynamic-title">شاهد كورة - Ultimate Pitch: تجربة كرة القدم النهائية</title>
     <meta name="description" id="dynamic-description" content="شاهد كورة - ملعبك النهائي لكرة القدم. بث مباشر بجودة فائقة، أهداف مجنونة، تحليلات عميقة، وآخر الأخبار من قلب الحدث. انغمس في عالم الكرة الحقيقية.">
     <meta name="keywords" id="dynamic-keywords" content="شاهد كورة، بث مباشر، مباريات اليوم، أهداف، ملخصات، أخبار كرة قدم، دوريات عالمية، كرة القدم، مشاهدة مجانية، تحليل كروي، Ultimate Pitch">
     <meta name="author" content="شاهد كورة - فريق Ultimate Pitch">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" id="dynamic-canonical" href="https://shahidkora.online/"> 
-    
+    <link rel="canonical" id="dynamic-canonical" href="https://shahidkora.online/">
+
     <meta property="og:type" id="dynamic-og-type" content="website">
     <meta property="og:url" id="dynamic-og-url" content="https://shahidkora.online/">
     <meta property="og:title" id="dynamic-og-title" content="شاهد كورة - Ultimate Pitch: كل كرة القدم في مكان واحد">
@@ -27,7 +27,7 @@
     <meta property="twitter:description" id="dynamic-twitter-description" content="شاهد كورة - ملعبك النهائي لكرة القدم. بث مباشر بجودة فائقة، أهداف مجنونة، تحليلات عميقة، وآخر الأخبار من قلب الحدث. انغمس في عالم الكرة الحقيقية.">
     <meta property="twitter:image" id="dynamic-twitter-image" content="https://shahidkora.online/images/shahidkora-ultimate-pitch-twitter.png">
     <meta property="twitter:creator" content="@ShahidKoraUP">
-    
+
     <link rel="icon" href="/favicon-ultimate-pitch.ico" type="image/x-icon">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,7 +37,7 @@
     <link rel="preload" href="./style.css" as="style">
     <link rel="preload" href="./script.js" as="script">
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Roboto:wght@400;700&display=swap" as="style">
-    <link rel="preload" href="/images/hero-ultimate-pitch-bg.webp" as="image" type="image/webp">
+    <link rel="preload" href="/images/hero-ultimate-pitch-bg.webp" as="image" type="image/webp"> 
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
@@ -54,10 +54,10 @@
                     <span class="logo-text">شاهد كورة</span>
                     <i class="fas fa-futbol logo-icon"></i>
                 </a>
-                
+
                 <nav id="main-nav" class="main-nav" aria-label="قائمة التنقل الرئيسية للموقع">
                     <ul>
-                        <li><a href="#" id="home-nav-link-actual" class="nav-link active" data-target-view="home">الرئيسية</a></li> 
+                        <li><a href="#" id="home-nav-link-actual" class="nav-link active" data-target-view="home">الرئيسية</a></li>
                         <li><a href="#" class="nav-link" data-target-view="live">المباريات المباشرة</a></li>
                         <li><a href="#" class="nav-link" data-target-view="upcoming">مواعيد المباريات</a></li>
                         <li><a href="#" class="nav-link" data-target-view="highlights">الأهداف والملخصات</a></li>
@@ -66,9 +66,9 @@
                 </nav>
                 <div class="search-bar">
                     <input type="text" id="search-input" placeholder="ابحث عن مباراة، فريق، بطولة..." aria-label="حقل البحث عن المباريات والأخبار">
-                    <button id="search-button" aria-label="تفعيل البحث"><i class="fas fa-search"></i></button> 
+                    <button id="search-button" aria-label="تفعيل البحث"><i class="fas fa-search"></i></button>
                 </div>
-                <button id="menu-toggle" class="menu-toggle" aria-label="فتح قائمة التنقل"><i class="fas fa-bars"></i></button> 
+                <button id="menu-toggle" class="menu-toggle" aria-label="فتح قائمة التنقل"><i class="fas fa-bars"></i></button>
             </div>
         </header>
 
@@ -141,7 +141,7 @@
             <section id="highlights-section" class="view-section highlights-view">
                 <div class="container">
                     <h2 class="section-title" id="highlights-title">أهداف وملخصات المباريات</h2>
-                    <div id="highlights-grid" class="match-grid"></div> 
+                    <div id="highlights-grid" class="match-grid"></div>
                     <div class="empty-state" id="highlights-empty-state" style="display: none;">
                         <p>لا توجد أهداف أو ملخصات متاحة حالياً.</p>
                     </div>
@@ -170,35 +170,25 @@
         </template>
 
         <template id="match-details-view-template">
-            <section class="view-section match-details-section"> 
+            <section class="view-section match-details-section">
                 <div class="container">
                     <button id="back-to-home-btn" class="btn btn-secondary back-btn" aria-label="العودة للمباريات"><i class="fas fa-arrow-right"></i> العودة للمباريات</button>
-                    <h1 class="match-details-title" id="match-details-title-element"></h1> 
-                    
+                    <h1 class="match-details-title" id="match-details-title-element"></h1>
+
                     <div class="video-player-wrapper">
-                        <div id="match-player-container" class="video-player-container"> 
+                        <div id="match-player-container" class="video-player-container">
                             <div id="video-loading-spinner" class="loading-spinner"></div>
                         </div>
                         <div id="video-overlay" class="video-overlay" aria-label="انقر للتشغيل وفتح الإعلان">
-                            <p class="video-play-text">انقر هنا للتشغيل</p> 
+                            <img id="overlay-thumbnail" class="overlay-thumbnail" src="" alt="صورة مصغرة لتشغيل الفيديو" loading="eager">
+                            <p class="video-play-text">انقر هنا للتشغيل</p>
                         </div>
                     </div>
 
                     <div class="ad-banner-center banner-ad-container" id="ad-banner-iframe-sync">
-                        <script type="text/javascript">
-                            atOptions = {
-                                'key' : 'd0f597100460382f12621237f055f943',
-                                'format' : 'iframe',
-                                'height' : 50,
-                                'width' : 320,
-                                'params' : {}
-                            };
-                        </script>
-                        <script type="text/javascript" src="//www.highperformanceformat.com/d0f597100460382f12621237f055f943/invoke.js"></script>
-                    </div>
+                        </div>
 
-                    <div class="match-info-box"> 
-                        <img id="match-details-poster" class="match-details-thumbnail" src="" alt="صورة المباراة" loading="lazy" width="250" height="180"> 
+                    <div class="match-info-box">
                         <div class="info-columns">
                             <p><strong>الوصف:</strong> <span id="match-details-description"></span></p>
                             <p><strong>وقت المباراة:</strong> <span id="match-details-date-time"></span></p>
@@ -211,7 +201,7 @@
                             <p id="match-details-highlights-container" class="hidden"><strong>ملخص الفيديو:</strong> <a href="#" target="_blank" rel="noopener noreferrer" id="match-details-highlights-link" class="btn btn-secondary match-details-highlights-link">شاهد الملخص</a></p>
                         </div>
                     </div>
-                    <div class="suggested-matches-section"> 
+                    <div class="suggested-matches-section">
                         <h2 class="section-title">مباريات قد تهمك</h2>
                         <div id="suggested-match-grid" class="match-grid"> </div>
                     </div>
@@ -231,7 +221,7 @@
                 </div>
             </div>
         </footer>
-    </div> 
+    </div>  
     
     <script src="./script.js" defer></script>
 </body>
