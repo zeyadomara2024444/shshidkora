@@ -1,1097 +1,1010 @@
-// script.js - هذا الكود محسن وواضح لمحركات البحث والمطورين
-// تم التركيز على أفضل أداء ممكن من جانب العميل مع الحفاظ على الوظائف والإعلانات
-// والتأكد من إزالة أي عناصر قد تؤثر سلباً على الفهم من قبل محركات البحث
-
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🏁 DOM Content Loaded. Script execution started.');
+    // ======== Configuration & Data Management ========
+    const API_URL = './matches.json'; // Path to your JSON data file
+    const ITEMS_PER_PAGE = 6;
 
-    // --- 1. DOM Element References ---
-    const menuToggle = document.getElementById('menu-toggle');
+    let DATA = []; // Will store fetched data
+    let currentPage = {
+        home: 1,
+        live: 1,
+        upcoming: 1,
+        highlights: 1,
+        news: 1,
+        search: 1
+    };
+    let currentView = 'home';
+    let currentFilter = {
+        upcoming: 'upcoming' // Default filter for upcoming: 'upcoming' (all), 'today', 'tomorrow'
+    };
+    let currentSearchQuery = '';
+
+    // Constants for date comparisons
+    const NOW = new Date();
+    const TODAY_START = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate());
+    const TOMORROW_START = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate() + 1);
+    const DAY_AFTER_TOMORROW_START = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate() + 2);
+
+    // ======== DOM Elements Cache (Static references) ========
+    const contentDisplay = document.getElementById('content-display');
     const mainNav = document.getElementById('main-nav');
-    const homeNavLink = document.getElementById('home-nav-link-actual');
-    const navLinks = document.querySelectorAll('.main-nav ul li a');
-    const heroSection = document.getElementById('hero-section');
-    const watchNowBtn = document.getElementById('watch-now-btn');
-    // Note: movieGridSection is from the previous context, assuming it's equivalent to match-grid-section for general listing
-    const movieGridSection = document.getElementById('match-grid-section'); 
-    const movieDetailsSection = document.querySelector('.match-details-section'); // Adjusted selector to class for template
-    const movieGrid = document.getElementById('main-match-grid'); // Adjusted ID for main grid
-    const suggestedMovieGrid = document.getElementById('suggested-match-grid'); // Adjusted ID for suggested grid
-    const suggestedMoviesSection = document.querySelector('.suggested-matches-section'); // Adjusted selector to class for template
-    const backToHomeBtn = document.getElementById('back-to-home-btn');
-    const videoContainer = document.getElementById('match-player-container'); // Adjusted ID for video container
-    const videoOverlay = document.getElementById('video-overlay');
-    const homeLogoLink = document.getElementById('home-logo-link');
-    const videoLoadingSpinner = document.getElementById('video-loading-spinner');
-    const movieDetailsPoster = document.getElementById('match-details-poster'); // Adjusted ID for details poster
-    
-    // Pagination buttons - assuming these are for the main home page grid
-    const prevPageBtn = document.getElementById('home-prev-page-btn');
-    const nextPageBtn = document.getElementById('home-next-page-btn');
-    
-    // ****** تحسين الأداء على الموبايل: عدد الأفلام المعروضة لكل صفحة ******
-    // إذا كنت قد غيرت هذا الرقم إلى 76، فهذا هو السبب الرئيسي في تدهور الأداء.
-    // القيمة 30 هي نقطة بداية جيدة. لزيادة الأداء على الموبايل، يمكنك تقليلها إلى 20 أو 24.
-    const matchesPerPage = 30; // القيمة الموصى بها لأداء أفضل على الموبايل
-
-    let currentPage = 1;
+    const navLinks = document.querySelectorAll('.nav-link');
+    const menuToggle = document.getElementById('menu-toggle');
     const searchInput = document.getElementById('search-input');
     const searchButton = document.getElementById('search-button');
-    const sectionTitleElement = movieGridSection ? movieGridSection.querySelector('h2') : null;
+    const homeLogoLink = document.getElementById('home-logo-link');
+    const watchNowBtn = document.getElementById('watch-now-btn');
+    const jsonLdSchema = document.getElementById('json-ld-schema');
+    const heroSection = document.getElementById('hero-section'); // Added reference to heroSection
 
-    // --- 1.1. Critical DOM Element Verification ---
-    const requiredElements = {
-        '#main-match-grid': movieGrid,
-        '#match-grid-section': movieGridSection,
-        '.match-details-section': movieDetailsSection,
-        '#hero-section': heroSection,
-        '#match-player-container': videoContainer,
-        '#video-overlay': videoOverlay,
-        '#suggested-match-grid': suggestedMovieGrid,
-        '.suggested-matches-section': suggestedMoviesSection,
-        '#video-loading-spinner': videoLoadingSpinner,
-        '#match-details-title-element': document.getElementById('match-details-title-element'), // Adjusted ID
-        '#match-details-description': document.getElementById('match-details-description'),
-        '#match-details-date-time': document.getElementById('match-details-date-time'),
-        '#match-details-league': document.getElementById('match-details-league'),
-        '#match-details-commentators': document.getElementById('match-details-commentators'),
-        '#match-details-teams': document.getElementById('match-details-teams'),
-        '#match-details-stadium': document.getElementById('match-details-stadium'),
-        '#match-details-status': document.getElementById('match-details-status'),
-        '#match-details-score-container': document.getElementById('match-details-score-container'),
-        '#match-details-score': document.getElementById('match-details-score'),
-        '#match-details-highlights-container': document.getElementById('match-details-highlights-container'),
-        '#match-details-highlights-link': document.getElementById('match-details-highlights-link'),
-        '#home-nav-link-actual': homeNavLink
+    // SEO Elements (Meta tags)
+    const dynamicTitle = document.getElementById('dynamic-title');
+    const dynamicDescription = document.getElementById('dynamic-description');
+    const dynamicKeywords = document.getElementById('dynamic-keywords');
+    const dynamicCanonical = document.getElementById('dynamic-canonical');
+    const dynamicOgType = document.getElementById('dynamic-og-type');
+    const dynamicOgUrl = document.getElementById('dynamic-og-url');
+    const dynamicOgTitle = document.getElementById('dynamic-og-title');
+    const dynamicOgDescription = document.getElementById('dynamic-og-description');
+    const dynamicOgImage = document.getElementById('dynamic-og-image');
+    const dynamicOgImageAlt = document.getElementById('dynamic-og-image-alt');
+    const dynamicTwitterCard = document.getElementById('dynamic-twitter-card');
+    const dynamicTwitterUrl = document.getElementById('dynamic-twitter-url');
+    const dynamicTwitterTitle = document.getElementById('dynamic-twitter-title');
+    const dynamicTwitterDescription = document.getElementById('dynamic-twitter-description');
+    const dynamicTwitterImage = document.getElementById('dynamic-twitter-image');
+
+    // ======== Utility Functions ========
+
+    /**
+     * Formats an ISO date string to a readable Arabic date and time with a relevant timezone abbreviation.
+     * @param {string} isoString - The ISO date string.
+     * @returns {string} Formatted date string.
+     */
+    const formatDateTime = (isoString) => {
+        const date = new Date(isoString);
+        const optionsDate = { year: 'numeric', month: 'long', day: 'numeric' };
+        const optionsTime = { hour: '2-digit', minute: '2-digit', hour12: true };
+
+        const formattedDatePart = new Intl.DateTimeFormat('ar-EG', optionsDate).format(date);
+        let formattedTimePart = new Intl.DateTimeFormat('ar-EG', optionsTime).format(date);
+
+        formattedTimePart = formattedTimePart.replace('ص', 'ص').replace('م', 'م');
+
+        let timezoneAbbreviation = '';
+        const timezoneOffsetMatch = isoString.match(/([+-]\d{2}:\d{2})$/);
+        const offsetString = timezoneOffsetMatch ? timezoneOffsetMatch[1] : null;
+
+        if (offsetString === '+03:00') {
+             timezoneAbbreviation = '(بتوقيت جدة)'; // SAST (Saudi Arabia Standard Time)
+        } else if (offsetString === '+02:00') {
+             // For +02:00 in July 2025, it's typically CEST for Europe (UTC+2) or EEST for Egypt (UTC+3) if they're still on summertime.
+             // Given the examples, the data uses +02:00 for European leagues.
+             if (isoString.includes("الدوري الإسباني") || isoString.includes("الدوري الألماني") || isoString.includes("الدوري الفرنسي") || isoString.includes("دوري أبطال أوروبا")) {
+                 timezoneAbbreviation = '(بتوقيت أوروبا/صيفي)'; // CEST for European leagues
+             } else {
+                 timezoneAbbreviation = '(بتوقيت القاهرة)'; // If it's a non-DST Egyptian time or a generic +02
+             }
+        } else if (offsetString === '+01:00') {
+             timezoneAbbreviation = '(بتوقيت لندن)'; // BST (British Summer Time)
+        } else if (offsetString === '+00:00') {
+             timezoneAbbreviation = '(بتوقيت جرينتش)'; // GMT/UTC
+        } else {
+            // Fallback for unhandled offsets or if offset is missing
+            timezoneAbbreviation = '(توقيت محلي)'; // Or try to deduce from browser's locale if desired
+        }
+
+        return `${formattedDatePart}، ${formattedTimePart} ${timezoneAbbreviation}`;
     };
 
-    let criticalError = false;
-    for (const [id, element] of Object.entries(requiredElements)) {
-        if (!element) {
-            console.error(`❌ خطأ فادح: العنصر بالمعرّف/المحدد "${id}" غير موجود. يرجى التحقق من ملف HTML الخاص بك.`);
-            criticalError = true;
-        }
-    }
-    if (criticalError) {
-        console.error('🛑 لن يتم تنفيذ السكريبت بالكامل بسبب عناصر DOM الأساسية المفقودة. قم بإصلاح HTML الخاص بك!');
-        document.body.innerHTML = '<div style="text-align: center; margin-top: 100px; color: #f44336; font-size: 20px;">' +
-                                    'عذرًا، حدث خطأ فني. يرجى تحديث الصفحة أو المحاولة لاحقًا.' +
-                                    '<p style="font-size: 14px; color: #ccc;">(عناصر الصفحة الرئيسية مفقودة)</p></div>';
-        return;
-    } else {
-        console.log('✅ تم العثور على جميع عناصر DOM الأساسية.');
-    }
+    /**
+     * Updates the page's SEO meta tags dynamically.
+     * @param {string} title - Page title.
+     * @param {string} description - Meta description.
+     * @param {string} keywords - Meta keywords.
+     * @param {string} url - Canonical URL.
+     * @param {string} [image=''] - Open Graph/Twitter image URL.
+     * @param {string} [imageAlt=''] - Open Graph image alt text.
+     */
+    const updateSEO = (title, description, keywords, url, image = '', imageAlt = '') => {
+        dynamicTitle.textContent = title;
+        dynamicDescription.setAttribute('content', description);
+        dynamicKeywords.setAttribute('content', keywords);
+        dynamicCanonical.setAttribute('href', url);
 
-    // --- 2. Adsterra Configuration (لم يتم لمسها) ---
-    const ADSTERRA_DIRECT_LINK_URL = 'https://www.profitableratecpm.com/spqbhmyax?key=2469b039d4e7c471764bd04c57824cf2';
-    const DIRECT_LINK_COOLDOWN_MOVIE_CARD = 3 * 60 * 1000; // 3 minutes
-    const DIRECT_LINK_COOLDOWN_VIDEO_INTERACTION = 10 * 1000; // 10 seconds
+        dynamicOgTitle.setAttribute('content', title);
+        dynamicOgDescription.setAttribute('content', description);
+        dynamicOgUrl.setAttribute('content', url);
+        dynamicOgImage.setAttribute('content', image || "https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png");
+        dynamicOgImageAlt.setAttribute('content', imageAlt || title);
+        dynamicOgType.setAttribute('content', 'website'); // Default, can be 'article', 'video.other'
 
-    let lastDirectLinkClickTimeMovieCard = 0;
-    let lastDirectLinkClickTimeVideoInteraction = 0;
+        dynamicTwitterTitle.setAttribute('content', title);
+        dynamicTwitterDescription.setAttribute('content', description);
+        dynamicTwitterUrl.setAttribute('content', url);
+        dynamicTwitterImage.setAttribute('content', image || "https://shahidkora.online/images/shahidkora-ultimate-pitch-twitter.png");
+        dynamicTwitterCard.setAttribute('content', 'summary_large_image');
+    };
 
-    function openAdLink(cooldownDuration, type) {
-        let lastClickTime;
-        let setLastClickTime;
+    /**
+     * Generates and updates JSON-LD structured data for SEO.
+     * @param {object} data - The data object (match or news).
+     * @param {string} viewName - The current view name.
+     */
+    const generateJsonLdSchema = (data, viewName) => {
+        let schema = {};
+        const siteUrl = window.location.origin + '/';
 
-        if (type === 'movieCard' || type === 'movieDetailsPoster') {
-            lastClickTime = lastDirectLinkClickTimeMovieCard;
-            setLastClickTime = (time) => lastDirectLinkClickTimeMovieCard = time;
-        } else if (type === 'videoOverlay' || type === 'videoSeek' || type === 'videoPause' || type === 'videoEndedRestart') {
-            lastClickTime = lastDirectLinkClickTimeVideoInteraction;
-            setLastClickTime = (time) => lastDirectLinkClickTimeVideoInteraction = time;
-        } else {
-            console.error('نوع إعلان غير صالح لـ openAdLink:', type);
-            return false;
-        }
-
-        const currentTime = Date.now();
-        if (currentTime - lastClickTime > cooldownDuration) {
-            const newWindow = window.open(ADSTERRA_DIRECT_LINK_URL, '_blank');
-            if (newWindow) {
-                newWindow.focus();
-                setLastClickTime(currentTime);
-                console.log(`💰 [نقر إعلان - ${type}] تم فتح الرابط المباشر بنجاح.`);
-                return true;
-            } else {
-                console.warn(`⚠️ [نقر إعلان - ${type}] تم حظر النافذة المنبثقة أو فشل فتح الرابط المباشر. تأكد من السماح بالنوافذ المنبثقة.`);
-                return false;
-            }
-        } else {
-            const timeLeft = (cooldownDuration - (currentTime - lastClickTime)) / 1000;
-            console.log(`⏳ [نقر إعلان - ${type}] التهدئة للرابط المباشر نشطة. لن يتم فتح علامة تبويب جديدة. الوقت المتبقي: ${timeLeft.toFixed(1)}ثانية`);
-            return false;
-        }
-    }
-
-    // --- 3. Match Data & Video URL Handling ---
-    let matchesData = []; // Renamed from moviesData to matchesData for clarity
-    let matchesDataForPagination = []; // Renamed for clarity
-    let currentDetailedMatch = null; // Renamed from currentDetailedMovie
-
-    async function fetchMatchesData() { // Renamed from fetchMoviesData
-        try {
-            console.log('📡 جلب بيانات المباريات من matches.json...');
-            const response = await fetch('matches.json'); // Changed to matches.json
-            if (!response.ok) {
-                throw new Error(`خطأ HTTP! الحالة: ${response.status} - تعذر تحميل matches.json. تحقق من مسار الملف وتكوين الخادم.`);
-            }
-            matchesData = await response.json(); // Renamed
-            if (!Array.isArray(matchesData)) {
-                console.error('❌ البيانات التي تم جلبها ليست مصفوفة. يرجى التحقق من تنسيق matches.json. المتوقع مصفوفة من كائنات المباريات.');
-                matchesData = [];
-            } else if (matchesData.length === 0) {
-                console.warn('⚠️ تم تحميل matches.json، ولكنه فارغ.');
-            }
-            console.log('✅ تم تحميل بيانات المباريات بنجاح من matches.json', matchesData.length, 'مباراة تم العثور عليهم.');
-            initialPageLoadLogic();
-        } catch (error) {
-            console.error('❌ فشل تحميل بيانات المباريات:', error.message);
-            if (movieGrid) { // Using movieGrid as the general home grid
-                movieGrid.innerHTML = '<p style="text-align: center; color: var(--text-color); margin-top: 50px;">عذرًا، لم نتمكن من تحميل بيانات المباريات. يرجى المحاولة مرة أخرى لاحقًا أو التحقق من ملف matches.json.</p>';
-            }
-            if (sectionTitleElement) {
-                sectionTitleElement.textContent = 'خطأ في تحميل المباريات';
-            }
-        }
-    }
-
-    function createMatchCard(match) { // Renamed from createMovieCard
-        const matchCard = document.createElement('div');
-        matchCard.classList.add('match-card'); // Changed class to match-card
-        const webpSource = match.thumbnail.replace(/\.(png|jpe?g)/i, '.webp'); // Changed from poster to thumbnail
-        matchCard.innerHTML = `
-            <picture>
-                <source srcset="${webpSource}" type="image/webp" onerror="this.remove()">
-                <img data-src="${match.thumbnail}" src="${match.thumbnail}" alt="${match.title}" class="lazyload" width="300" height="180" loading="lazy">
-            </picture>
-            <h3>${match.title}</h3>
-            <p>${match.league}</p>
-            <p>${match.date} - ${match.time}</p>
-        `;
-        matchCard.addEventListener('click', () => {
-            console.log(`⚡ [تفاعل] تم النقر على بطاقة المباراة للمعّرف: ${match.id}`);
-            openAdLink(DIRECT_LINK_COOLDOWN_MOVIE_CARD, 'movieCard'); // Reusing movieCard type for ad cooldown
-            showMatchDetails(match.id); // Renamed from showMovieDetails
-        });
-        return matchCard;
-    }
-
-    function initializeLazyLoad() {
-        if ('IntersectionObserver' in window) {
-            let lazyLoadImages = document.querySelectorAll('.lazyload');
-            let imageObserver = new IntersectionObserver(function(entries, observer) {
-                entries.forEach(function(entry) {
-                    if (entry.isIntersecting) {
-                        let image = entry.target;
-                        if (image.dataset.src && (!image.src || image.src !== image.dataset.src)) {
-                            image.src = image.dataset.src;
-                            const pictureParent = image.closest('picture');
-                            if (pictureParent) {
-                                const sourceElement = pictureParent.querySelector('source');
-                                if (sourceElement && sourceElement.dataset.srcset) {
-                                    sourceElement.srcset = sourceElement.dataset.srcset;
-                                }
-                            }
-                        }
-                        image.classList.remove('lazyload');
-                        observer.unobserve(image);
-                    }
-                });
-            }, {
-                rootMargin: '0px 0px 100px 0px'
-            });
-
-            lazyLoadImages.forEach(function(image) {
-                imageObserver.observe(image);
-            });
-        } else {
-            let lazyLoadImages = document.querySelectorAll('.lazyload');
-            lazyLoadImages.forEach(function(image) {
-                if (image.dataset.src) {
-                    image.src = image.dataset.src;
-                    const pictureParent = image.closest('picture');
-                    if (pictureParent) {
-                        const sourceElement = pictureParent.querySelector('source');
-                        if (sourceElement && sourceElement.dataset.srcset) {
-                            sourceElement.srcset = sourceElement.dataset.srcset;
-                        }
-                    }
-                }
-            });
-        }
-        console.log('🖼️ [تحميل كسول] تم تهيئة IntersectionObserver للصور (أو العودة للخيار البديل).');
-    }
-
-    function displayMatches(matchesToDisplay, targetGridElement) { // Renamed from displayMovies
-        if (!targetGridElement) {
-            console.error('❌ displayMatches: العنصر المستهدف للشبكة فارغ أو غير معرّف.');
-            return;
-        }
-        targetGridElement.innerHTML = ''; // مسح المحتوى القديم
-
-        if (!matchesToDisplay || matchesToDisplay.length === 0) {
-            targetGridElement.innerHTML = '<p style="text-align: center; color: var(--text-muted);">لا توجد مباريات مطابقة للبحث أو مقترحة.</p>';
-            console.log(`⚽ [عرض] لا توجد مباريات للعرض في ${targetGridElement.id}.`);
-            return;
-        }
-
-        console.log(`⚽ [عرض] جاري عرض ${matchesToDisplay.length} مباراة في ${targetGridElement.id}.`);
-        matchesToDisplay.forEach(match => {
-            targetGridElement.appendChild(createMatchCard(match));
-        });
-        console.log(`⚽ [عرض] تم عرض ${matchesToDisplay.length} مباراة في ${targetGridElement.id}.`);
-        initializeLazyLoad(); // إعادة تهيئة التحميل الكسول للعناصر الجديدة
-    }
-
-    function paginateMatches(matchesArray, page) { // Renamed from paginateMovies
-        if (!Array.isArray(matchesArray) || matchesArray.length === 0) {
-            displayMatches([], movieGrid);
-            updatePaginationButtons(0);
-            return;
-        }
-
-        const startIndex = (page - 1) * matchesPerPage;
-        const endIndex = startIndex + matchesPerPage;
-        const paginatedMatches = matchesArray.slice(startIndex, endIndex);
-
-        displayMatches(paginatedMatches, movieGrid);
-        updatePaginationButtons(matchesArray.length);
-        console.log(`➡️ [ترقيم الصفحات] يتم عرض الصفحة ${page}. المباريات من الفهرس ${startIndex} إلى ${Math.min(endIndex, matchesArray.length)-1}.`);
-    }
-
-    function updatePaginationButtons(totalMatches) { // Renamed from updatePaginationButtons (but still for home page)
-        if (prevPageBtn) prevPageBtn.disabled = currentPage === 1;
-        if (nextPageBtn) nextPageBtn.disabled = currentPage * matchesPerPage >= totalMatches;
-        console.log(`🔄 [ترقيم الصفحات] تم تحديث الأزرار. الصفحة الحالية: ${currentPage}, إجمالي المباريات: ${totalMatches}`);
-    }
-
-    function performSearch() {
-        const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-        let filteredMatches = []; // Renamed
-        if (query) {
-            filteredMatches = matchesData.filter(match => // Renamed
-                match.title.toLowerCase().includes(query) ||
-                (match.league && match.league.toLowerCase().includes(query)) ||
-                (match.team1 && match.team1.toLowerCase().includes(query)) ||
-                (match.team2 && match.team2.toLowerCase().includes(query)) ||
-                (match.commentators && String(match.commentators).toLowerCase().includes(query))
-            );
-            if (sectionTitleElement) {
-                sectionTitleElement.textContent = `نتائج البحث عن "${query}"`;
-            }
-            console.log(`🔍 [بحث] تم إجراء بحث عن "${query}". تم العثور على ${filteredMatches.length} نتيجة.`);
-        } else {
-            filteredMatches = [...matchesData].sort(() => 0.5 - Math.random()); // Renamed
-            if (sectionTitleElement) {
-                sectionTitleElement.textContent = 'أبرز المباريات والجديد'; // Adjusted title
-            }
-            console.log('🔍 [بحث] استعلام البحث فارغ، يتم عرض جميع المباريات (عشوائياً).');
-        }
-        currentPage = 1;
-        matchesDataForPagination = filteredMatches; // Renamed
-        paginateMatches(matchesDataForPagination, currentPage); // Renamed
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    async function showMatchDetails(matchId) { // Renamed from showMovieDetails
-        console.log(`🔍 [توجيه] عرض تفاصيل المباراة للمعّرف: ${matchId}`);
-        const match = matchesData.find(m => m.id === matchId); // Renamed
-
-        if (match) {
-            currentDetailedMatch = match; // Renamed
-
-            if (heroSection) heroSection.style.display = 'none';
-            if (movieGridSection) movieGridSection.style.display = 'none';
-            // Also hide other main sections if they are not part of the details view
-            document.querySelectorAll('.view-section').forEach(section => {
-                if (section.id !== movieDetailsSection.id) { // Keep movieDetailsSection visible
-                    section.style.display = 'none';
-                }
-            });
-
-
-            // Clear previous video player content
-            if (videoContainer) {
-                videoContainer.innerHTML = ''; 
-                // Create an iframe element instead of a video element
-                const newIframeElement = document.createElement('iframe');
-                newIframeElement.id = 'match-player-iframe'; // New ID for the iframe
-                newIframeElement.classList.add('video-player-iframe'); // Add a class for styling
-                newIframeElement.setAttribute('src', match.embed_url); // Directly use embed_url for iframe
-                newIframeElement.setAttribute('frameborder', '0');
-                newIframeElement.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture'); // Crucial for mobile and fullscreen
-                newIframeElement.setAttribute('allowfullscreen', ''); // For older browsers
-                newIframeElement.setAttribute('width', '100%'); // Ensure responsiveness, can be set via CSS
-                newIframeElement.setAttribute('height', '100%'); // Ensure responsiveness, can be set via CSS
-                newIframeElement.setAttribute('referrerpolicy', 'origin'); // Recommended for embeds
-                videoContainer.appendChild(newIframeElement);
-                console.log('[مشغل الفيديو] تم إنشاء عنصر iframe لمشغل الفيديو.');
-            } else {
-                console.error('❌ خطأ فادح: match-player-container غير موجود. لا يمكن إنشاء مشغل الفيديو.');
-                return;
-            }
-
-            // Show the match details section and suggested matches
-            if (movieDetailsSection) movieDetailsSection.style.display = 'block';
-            if (suggestedMoviesSection) suggestedMoviesSection.style.display = 'block';
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            console.log('[توجيه] تم التمرير للأعلى.');
-
-            // Populate match details
-            document.getElementById('match-details-title-element').textContent = match.title || 'غير متوفر';
-            document.getElementById('match-details-description').textContent = match.description || 'لا يوجد وصف متاح.';
-            document.getElementById('match-details-date-time').textContent = `${match.date || 'غير متوفر'} - ${match.time || 'غير متوفر'}`;
-            document.getElementById('match-details-league').textContent = match.league || 'غير متوفر';
-            document.getElementById('match-details-commentators').textContent = Array.isArray(match.commentators) ? match.commentators.join(', ') : match.commentators || 'غير متوفر';
-            document.getElementById('match-details-teams').textContent = `${match.team1 || 'فريق غير متوفر'} vs ${match.team2 || 'فريق غير متوفر'}`;
-            document.getElementById('match-details-stadium').textContent = match.stadium || 'غير متوفر';
-            document.getElementById('match-details-status').textContent = match.status || 'غير متوفر';
-
-            // Show/hide score and highlights based on match status
-            const scoreContainer = document.getElementById('match-details-score-container');
-            const highlightsContainer = document.getElementById('match-details-highlights-container');
-            
-            if (match.status === 'انتهت' || match.status === 'مؤجلة') { // Assuming 'انتهت' for finished matches
-                if (scoreContainer) {
-                    scoreContainer.classList.remove('hidden');
-                    document.getElementById('match-details-score').textContent = match.score || 'غير متوفر';
-                }
-                if (highlightsContainer) {
-                    if (match.highlights_url) {
-                        highlightsContainer.classList.remove('hidden');
-                        document.getElementById('match-details-highlights-link').href = match.highlights_url;
-                    } else {
-                        highlightsContainer.classList.add('hidden');
-                    }
-                }
-            } else {
-                if (scoreContainer) scoreContainer.classList.add('hidden');
-                if (highlightsContainer) highlightsContainer.classList.add('hidden');
-            }
-
-
-            if (movieDetailsPoster) { // Renamed from movieDetailsPoster to match HTML ID
-                movieDetailsPoster.src = match.thumbnail; // Changed from poster to thumbnail
-                movieDetailsPoster.alt = match.title;
-                movieDetailsPoster.setAttribute('width', '250'); // Consistent with HTML
-                movieDetailsPoster.setAttribute('height', '180'); // Consistent with HTML
-                console.log(`[تفاصيل] تم تعيين البوستر لـ ${match.title}`);
-            }
-
-            // The videoOverlay logic for iframe
-            if (videoOverlay) {
-                // Ensure overlay is visible and clickable initially
-                videoOverlay.style.pointerEvents = 'auto';
-                videoOverlay.classList.remove('hidden');
-                if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none'; // Hide spinner until user click/ad interaction
-            }
-
-
-            const matchSlug = match.title.toLowerCase().replace(/[^a-z0-9\u0600-\u06FF\s-]/g, '').replace(/\s+/g, '-');
-            const newUrl = new URL(window.location.origin);
-            newUrl.searchParams.set('view', 'details');
-            newUrl.searchParams.set('id', matchId);
-            newUrl.searchParams.set('title', matchSlug);
-
-            history.pushState({ view: 'details', id: matchId }, match.title, newUrl.toString());
-            console.log(`🔗 [URL] تم تحديث URL إلى ${newUrl.toString()}`);
-
-            // استدعاء الدوال المعدلة
-            updatePageMetadata(match);
-            generateAndInjectSchema(match);
-
-            displaySuggestedMatches(matchId); // Renamed
-            console.log(`✨ [اقتراحات] استدعاء displaySuggestedMatches للمعّرف: ${matchId}`);
-
-        } else {
-            console.error('❌ [توجيه] المباراة غير موجودة للمعّرف:', matchId, 'يتم إعادة التوجيه إلى الصفحة الرئيسية.');
-            showHomePage();
-        }
-    }
-
-    // START: Updated function for Meta Tags (Renamed from updateMetaTags)
-    function updatePageMetadata(match = null) { // Renamed movie to match
-        let canonicalLink = document.querySelector('link[rel="canonical"]');
-        if (!canonicalLink) {
-            canonicalLink = document.createElement('link');
-            canonicalLink.setAttribute('rel', 'canonical');
-            document.head.appendChild(canonicalLink);
-        }
-
-        let pageTitle, pageDescription, pageKeywords, ogUrl, ogTitle, ogDescription, ogImage, ogType;
-        let twitterTitle, twitterDescription, twitterImage, twitterCard;
-
-        if (match) {
-            const matchUrl = `${window.location.origin}/view/?details&id=${match.id}&title=${match.title.toLowerCase().replace(/[^a-z0-9\u0600-\u06FF\s-]/g, '').replace(/\s+/g, '-')}`;
-            canonicalLink.setAttribute('href', matchUrl);
-
-            pageTitle = `${match.title} - مشاهدة أونلاين على شاهد كورة بجودة عالية`;
-            const shortDescription = (match.description || `شاهد مباراة ${match.title} بث مباشر بجودة عالية. استمتع بأحدث المباريات، الأهداف، والتحليلات الحصرية على شاهد كورة - Ultimate Pitch.`).substring(0, 155);
-            pageDescription = shortDescription + (match.description && match.description.length > 155 ? '...' : '');
-
-            const matchLeague = String(match.league || '').trim();
-            const matchCommentators = Array.isArray(match.commentators) ? match.commentators.join(', ') : String(match.commentators || '').trim();
-            pageKeywords = [
-                match.title,
-                matchLeague,
-                match.team1,
-                match.team2,
-                matchCommentators,
-                'شاهد كورة', 'بث مباشر', 'مشاهدة أونلاين', 'مباراة اليوم', 'أهداف', 'ملخصات', 'أخبار كرة قدم', 'دوريات عالمية', 'كرة القدم', 'مشاهدة مجانية', 'تحليل كروي', 'Ultimate Pitch'
-            ].filter(Boolean).join(', ');
-
-            ogUrl = matchUrl;
-            ogTitle = `${match.title} - بث مباشر على شاهد كورة`;
-            ogDescription = pageDescription;
-            ogImage = match.thumbnail; // Use match thumbnail as OG image
-            ogType = "video.other"; // Changed to video.other as it's a match, not a movie
-
-            twitterTitle = ogTitle;
-            twitterDescription = ogDescription;
-            twitterImage = ogImage;
-            twitterCard = "summary_large_image";
-
-        } else {
-            // بيانات الصفحة الرئيسية الافتراضية
-            pageTitle = 'شاهد كورة - Ultimate Pitch: تجربة كرة القدم النهائية';
-            pageDescription = 'شاهد كورة - ملعبك النهائي لكرة القدم. بث مباشر بجودة فائقة، أهداف مجنونة، تحليلات عميقة، وآخر الأخبار من قلب الحدث. انغمس في عالم الكرة الحقيقية.';
-            pageKeywords = 'شاهد كورة، بث مباشر، مباريات اليوم، أهداف، ملخصات، أخبار كرة قدم، دوريات عالمية، كرة القدم، مشاهدة مجانية، تحليل كروي، Ultimate Pitch';
-
-            ogUrl = window.location.origin;
-            canonicalLink.setAttribute('href', ogUrl + '/');
-            ogTitle = 'شاهد كورة - Ultimate Pitch: كل كرة القدم في مكان واحد';
-            ogDescription = pageDescription;
-            ogImage = 'https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png'; // Example image
-            ogType = 'website';
-
-            twitterTitle = ogTitle;
-            twitterDescription = ogDescription;
-            twitterImage = 'https://shahidkora.online/images/shahidkora-ultimate-pitch-twitter.png'; // Example image
-            twitterCard = "summary_large_image";
-        }
-
-        // تحديث جميع الـ meta tags باستخدام الـ IDs
-        document.title = pageTitle;
-        document.getElementById('dynamic-title').textContent = pageTitle;
-        document.getElementById('dynamic-description').setAttribute('content', pageDescription);
-        document.getElementById('dynamic-keywords').setAttribute('content', pageKeywords);
-
-        document.getElementById('dynamic-og-title').setAttribute('content', ogTitle);
-        document.getElementById('dynamic-og-description').setAttribute('content', ogDescription);
-        document.getElementById('dynamic-og-image').setAttribute('content', ogImage);
-        document.getElementById('dynamic-og-image-alt').setAttribute('content', ogTitle);
-        document.getElementById('dynamic-og-url').setAttribute('content', ogUrl);
-        document.getElementById('dynamic-og-type').setAttribute('content', ogType);
-
-        document.getElementById('dynamic-twitter-title').setAttribute('content', twitterTitle);
-        document.getElementById('dynamic-twitter-description').setAttribute('content', twitterDescription);
-        document.getElementById('dynamic-twitter-image').setAttribute('content', twitterImage);
-        document.getElementById('dynamic-twitter-card').setAttribute('content', twitterCard);
-
-        document.getElementById('dynamic-canonical').setAttribute('href', canonicalLink.getAttribute('href'));
-
-        console.log('📄 [SEO] تم تحديث الميتا تاجز.');
-    }
-    // END: Updated function for Meta Tags
-
-    // START: Updated function for JSON-LD Schema
-    function generateAndInjectSchema(match = null) { // Renamed movie to match
-        let schemaScriptElement = document.getElementById('json-ld-schema'); // Corrected ID from HTML
-        if (!schemaScriptElement) {
-            schemaScriptElement = document.createElement('script');
-            schemaScriptElement.type = 'application/ld+json';
-            schemaScriptElement.id = 'json-ld-schema';
-            document.head.appendChild(schemaScriptElement);
-        }
-
-        if (!match) {
-            schemaScriptElement.textContent = '';
-            console.log('📄 [SEO] لا يوجد مخطط JSON-LD للصفحة الرئيسية.');
-            return;
-        }
-
-        const matchUrl = `${window.location.origin}/view/?details&id=${match.id}&title=${match.title.toLowerCase().replace(/[^a-z0-9\u0600-\u06FF\s-]/g, '').replace(/\s+/g, '-')}`;
-
-        let formattedDate;
-        if (match.date) {
-            try {
-                // Assuming date format is YYYY-MM-DD or parseable by Date constructor
-                const dateParts = match.date.split('-');
-                const timeParts = (match.time || '00:00').split(':');
-                const dt = new Date(
-                    parseInt(dateParts[0]), 
-                    parseInt(dateParts[1]) - 1, 
-                    parseInt(dateParts[2]), 
-                    parseInt(timeParts[0]), 
-                    parseInt(timeParts[1])
-                );
-                if (!isNaN(dt.getTime())) {
-                    formattedDate = dt.toISOString();
-                } else {
-                    formattedDate = new Date().toISOString(); // fallback to current date if parse fails
-                }
-            } catch (e) {
-                formattedDate = new Date().toISOString(); // fallback
-            }
-        } else {
-            formattedDate = new Date().toISOString(); // fallback
-        }
-        
-        const commentatorsArray = Array.isArray(match.commentators) ? match.commentators : String(match.commentators || '').split(',').map(s => s.trim()).filter(s => s !== '');
-        
-        const schema = {
-            "@context": "https://schema.org",
-            "@type": "SportsEvent", // Changed type to SportsEvent for a match
-            "name": match.title,
-            "description": match.description || `مشاهدة بث مباشر لـ ${match.title} بجودة عالية على شاهد كورة.`,
-            "startDate": formattedDate,
-            "location": {
-                "@type": "Place",
-                "name": match.stadium || "غير متوفر",
-                "address": {
-                    "@type": "PostalAddress",
-                    "addressLocality": match.city || "غير متوفر", // Assuming a 'city' property in matches.json
-                    "addressCountry": match.country || "غير متوفر" // Assuming a 'country' property in matches.json
-                }
-            },
-            "performer": [ // Teams involved
-                {
-                    "@type": "SportsTeam",
-                    "name": match.team1 || "فريق غير متوفر"
+        if (viewName === 'match-details' && data && data.type === 'match') {
+            schema = {
+                "@context": "https://schema.org",
+                "@type": "SportsEvent",
+                "name": data.title,
+                "description": data.short_description,
+                "startDate": data.date_time,
+                "location": {
+                    "@type": "Place",
+                    "name": data.stadium
                 },
-                {
-                    "@type": "SportsTeam",
-                    "name": match.team2 || "فريق غير متوفر"
-                }
-            ],
-            "competitor": [ // Same as performer for matches
-                {
-                    "@type": "SportsTeam",
-                    "name": match.team1 || "فريق غير متوفر"
+                "competitor": [
+                    {
+                        "@type": "SportsTeam",
+                        "name": data.home_team,
+                        "logo": data.home_team_logo
+                    },
+                    {
+                        "@type": "SportsTeam",
+                        "name": data.away_team,
+                        "logo": data.away_team_logo
+                    }
+                ],
+                "sport": "Football",
+                "eventStatus": `https://schema.org/EventStatus/${data.status === 'Live' ? 'EventScheduled' : data.status === 'Finished' ? 'EventEnded' : 'EventScheduled'}`,
+                "image": data.thumbnail,
+                "url": `${siteUrl}#match-${data.id}`
+            };
+            if (data.score) {
+                schema.result = data.score;
+            }
+            if (data.commentators && data.commentators.length > 0) {
+                schema.performer = data.commentators.map(c => ({
+                    "@type": "Person",
+                    "name": c
+                }));
+            }
+            if (data.channel_info && data.channel_info.length > 0) {
+                schema.broadcastOfEvent = data.channel_info.map(channel => ({
+                    "@type": "BroadcastService",
+                    "name": channel.name,
+                    "url": channel.link
+                }));
+            }
+        } else if (viewName === 'news-details' && data && data.type === 'news') { // Assuming a news details view might exist
+            schema = {
+                "@context": "https://schema.org",
+                "@type": "NewsArticle",
+                "headline": data.title,
+                "image": [data.article_image],
+                "datePublished": data.date_time,
+                "dateModified": data.date_time,
+                "author": {
+                    "@type": "Person",
+                    "name": "فريق شاهد كورة"
                 },
-                {
-                    "@type": "SportsTeam",
-                    "name": match.team2 || "فريق غير متوفر"
-                }
-            ],
-            "sport": "كرة القدم", // Specific sport
-            "url": matchUrl, // URL of the page
-            "image": match.thumbnail, // Thumbnail image for the match
-
-            // VideoObject embedded within SportsEvent
-            "video": {
-                "@type": "VideoObject",
-                "name": match.title,
-                "description": match.description || `بث مباشر لـ ${match.title} على شاهد كورة.`,
-                "thumbnailUrl": match.thumbnail,
-                "uploadDate": formattedDate, // Use match date/time for video upload date
-                "contentUrl": match.embed_url, // Direct video URL
-                "embedUrl": match.embed_url, // Embedded video URL
-                "interactionCount": "100000", // Placeholder, ideally dynamic
-                "duration": match.duration || "PT2H", // Example: PT2H for 2 hours. If duration is available in data, use it.
                 "publisher": {
                     "@type": "Organization",
                     "name": "شاهد كورة - Ultimate Pitch",
                     "logo": {
                         "@type": "ImageObject",
-                        "url": "https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png", // Use your logo for publisher
-                        "width": 200,
-                        "height": 50
+                        "url": "https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png"
                     }
+                },
+                "description": data.short_description,
+                "mainEntityOfPage": {
+                    "@type": "WebPage",
+                    "@id": data.article_url
                 }
-            },
-            
-            "eventStatus": (function() {
-                if (match.status === 'جارية') return "https://schema.org/EventScheduled"; // Assuming live
-                if (match.status === 'انتهت') return "https://schema.org/EventCompleted";
-                if (match.status === 'ملغاة') return "https://schema.org/EventCancelled";
-                if (match.status === 'مؤجلة') return "https://schema.org/EventPostponed";
-                return "https://schema.org/EventScheduled"; // Default for upcoming/scheduled
-            })(),
-
-            // Add aggregate rating if available, similar to movies
-            // "aggregateRating": { ... } // If you have rating for matches
-        };
-
-        schemaScriptElement.textContent = JSON.stringify(schema, null, 2); // تنسيق JSON للقراءة
-        console.log('📄 [SEO] تم إضافة/تحديث مخطط JSON-LD الجديد.');
-    }
-    // END: Updated function for JSON-LD Schema
-
-    function displaySuggestedMatches(currentMatchId) { // Renamed from displaySuggestedMovies
-        if (!suggestedMovieGrid || !currentDetailedMatch) { // Using suggestedMovieGrid and currentDetailedMatch
-            console.error('❌ displaySuggestedMatches: suggestedMatchGrid أو currentDetailedMatch غير موجودين. لا يمكن عرض المباريات المقترحة.');
-            return;
+            };
+        } else if (viewName === 'home') {
+            schema = {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                "name": "شاهد كورة - Ultimate Pitch",
+                "url": siteUrl,
+                "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": `${siteUrl}?q={search_term_string}`,
+                    "queryInput": "required name=search_term_string"
+                }
+            };
+        } else if (['live', 'upcoming', 'highlights', 'search-results'].includes(viewName)) {
+            schema = {
+                "@context": "https://schema.org",
+                "@type": "CollectionPage",
+                "name": dynamicTitle.textContent,
+                "description": dynamicDescription.getAttribute('content'),
+                "url": dynamicCanonical.getAttribute('href')
+            };
         }
 
-        const currentMatchLeague = currentDetailedMatch.league; // Suggest based on league
-        let suggested = [];
+        jsonLdSchema.textContent = JSON.stringify(schema, null, 2);
+    };
 
-        if (currentMatchLeague) {
-            suggested = matchesData.filter(match =>
-                match.id !== currentMatchId &&
-                String(match.league || '').toLowerCase().includes(String(currentMatchLeague).toLowerCase().trim())
-            );
-            suggested = suggested.sort(() => 0.5 - Math.random());
-        }
+    /**
+     * Lazy loads images using Intersection Observer.
+     * Applied to images with data-src and 'lazy' class.
+     */
+    const lazyLoadImages = () => {
+        const lazyImages = document.querySelectorAll('img.lazy[data-src]');
 
-        if (suggested.length < 24) { // Populate with random matches if not enough suggested
-            const otherMatches = matchesData.filter(match => match.id !== currentMatchId && !suggested.includes(match));
-            const shuffledOthers = otherMatches.sort(() => 0.5 - Math.random());
-            const needed = 24 - suggested.length;
-            suggested = [...suggested, ...shuffledOthers.slice(0, needed)];
-        }
-
-        const finalSuggested = suggested.slice(0, 24);
-
-        if (finalSuggested.length === 0) {
-            suggestedMovieGrid.innerHTML = '<p style="text-align: center; color: var(--text-muted);">لا توجد مباريات مقترحة حالياً.</p>';
-            console.log('✨ [اقتراحات] لا توجد مباريات مقترحة متاحة بعد التصفية.');
-            return;
-        }
-
-        displayMatches(finalSuggested, suggestedMovieGrid); // Renamed
-        console.log(`✨ [اقتراحات] تم عرض ${finalSuggested.length} مباراة مقترحة في ${suggestedMovieGrid.id}.`);
-    }
-
-    function showHomePage() {
-        console.log('🏠 [توجيه] عرض الصفحة الرئيسية.');
-        // Hide all template views first
-        document.querySelectorAll('.view-section').forEach(section => {
-            section.style.display = 'none';
-        });
-
-        if (heroSection) heroSection.style.display = 'flex';
-        if (movieGridSection) movieGridSection.style.display = 'block'; // Show home match grid section
-
-        if (searchInput) searchInput.value = '';
-        if (sectionTitleElement) sectionTitleElement.textContent = 'أبرز المباريات والجديد';
-
-        matchesDataForPagination = matchesData.length > 0 ? [...matchesData].sort(() => 0.5 - Math.random()) : [];
-        currentPage = 1;
-        paginateMatches(matchesDataForPagination, currentPage);
-
-        if (videoOverlay) {
-            videoOverlay.style.pointerEvents = 'none';
-            videoOverlay.classList.add('hidden');
-            if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
-        }
-
-        // Clear video container content (iframe)
-        if (videoContainer) {
-            videoContainer.innerHTML = '';
-            console.log('[مشغل الفيديو] تم مسح match-player-container عند الانتقال للصفحة الرئيسية.');
-        }
-        currentDetailedMatch = null;
-
-        const newUrl = new URL(window.location.origin);
-        history.pushState({ view: 'home' }, 'شاهد كورة - الصفحة الرئيسية', newUrl.toString());
-        console.log(`🔗 [URL] تم تحديث URL إلى ${newUrl.toString()}`);
-
-        // استدعاء الدوال المعدلة للصفحة الرئيسية
-        updatePageMetadata();
-        generateAndInjectSchema();
-    }
-
-    // --- 5. Event Listeners ---
-    if (menuToggle && mainNav) {
-        menuToggle.addEventListener('click', () => {
-            mainNav.classList.toggle('nav-open');
-            console.log('☰ [تفاعل] تم تبديل القائمة.');
-        });
-    }
-
-    // Handle navigation clicks for dynamic view loading
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetView = link.dataset.targetView;
-            if (targetView) {
-                console.log(`🧭 [تفاعل] تم النقر على رابط التنقل: ${targetView}`);
-                loadView(targetView); // Call a new function to load specific views
-            }
-            if (mainNav && mainNav.classList.contains('nav-open')) {
-                mainNav.classList.remove('nav-open');
-            }
-        });
-    });
-
-    // New function to load different views based on data-target-view
-    function loadView(viewName) {
-        // Hide all sections first
-        document.querySelectorAll('.view-section').forEach(section => {
-            section.style.display = 'none';
-        });
-        if (heroSection) heroSection.style.display = 'none'; // Hide hero on view change
-
-        let targetSection;
-        let targetGrid;
-        let titleElement;
-        let paginationPrevBtn;
-        let paginationNextBtn;
-        let emptyStateElement;
-        let currentMatchesToDisplay = [];
-
-        // Determine which template to clone and which elements to target
-        let templateId;
-        switch (viewName) {
-            case 'home':
-                showHomePage(); // Re-use existing home page logic
-                return;
-            case 'live':
-                templateId = 'live-matches-template';
-                targetSection = document.getElementById('live-matches-section');
-                targetGrid = document.getElementById('live-match-grid');
-                titleElement = document.getElementById('live-matches-title');
-                paginationPrevBtn = document.getElementById('live-prev-page-btn');
-                paginationNextBtn = document.getElementById('live-next-page-btn');
-                emptyStateElement = document.getElementById('live-empty-state');
-                
-                currentMatchesToDisplay = matchesData.filter(match => match.status === 'جارية'); // Filter live matches
-                if (titleElement) titleElement.textContent = 'مباريات كرة القدم مباشرة الآن';
-                break;
-            case 'upcoming':
-                templateId = 'upcoming-matches-template';
-                targetSection = document.getElementById('upcoming-matches-section');
-                targetGrid = document.getElementById('upcoming-match-grid');
-                titleElement = document.getElementById('upcoming-matches-title');
-                paginationPrevBtn = document.getElementById('upcoming-prev-page-btn');
-                paginationNextBtn = document.getElementById('upcoming-next-page-btn');
-                emptyStateElement = document.getElementById('upcoming-empty-state');
-
-                currentMatchesToDisplay = matchesData.filter(match => match.status === 'قادمة' || match.status === 'مجدولة'); // Filter upcoming
-                if (titleElement) titleElement.textContent = 'مواعيد مباريات كرة القدم القادمة';
-                break;
-            case 'highlights':
-                templateId = 'highlights-template';
-                targetSection = document.getElementById('highlights-section');
-                targetGrid = document.getElementById('highlights-grid');
-                titleElement = document.getElementById('highlights-title');
-                paginationPrevBtn = document.getElementById('highlights-prev-page-btn');
-                paginationNextBtn = document.getElementById('highlights-next-page-btn');
-                emptyStateElement = document.getElementById('highlights-empty-state');
-
-                currentMatchesToDisplay = matchesData.filter(match => match.highlights_url); // Matches with highlights
-                if (titleElement) titleElement.textContent = 'أهداف وملخصات المباريات';
-                break;
-            case 'news':
-                templateId = 'news-template';
-                targetSection = document.getElementById('news-section');
-                targetGrid = document.getElementById('news-grid');
-                titleElement = document.getElementById('news-title');
-                paginationPrevBtn = document.getElementById('news-prev-page-btn');
-                paginationNextBtn = document.getElementById('news-next-page-btn');
-                emptyStateElement = document.getElementById('news-empty-state');
-
-                // For news, you'd fetch news data separately or have it in matches.json if applicable
-                currentMatchesToDisplay = []; // Assuming news data is separate or not in matches.json
-                if (titleElement) titleElement.textContent = 'آخر أخبار كرة القدم';
-                // Placeholder for news, replace with actual news display logic
-                if (targetGrid) targetGrid.innerHTML = '<p style="text-align: center; color: var(--text-muted);">الأخبار قيد التحديث. تابعونا لكل جديد في عالم كرة القدم!</p>';
-                if (emptyStateElement) emptyStateElement.style.display = 'block';
-                break;
-            default:
-                console.warn(`⚠️ [View Loader] عرض غير معروف: ${viewName}`);
-                showHomePage();
-                return;
-        }
-
-        // If the section doesn't exist yet, clone from template
-        if (!targetSection) {
-            const template = document.getElementById(templateId);
-            if (template) {
-                targetSection = template.content.cloneNode(true).firstElementChild;
-                document.getElementById('content-display').appendChild(targetSection);
-                // Re-get references after cloning
-                targetGrid = targetSection.querySelector('.match-grid') || targetSection.querySelector('.news-grid');
-                titleElement = targetSection.querySelector('.section-title');
-                paginationPrevBtn = targetSection.querySelector('.btn-page.prev');
-                paginationNextBtn = targetSection.querySelector('.btn-page.next');
-                emptyStateElement = targetSection.querySelector('.empty-state');
-                console.log(`🏗️ [View Loader] تم استنساخ "${viewName}" من القالب.`);
-            } else {
-                console.error(`❌ [View Loader] قالب "${templateId}" غير موجود.`);
-                showHomePage();
-                return;
-            }
-        }
-        
-        // Always set the current page to 1 when changing views
-        currentPage = 1; 
-        
-        // Handle pagination for specific views (if applicable)
-        if (targetGrid) {
-            // Store the currently filtered data for pagination on this specific view
-            targetGrid.currentData = currentMatchesToDisplay; 
-            targetGrid.currentPage = 1;
-            
-            const startIdx = (targetGrid.currentPage - 1) * matchesPerPage;
-            const endIdx = startIdx + matchesPerPage;
-            const paginatedData = targetGrid.currentData.slice(startIdx, endIdx);
-
-            displayMatches(paginatedData, targetGrid);
-            
-            // Update pagination buttons for this view
-            if (paginationPrevBtn && paginationNextBtn) {
-                paginationPrevBtn.disabled = targetGrid.currentPage === 1;
-                paginationNextBtn.disabled = targetGrid.currentPage * matchesPerPage >= targetGrid.currentData.length;
-                
-                // Add event listeners for pagination within the cloned section
-                paginationPrevBtn.onclick = () => {
-                    if (targetGrid.currentPage > 1) {
-                        targetGrid.currentPage--;
-                        paginateCurrentView(targetGrid, paginationPrevBtn, paginationNextBtn, targetGrid.currentData.length);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if ('IntersectionObserver' in window) {
+            let lazyImageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        const lazyImage = entry.target;
+                        lazyImage.src = lazyImage.dataset.src;
+                        lazyImage.removeAttribute('data-src'); // Remove data-src after loading
+                        lazyImage.classList.remove('lazy');
+                        lazyImage.onload = () => lazyImage.classList.add('loaded'); // Add 'loaded' class for fade-in effect (requires CSS transition)
+                        observer.unobserve(lazyImage); // Stop observing once loaded
                     }
-                };
-                paginationNextBtn.onclick = () => {
-                    const totalPages = Math.ceil(targetGrid.currentData.length / matchesPerPage);
-                    if (targetGrid.currentPage < totalPages) {
-                        targetGrid.currentPage++;
-                        paginateCurrentView(targetGrid, paginationPrevBtn, paginationNextBtn, targetGrid.currentData.length);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                };
-            }
-        }
-
-        // Show/hide empty state
-        if (emptyStateElement) {
-            emptyStateElement.style.display = currentMatchesToDisplay.length === 0 ? 'block' : 'none';
-        }
-        
-        targetSection.style.display = 'block';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        // Update URL and SEO for the new view (if it's not match details)
-        const newUrl = new URL(window.location.origin);
-        if (viewName !== 'home') { // Don't add 'view' param for home
-             newUrl.searchParams.set('view', viewName);
-        }
-       
-        history.pushState({ view: viewName }, `${viewName} - شاهد كورة`, newUrl.toString());
-        updatePageMetadata(); // Revert to homepage metadata if not a specific match
-        generateAndInjectSchema(); // Clear schema if not a specific match
-    }
-
-    // Helper for pagination on specific views
-    function paginateCurrentView(gridElement, prevBtn, nextBtn, totalItems) {
-        const startIndex = (gridElement.currentPage - 1) * matchesPerPage;
-        const endIndex = startIndex + matchesPerPage;
-        const paginatedData = gridElement.currentData.slice(startIndex, endIndex);
-        displayMatches(paginatedData, gridElement);
-
-        prevBtn.disabled = gridElement.currentPage === 1;
-        nextBtn.disabled = gridElement.currentPage * matchesPerPage >= totalItems;
-        console.log(`➡️ [ترقيم الصفحات - ${gridElement.id}] يتم عرض الصفحة ${gridElement.currentPage}.`);
-    }
-
-    if (watchNowBtn && movieGridSection) {
-        watchNowBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            console.log('🎬 [تفاعل] تم النقر على زر "شاهد المباريات الآن".');
-            movieGridSection.scrollIntoView({ behavior: 'smooth' });
-        });
-    }
-
-    if (backToHomeBtn) {
-        backToHomeBtn.addEventListener('click', () => {
-            console.log('🔙 [تفاعل] تم النقر على زر العودة للصفحة الرئيسية.');
-            showHomePage();
-        });
-    }
-
-    if (searchButton) {
-        searchButton.addEventListener('click', performSearch);
-        console.log('🔍 [حدث] تم إرفاق مستمع زر البحث.');
-    }
-    if (searchInput) {
-        searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                performSearch();
-                searchInput.blur();
-            }
-        });
-        console.log('🔍 [حدث] تم إرفاق مستمع ضغط مفتاح البحث.');
-    }
-
-    // Pagination buttons for the HOME view
-    if (prevPageBtn) {
-        prevPageBtn.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                paginateMatches(matchesDataForPagination, currentPage);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-            console.log(`⬅️ [ترقيم الصفحات] تم النقر على الصفحة السابقة. الصفحة الحالية: ${currentPage}`);
-        });
-    }
-    if (nextPageBtn) {
-        nextPageBtn.addEventListener('click', () => {
-            const totalPages = Math.ceil(matchesDataForPagination.length / matchesPerPage);
-            if (currentPage < totalPages) {
-                currentPage++;
-                paginateMatches(matchesDataForPagination, currentPage);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-            console.log(`➡️ [ترقيم الصفحات] تم النقر على الصفحة التالية. الصفحة الحالية: ${currentPage}`);
-        });
-    }
-
-    if (homeLogoLink) {
-        homeLogoLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            console.log('🏠 [تفاعل] تم النقر على شعار الصفحة الرئيسية.');
-            showHomePage();
-        });
-    }
-
-    if (movieDetailsPoster) {
-        movieDetailsPoster.addEventListener('click', () => {
-            console.log('🖼️ [نقر إعلان] تم النقر على بوستر تفاصيل المباراة. محاولة فتح الرابط المباشر.');
-            openAdLink(DIRECT_LINK_COOLDOWN_MOVIE_CARD, 'movieDetailsPoster');
-        });
-        console.log('[حدث] تم إرفاق مستمع النقر على بوستر تفاصيل المباراة.');
-    }
-
-    if (videoOverlay) {
-        videoOverlay.addEventListener('click', async (e) => {
-            console.log('⏯️ [نقر إعلان] تم النقر على غطاء الفيديو. محاولة فتح الرابط المباشر.');
-            const adOpened = openAdLink(DIRECT_LINK_COOLDOWN_VIDEO_INTERACTION, 'videoOverlay');
-
-            if (adOpened) {
-                // Give a brief moment for the ad window to pop up
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
-                if (videoOverlay) {
-                    videoOverlay.style.pointerEvents = 'none';
-                    videoOverlay.classList.add('hidden');
-                }
-                if (videoLoadingSpinner) videoLoadingSpinner.style.display = 'none';
-                console.log('[غطاء الفيديو] تم فتح الإعلان. تم إخفاء الغطاء والسماح بتفاعل iframe.');
-            } else {
-                console.log('[غطاء الفيديو] الإعلان لم يفتح بسبب التهدئة. سيظل الغطاء نشطًا.');
-            }
-            e.stopPropagation();
-        });
-        console.log('[غطاء الفيديو] تم إرفاق مستمع النقر لتفاعل الإعلان.');
-    }
-
-    document.addEventListener('contextmenu', e => {
-        e.preventDefault();
-        console.warn('🚫 [أمان] تم تعطيل النقر بالزر الأيمن.');
-    });
-
-    document.addEventListener('keydown', e => {
-        if (
-            e.key === 'F12' ||
-            (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
-            (e.ctrlKey && e.key === 'u') ||
-            (e.metaKey && e.altKey && e.key === 'I')
-        ) {
-            e.preventDefault();
-            console.warn(`🚫 [أمان] تم منع اختصار لوحة المفاتيح لأدوات المطور/المصدر: ${e.key}`);
-        }
-    });
-
-    const devtoolsDetector = (() => {
-        const threshold = 160;
-        let isOpen = false;
-        const checkDevTools = () => {
-            const widthThreshold = window.outerWidth - window.innerWidth > threshold;
-            const heightThreshold = window.outerHeight - window.innerHeight > threshold;
-
-            if (widthThreshold || heightThreshold) {
-                if (!isOpen) {
-                    isOpen = true;
-                    console.warn('🚨 [أمان] تم اكتشاف أدوات المطور! هذا الإجراء غير مشجع.');
-                }
-            } else {
-                if (isOpen) {
-                    isOpen = false;
-                    console.log('✅ [أمان] تم إغلاق أدوات المطور.');
-                }
-            }
-        };
-
-        window.addEventListener('resize', checkDevTools);
-        setInterval(checkDevTools, 1000);
-        checkDevTools();
-    })();
-
-    function initialPageLoadLogic() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const viewParam = urlParams.get('view');
-        const idParam = urlParams.get('id');
-
-        if (viewParam === 'details' && idParam) {
-            const matchId = parseInt(idParam);
-            const match = matchesData.find(m => m.id === matchId);
-
-            if (!isNaN(matchId) && match) {
-                console.log(`🚀 [تحميل أولي] محاولة تحميل تفاصيل المباراة من URL: المعّرف ${matchId}`);
-                updatePageMetadata(match);
-                generateAndInjectSchema(match);
-                showMatchDetails(matchId);
-            } else {
-                console.warn('⚠️ [تحميل أولي] معّرف المباراة غير صالح في URL أو المباراة غير موجودة. يتم عرض الصفحة الرئيسية.');
-                showHomePage();
-            }
-        } else if (viewParam) { // Handle other views loaded directly via URL
-            console.log(`🚀 [تحميل أولي] محاولة تحميل العرض "${viewParam}" من URL.`);
-            loadView(viewParam);
-        } else {
-            console.log('🚀 [تحميل أولي] لا يوجد عرض محدد في URL. يتم عرض الصفحة الرئيسية.');
-            showHomePage();
-        }
-    }
-
-    window.addEventListener('popstate', (event) => {
-        console.log('↩️ [Popstate] تم اكتشاف تصفح سجل المتصفح.', event.state);
-        if (matchesData.length === 0) {
-            console.warn('[Popstate] لم يتم تحميل بيانات المباريات، محاولة جلب البيانات وعرض الصفحة بناءً على الحالة.');
-            fetchMatchesData().then(() => {
-                if (event.state && event.state.view === 'details' && event.state.id) {
-                    const match = matchesData.find(m => m.id === event.state.id);
-                    if (match) {
-                        updatePageMetadata(match);
-                        generateAndInjectSchema(match);
-                        showMatchDetails(event.state.id);
-                    } else {
-                        console.warn('[Popstate] المباراة غير موجودة عند popstate. يتم عرض الصفحة الرئيسية.');
-                        showHomePage();
-                    }
-                } else if (event.state && event.state.view) {
-                    loadView(event.state.view);
-                } else {
-                    showHomePage();
-                }
-            }).catch(err => {
-                console.error('[Popstate] فشل جلب بيانات المباريات عند popstate:', err);
-                showHomePage();
+                });
+            }, {
+                rootMargin: '0px 0px 200px 0px' // Load images when 200px from viewport
             });
-            return;
+
+            lazyImages.forEach((lazyImage) => {
+                lazyImageObserver.observe(lazyImage);
+            });
+        } else {
+            // Fallback for browsers that don't support Intersection Observer (load all immediately)
+            lazyImages.forEach((img) => {
+                img.src = img.dataset.src;
+                img.removeAttribute('data-src');
+                img.classList.remove('lazy');
+            });
+        }
+    };
+
+    /**
+     * Creates a match card HTML element.
+     * @param {object} match - Match data object.
+     * @returns {HTMLElement} The created match card element.
+     */
+    const createMatchCard = (match) => {
+        const card = document.createElement('div');
+        card.classList.add('match-card', match.status.toLowerCase());
+        card.dataset.matchId = match.id;
+        card.dataset.type = 'match';
+
+        let statusText = '';
+        let statusClass = '';
+        let timeDisplay = '';
+        let buttonHtml = '';
+        let scoreOrVs = '<span>vs</span>';
+
+        if (match.status === 'Live') {
+            statusText = 'مباشر';
+            statusClass = 'live-status';
+            timeDisplay = 'الآن';
+            buttonHtml = `<a href="#match-${match.id}" class="btn btn-primary" data-match-id="${match.id}" data-type="match">شاهد الآن <i class="fas fa-play-circle"></i></a>`;
+        } else if (match.status === 'Finished') {
+            statusText = 'انتهت';
+            statusClass = 'finished-status';
+            timeDisplay = formatDateTime(match.date_time);
+            scoreOrVs = match.score ? `<span>${match.score}</span>` : '<span>-</span>';
+            buttonHtml = `<a href="#match-${match.id}" class="btn btn-secondary" data-match-id="${match.id}" data-type="match">${match.highlights_url ? 'شاهد الملخص' : 'عرض التفاصيل'} <i class="fas ${match.highlights_url ? 'fa-video' : 'fa-info-circle'}"></i></a>`;
+        } else if (match.status === 'Upcoming') {
+            statusText = 'قريباً';
+            statusClass = 'upcoming-status';
+            timeDisplay = formatDateTime(match.date_time);
+            buttonHtml = `<a href="#match-${match.id}" class="btn btn-secondary" data-match-id="${match.id}" data-type="match">عرض التفاصيل <i class="fas fa-info-circle"></i></a>`;
         }
 
-        if (event.state && event.state.view === 'details' && event.state.id) {
-            const match = matchesData.find(m => m.id === event.state.id);
-            if (match) {
-                updatePageMetadata(match);
-                generateAndInjectSchema(match);
-                showMatchDetails(event.state.id);
-            } else {
-                console.warn('[Popstate] المباراة غير موجودة عند popstate. يتم عرض الصفحة الرئيسية.');
-                showHomePage();
-            }
-        } else if (event.state && event.state.view) {
-            loadView(event.state.view);
+        // Use data-src for lazy loading and add 'lazy' class
+        card.innerHTML = `
+            <div class="match-header">
+                <span class="match-status ${statusClass}">${statusText}</span>
+                <span class="match-time">${timeDisplay}</span>
+            </div>
+            <div class="match-teams">
+                <div class="team home-team">
+                    <img data-src="${match.home_team_logo}" alt="شعار ${match.home_team}" class="lazy" width="48" height="48">
+                    <span>${match.home_team}</span>
+                </div>
+                <div class="vs">${scoreOrVs}</div>
+                <div class="team away-team">
+                    <img data-src="${match.away_team_logo}" alt="شعار ${match.away_team}" class="lazy" width="48" height="48">
+                    <span>${match.away_team}</span>
+                </div>
+            </div>
+            <div class="match-league">
+                <img data-src="${match.league_logo}" alt="شعار ${match.league_name}" class="lazy" width="32" height="32">
+                <span>${match.league_name}</span>
+            </div>
+            ${match.channel_info && match.channel_info.length > 0 && match.status !== 'Finished' ?
+                `<div class="match-channels"><span>القنوات: ${match.channel_info.map(c => c.name).join(', ')}</span></div>` : ''}
+            <div class="match-details-btn">
+                ${buttonHtml}
+            </div>
+        `;
+        return card;
+    };
+
+    /**
+     * Creates a news card HTML element.
+     * @param {object} news - News data object.
+     * @returns {HTMLElement} The created news card element.
+     */
+    const createNewsCard = (news) => {
+        const card = document.createElement('div');
+        card.classList.add('news-card');
+        card.dataset.newsId = news.id;
+        card.dataset.type = 'news';
+        // Use data-src for lazy loading thumbnail
+        card.innerHTML = `
+            <img data-src="${news.thumbnail}" alt="صورة خبر ${news.title}" class="lazy" width="250" height="150">
+            <div class="news-card-content">
+                <h3>${news.title}</h3>
+                <p>${news.short_description}</p>
+                <span class="news-date">${formatDateTime(news.date_time)}</span>
+                <a href="${news.article_url}" target="_blank" rel="noopener noreferrer" class="btn btn-tertiary">اقرأ المزيد <i class="fas fa-arrow-left"></i></a>
+            </div>
+        `;
+        return card;
+    };
+
+    /**
+     * Renders items into a specified grid container with pagination.
+     * @param {Array<object>} items - Array of data items (matches or news).
+     * @param {HTMLElement} container - The HTML container element to render into.
+     * @param {Function} cardCreator - Function to create an individual card (createMatchCard or createNewsCard).
+     * @param {number} page - Current page number for pagination.
+     * @param {HTMLElement} [emptyStateElement=null] - Optional reference to the empty state div.
+     * @param {HTMLElement} [paginationControlsElement=null] - Optional reference to the pagination controls div.
+     */
+    const renderGrid = (items, container, cardCreator, page, emptyStateElement = null, paginationControlsElement = null) => {
+        if (!container) {
+            console.error(`renderGrid: Target container is null or undefined. This indicates an issue with template cloning or element selection. Container expected: ${container?.id || 'N/A'}`);
+            return;
         }
-        else {
-            showHomePage();
+        container.innerHTML = ''; // Clear previous content
+
+        if (items.length === 0) {
+            if (emptyStateElement) emptyStateElement.style.display = 'block';
+            if (paginationControlsElement) paginationControlsElement.style.display = 'none';
+            return;
+        } else {
+            if (emptyStateElement) emptyStateElement.style.display = 'none';
+            if (paginationControlsElement) paginationControlsElement.style.display = 'flex';
+        }
+
+        const startIndex = (page - 1) * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        const paginatedItems = items.slice(startIndex, endIndex);
+
+        paginatedItems.forEach(item => {
+            // Ensure cardCreator returns an HTMLElement
+            const cardElement = cardCreator(item);
+            if (cardElement instanceof HTMLElement) {
+                container.appendChild(cardElement);
+            } else {
+                console.warn('cardCreator did not return an HTMLElement for item:', item);
+            }
+        });
+
+        // Update pagination button states
+        if (paginationControlsElement) {
+            const prevBtn = paginationControlsElement.querySelector('.btn-page.prev');
+            const nextBtn = paginationControlsElement.querySelector('.btn-page.next');
+            if (prevBtn) prevBtn.disabled = page === 1;
+            if (nextBtn) nextBtn.disabled = endIndex >= items.length;
+        }
+
+        // Apply lazy loading to newly rendered images
+        lazyLoadImages();
+    };
+
+
+    // ======== View Management & Content Rendering ========
+
+    /**
+     * Main function to switch between different sections (views) of the application.
+     * @param {string} viewName - The name of the view to switch to (e.g., 'home', 'live', 'match-details').
+     * @param {string|number} [dataId=null] - Optional ID for specific item details (e.g., match ID).
+     */
+    const switchView = (viewName, dataId = null) => {
+        currentView = viewName;
+        
+        // Hide all main content sections initially
+        document.querySelectorAll('.view-section').forEach(section => {
+            section.classList.remove('active-view');
+            section.style.display = 'none';
+        });
+
+        // Always hide hero section unless it's the home view
+        if (heroSection) { // Check if heroSection exists
+            heroSection.style.display = (viewName === 'home') ? 'block' : 'none';
+            if (viewName === 'home') {
+                heroSection.classList.add('active-view'); // Add active class if it's the home view
+            } else {
+                heroSection.classList.remove('active-view');
+            }
+        } else {
+            console.error("Hero section element (#hero-section) not found.");
+        }
+
+
+        // Deactivate all nav links and activate the current one
+        navLinks.forEach(link => link.classList.remove('active'));
+        const activeNavLink = document.querySelector(`.nav-link[data-target-view="${viewName}"]`);
+        if (activeNavLink) activeNavLink.classList.add('active');
+        // Close mobile menu if open
+        mainNav.classList.remove('active');
+        menuToggle.classList.remove('active');
+
+        let pageTitle = "شاهد كورة: Ultimate Pitch - كل كرة القدم في مكان واحد";
+        let pageDescription = "شاهد كورة - ملعبك النهائي لكرة القدم. بث مباشر بجودة فائقة، أهداف مجنونة، تحليلات عميقة، وآخر الأخبار من قلب الحدث. انغمس في عالم الكرة الحقيقية.";
+        let pageKeywords = "شاهد كورة، بث مباشر، مباريات اليوم، أهداف، ملخصات، أخبار كرة قدم، دوريات عالمية، كرة القدم، مشاهدة مجانية، تحليل كروي، Ultimate Pitch";
+        let pageUrl = window.location.origin + '/';
+        let ogImage = "https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png";
+        let ogImageAlt = "شاهد كورة | ملعبك النهائي لكرة القدم";
+        let jsonLdData = {}; // Data for schema markup
+
+        let targetSectionClone; // Holds the cloned template content's root element
+
+        // Render content based on the viewName
+        if (viewName === 'home') {
+            const template = document.getElementById('home-view-template');
+            if (!template) {
+                console.error("ERROR: The <template id='home-view-template'> element was not found in the DOM. Ensure it's in index.html.");
+                contentDisplay.innerHTML = '<p class="error-message">عذراً، حدث خطأ في تحميل المحتوى الأساسي للموقع (قالب الصفحة الرئيسية غير موجود).</p>';
+                return;
+            }
+            targetSectionClone = document.importNode(template.content, true).firstElementChild;
+
+            if (!targetSectionClone) {
+                console.error("ERROR: The cloned content of 'home-view-template' is empty or does not have a first element child. Check the template structure in index.html.");
+                contentDisplay.innerHTML = '<p class="error-message">عذراً، لم يتم العثور على القسم الرئيسي في القالب (قالب الصفحة الرئيسية فارغ).</p>';
+                return;
+            }
+
+            // Clear previous content from contentDisplay (excluding heroSection)
+            // Remove all children except heroSection
+            Array.from(contentDisplay.children).forEach(child => {
+                if (child.id !== 'hero-section') {
+                    child.remove();
+                }
+            });
+            contentDisplay.appendChild(targetSectionClone);
+            targetSectionClone.style.display = 'block';
+            targetSectionClone.classList.add('active-view');
+
+            // Get references to elements *inside the cloned section*
+            const mainGridContainer = targetSectionClone.querySelector('#main-match-grid');
+            const homePaginationControls = targetSectionClone.querySelector('.pagination-controls');
+            const homeMatchesTitle = targetSectionClone.querySelector('#home-matches-title');
+
+            // Filter for home: Live + Upcoming (Today/Tomorrow) + 2 latest finished + 2 latest news
+            const liveMatches = DATA.filter(item => item.type === 'match' && item.status === 'Live');
+            const upcomingMatchesTodayTomorrow = DATA.filter(item => {
+                if (item.type !== 'match' || item.status !== 'Upcoming') return false;
+                const matchDate = new Date(item.date_time);
+                return (matchDate >= TODAY_START && matchDate < TOMORROW_START) ||
+                       (matchDate >= TOMORROW_START && matchDate < DAY_AFTER_TOMORROW_START);
+            }).sort((a, b) => new Date(a.date_time) - new Date(b.date_time));
+
+            const finishedMatches = DATA.filter(item => item.type === 'match' && item.status === 'Finished')
+                                         .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
+                                         .slice(0, 2);
+
+            const latestNews = DATA.filter(item => item.type === 'news')
+                                        .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
+                                        .slice(0, 2);
+
+            // Filter out any potential non-match/news items before passing to renderGrid
+            const itemsToRender = [...liveMatches, ...upcomingMatchesTodayTomorrow, ...latestNews, ...finishedMatches].filter(item => item.type === 'match' || item.type === 'news');
+
+            homeMatchesTitle.textContent = "أبرز المباريات والجديد";
+            renderGrid(itemsToRender, mainGridContainer, (item) => {
+                if (item.type === 'match') return createMatchCard(item);
+                if (item.type === 'news') return createNewsCard(item);
+                return null; // Ensure something is returned
+            }, currentPage.home, null, homePaginationControls);
+
+
+            pageTitle = "شاهد كورة: Ultimate Pitch - كل كرة القدم في مكان واحد";
+            pageDescription = "شاهد كورة - ملعبك النهائي لكرة القدم. بث مباشر بجودة فائقة، أهداف مجنونة، تحليلات عميقة، وآخر الأخبار من قلب الحدث. انغمس في عالم الكرة الحقيقية.";
+            pageKeywords = "شاهد كورة، بث مباشر، مباريات اليوم، أهداف، ملخصات، أخبار كرة قدم، دوريات عالمية، كرة القدم، مشاهدة مجانية، تحليل كروي، Ultimate Pitch, مباريات اليوم, بث مباشر الأهلي والزمالك, أخبار مبابي, ملخصات الدوري الإسباني";
+            pageUrl = window.location.origin + '/';
+            jsonLdData = { "@type": "WebSite", "name": "شاهد كورة - Ultimate Pitch", "url": pageUrl };
+
+
+        } else if (viewName === 'live') {
+            const template = document.getElementById('live-matches-template');
+            if (!template) { console.error("ERROR: The 'live-matches-template' template was not found."); contentDisplay.innerHTML = '<p class="error-message">عذراً، قالب المباريات المباشرة غير موجود.</p>'; return; }
+            targetSectionClone = document.importNode(template.content, true).firstElementChild;
+            if (!targetSectionClone) { console.error("ERROR: Cloned content of 'live-matches-template' is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب المباريات المباشرة فارغ.</p>'; return; }
+
+            // Clear all current children of contentDisplay except heroSection (if it exists)
+            Array.from(contentDisplay.children).forEach(child => {
+                if (child.id !== 'hero-section') {
+                    child.remove();
+                }
+            });
+            contentDisplay.appendChild(targetSectionClone);
+            targetSectionClone.style.display = 'block';
+            targetSectionClone.classList.add('active-view');
+
+            const liveGridContainer = targetSectionClone.querySelector('#live-match-grid');
+            const liveEmptyState = targetSectionClone.querySelector('#live-empty-state');
+            const livePaginationControls = targetSectionClone.querySelector('.pagination-controls');
+
+            const itemsToRender = DATA.filter(item => item.type === 'match' && item.status === 'Live');
+            renderGrid(itemsToRender, liveGridContainer, createMatchCard, currentPage.live, liveEmptyState, livePaginationControls);
+
+            pageTitle = "شاهد كورة: مباريات كرة القدم مباشرة الآن | بث مباشر";
+            pageDescription = "شاهد جميع مباريات كرة القدم التي تبث مباشرة الآن بجودة عالية. تابع ديربيات الكرة العالمية والمحلية لحظة بلحظة.";
+            pageKeywords = "مباريات مباشرة، بث مباشر، شاهد الآن، كرة قدم لايف، مشاهدة مباريات، بث مجاني، الدوري المصري مباشر، الدوري السعودي مباشر";
+            pageUrl = window.location.origin + '/live';
+
+
+        } else if (viewName === 'upcoming') {
+            const template = document.getElementById('upcoming-matches-template');
+            if (!template) { console.error("ERROR: The 'upcoming-matches-template' template was not found."); contentDisplay.innerHTML = '<p class="error-message">عذراً، قالب المباريات القادمة غير موجود.</p>'; return; }
+            targetSectionClone = document.importNode(template.content, true).firstElementChild;
+            if (!targetSectionClone) { console.error("ERROR: Cloned content of 'upcoming-matches-template' is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب المباريات القادمة فارغ.</p>'; return; }
+
+            Array.from(contentDisplay.children).forEach(child => {
+                if (child.id !== 'hero-section') {
+                    child.remove();
+                }
+            });
+            contentDisplay.appendChild(targetSectionClone);
+            targetSectionClone.style.display = 'block';
+            targetSectionClone.classList.add('active-view');
+
+            const upcomingGridContainer = targetSectionClone.querySelector('#upcoming-match-grid');
+            const upcomingEmptyState = targetSectionClone.querySelector('#upcoming-empty-state');
+            const upcomingPaginationControls = targetSectionClone.querySelector('.pagination-controls');
+
+
+            const filterBtns = targetSectionClone.querySelectorAll('.filter-btn');
+            filterBtns.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.filterValue === currentFilter.upcoming) {
+                    btn.classList.add('active');
+                }
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentFilter.upcoming = e.target.dataset.filterValue;
+                    currentPage.upcoming = 1;
+                    switchView('upcoming');
+                };
+            });
+
+            let filteredUpcoming = DATA.filter(item => item.type === 'match' && item.status === 'Upcoming');
+
+            if (currentFilter.upcoming === 'today') {
+                filteredUpcoming = filteredUpcoming.filter(item => {
+                    const matchDate = new Date(item.date_time);
+                    return matchDate >= TODAY_START && matchDate < TOMORROW_START;
+                });
+            } else if (currentFilter.upcoming === 'tomorrow') {
+                filteredUpcoming = filteredUpcoming.filter(item => {
+                    const matchDate = new Date(item.date_time);
+                    return matchDate >= TOMORROW_START && matchDate < DAY_AFTER_TOMORROW_START;
+                });
+            }
+            filteredUpcoming.sort((a, b) => new Date(a.date_time) - new Date(b.date_time));
+
+            renderGrid(filteredUpcoming, upcomingGridContainer, createMatchCard, currentPage.upcoming, upcomingEmptyState, upcomingPaginationControls);
+
+            pageTitle = "شاهد كورة: مواعيد مباريات كرة القدم القادمة | جدول المباريات";
+            pageDescription = "اكتشف مواعيد مباريات كرة القدم القادمة في جميع الدوريات والبطولات الكبرى. لا تفوت أي مباراة حاسمة!";
+            pageKeywords = "مواعيد مباريات، مباريات اليوم، مباريات الغد، جدول المباريات، كرة قدم قادمة، دوري أبطال أوروبا، الدوري الإسباني، الدوري الإنجليزي";
+            pageUrl = window.location.origin + '/upcoming';
+
+
+        } else if (viewName === 'highlights') {
+            const template = document.getElementById('highlights-template');
+            if (!template) { console.error("ERROR: The 'highlights-template' template was not found."); contentDisplay.innerHTML = '<p class="error-message">عذراً، قالب الملخصات غير موجود.</p>'; return; }
+            targetSectionClone = document.importNode(template.content, true).firstElementChild;
+            if (!targetSectionClone) { console.error("ERROR: Cloned content of 'highlights-template' is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب الملخصات فارغ.</p>'; return; }
+
+            Array.from(contentDisplay.children).forEach(child => {
+                if (child.id !== 'hero-section') {
+                    child.remove();
+                }
+            });
+            contentDisplay.appendChild(targetSectionClone);
+            targetSectionClone.style.display = 'block';
+            targetSectionClone.classList.add('active-view');
+
+            const highlightsGridContainer = targetSectionClone.querySelector('#highlights-grid');
+            const highlightsEmptyState = targetSectionClone.querySelector('#highlights-empty-state');
+            const highlightsPaginationControls = targetSectionClone.querySelector('.pagination-controls');
+
+            const itemsToRender = DATA.filter(item => item.type === 'match' && item.highlights_url);
+            itemsToRender.sort((a, b) => new Date(b.date_time) - new Date(a.date_time));
+            renderGrid(itemsToRender, highlightsGridContainer, createMatchCard, currentPage.highlights, highlightsEmptyState, highlightsPaginationControls);
+
+            pageTitle = "شاهد كورة: أهداف وملخصات المباريات | أبرز اللقطات";
+            pageDescription = "شاهد أهداف جميع المباريات وملخصات كاملة لأبرز اللقاءات في الدوريات والبطولات الكبرى. استمتع بأجمل اللحظات الكروية.";
+            pageKeywords = "أهداف المباريات، ملخصات كرة القدم، أهداف اليوم، لقطات حاسمة، أفضل الأهداف، ملخصات الدوري الإسباني، ملخصات الدوري الإنجليزي";
+            pageUrl = window.location.origin + '/highlights';
+
+
+        } else if (viewName === 'news') {
+            const template = document.getElementById('news-template');
+            if (!template) { console.error("ERROR: The 'news-template' template was not found."); contentDisplay.innerHTML = '<p class="error-message">عذراً، قالب الأخبار غير موجود.</p>'; return; }
+            targetSectionClone = document.importNode(template.content, true).firstElementChild;
+            if (!targetSectionClone) { console.error("ERROR: Cloned content of 'news-template' is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب الأخبار فارغ.</p>'; return; }
+
+            Array.from(contentDisplay.children).forEach(child => {
+                if (child.id !== 'hero-section') {
+                    child.remove();
+                }
+            });
+            contentDisplay.appendChild(targetSectionClone);
+            targetSectionClone.style.display = 'block';
+            targetSectionClone.classList.add('active-view');
+
+            const newsGridContainer = targetSectionClone.querySelector('#news-grid');
+            const newsEmptyState = targetSectionClone.querySelector('#news-empty-state');
+            const newsPaginationControls = targetSectionClone.querySelector('.pagination-controls');
+
+            const itemsToRender = DATA.filter(item => item.type === 'news');
+            itemsToRender.sort((a, b) => new Date(b.date_time) - new Date(a.date_time));
+            renderGrid(itemsToRender, newsGridContainer, createNewsCard, currentPage.news, newsEmptyState, newsPaginationControls);
+
+            pageTitle = "شاهد كورة: آخر أخبار كرة القدم | تحديثات حصرية";
+            pageDescription = "تابع آخر أخبار كرة القدم العالمية والمحلية، انتقالات اللاعبين، تحديثات الأندية، وتحليلات حصرية لأبرز الأحداث الكروية.";
+            pageKeywords = "أخبار كرة قدم، انتقالات اللاعبين، أخبار ريال مدريد، أخبار ليفربول، أخبار مبابي، تحديثات رياضية، أخبار الدوري الإنجليزي، أخبار الدوري الإسباني";
+            pageUrl = window.location.origin + '/news';
+
+
+        } else if (viewName === 'match-details' && dataId) {
+            const match = DATA.find(item => item.type === 'match' && item.id === parseInt(dataId));
+            if (match) {
+                const template = document.getElementById('match-details-view-template');
+                if (!template) { console.error("ERROR: The 'match-details-view-template' template was not found."); contentDisplay.innerHTML = '<p class="error-message">عذراً، قالب تفاصيل المباراة غير موجود.</p>'; return; }
+                targetSectionClone = document.importNode(template.content, true).firstElementChild;
+                if (!targetSectionClone) { console.error("ERROR: Cloned content of 'match-details-view-template' is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب تفاصيل المباراة فارغ.</p>'; return; }
+
+                // Clear all current children of contentDisplay except heroSection (if it exists)
+                Array.from(contentDisplay.children).forEach(child => {
+                    if (child.id !== 'hero-section') {
+                        child.remove();
+                    }
+                });
+                contentDisplay.appendChild(targetSectionClone);
+                targetSectionClone.style.display = 'block';
+                targetSectionClone.classList.add('active-view');
+
+                const matchDetailsTitleElement = targetSectionClone.querySelector('#match-details-title-element');
+                const matchDetailsDescription = targetSectionClone.querySelector('#match-details-description');
+                const matchDetailsDateTime = targetSectionClone.querySelector('#match-details-date-time');
+                const matchDetailsLeague = targetSectionClone.querySelector('#match-details-league');
+                const matchDetailsCommentators = targetSectionClone.querySelector('#match-details-commentators');
+                const matchDetailsTeams = targetSectionClone.querySelector('#match-details-teams');
+                const matchDetailsStadium = targetSectionClone.querySelector('#match-details-stadium');
+                const matchDetailsStatus = targetSectionClone.querySelector('#match-details-status');
+                const matchPlayerContainer = targetSectionClone.querySelector('#match-player-container');
+                const videoOverlay = targetSectionClone.querySelector('#video-overlay');
+                const overlayThumbnail = targetSectionClone.querySelector('#overlay-thumbnail');
+                const loadingSpinner = targetSectionClone.querySelector('#video-loading-spinner');
+                const matchDetailsScoreContainer = targetSectionClone.querySelector('#match-details-score-container');
+                const matchDetailsScore = targetSectionClone.querySelector('#match-details-score');
+                const matchDetailsHighlightsContainer = targetSectionClone.querySelector('#match-details-highlights-container');
+                const matchDetailsHighlightsLink = targetSectionClone.querySelector('#match-details-highlights-link');
+                const suggestedMatchGrid = targetSectionClone.querySelector('#suggested-match-grid');
+                const backToHomeBtn = targetSectionClone.querySelector('#back-to-home-btn'); // Get the back button within the cloned template
+
+                // Add event listener for the back button, if it exists
+                if (backToHomeBtn) {
+                    backToHomeBtn.onclick = (e) => {
+                        e.preventDefault();
+                        switchView('home');
+                        window.history.pushState({ view: 'home' }, '', '#home');
+                    };
+                }
+
+
+                matchDetailsTitleElement.textContent = match.title;
+                matchDetailsDescription.textContent = match.short_description;
+                matchDetailsDateTime.textContent = formatDateTime(match.date_time);
+                matchDetailsLeague.textContent = match.league_name;
+                matchDetailsCommentators.textContent = match.commentators.join(', ') || 'غير متاح';
+                matchDetailsTeams.textContent = `${match.home_team} ضد ${match.away_team}`;
+                matchDetailsStadium.textContent = match.stadium;
+                matchDetailsStatus.textContent = match.status === 'Live' ? 'مباشرة' : match.status === 'Finished' ? 'انتهت' : 'قادمة';
+
+                // Video Player & Overlay logic
+                matchPlayerContainer.innerHTML = '';
+                overlayThumbnail.src = match.thumbnail;
+                videoOverlay.style.display = 'flex';
+                loadingSpinner.style.display = 'none';
+
+                videoOverlay.onclick = () => {
+                    loadingSpinner.style.display = 'block';
+                    videoOverlay.style.display = 'none';
+
+                    const iframe = document.createElement('iframe');
+                    iframe.src = match.embed_url;
+                    iframe.allow = "autoplay; fullscreen";
+                    iframe.frameBorder = "0";
+                    iframe.scrolling = "no";
+                    iframe.setAttribute('referrerpolicy', 'origin');
+                    iframe.onload = () => {
+                        loadingSpinner.style.display = 'none';
+                    };
+                    iframe.onerror = () => {
+                        loadingSpinner.style.display = 'none';
+                        matchPlayerContainer.innerHTML = '<p class="error-message">تعذر تحميل البث. يرجى المحاولة لاحقاً.</p>';
+                    };
+                    matchPlayerContainer.appendChild(iframe);
+
+                    const adBannerContainer = targetSectionClone.querySelector('#ad-banner-iframe-sync');
+                    if (adBannerContainer && !adBannerContainer.hasChildNodes()) {
+                        window.atOptions = {
+                            'key' : 'd0f597100460382f12621237f055f943',
+                            'format' : 'iframe',
+                            'height' : 50,
+                            'width' : 320,
+                            'params' : {}
+                        };
+
+                        const externalAdScript = document.createElement('script');
+                        externalAdScript.type = 'text/javascript';
+                        externalAdScript.src = '//www.highperformanceformat.com/d0f597100460382f12621237f055f943/invoke.js';
+                        externalAdScript.async = true;
+
+                        adBannerContainer.appendChild(externalAdScript);
+                    }
+                };
+
+                if (match.status === 'Finished' && match.score) {
+                    matchDetailsScoreContainer.classList.remove('hidden');
+                    matchDetailsScore.textContent = match.score;
+                } else {
+                    matchDetailsScoreContainer.classList.add('hidden');
+                }
+
+                if (match.status === 'Finished' && match.highlights_url) {
+                    matchDetailsHighlightsContainer.classList.remove('hidden');
+                    matchDetailsHighlightsLink.href = match.highlights_url;
+                } else {
+                    matchDetailsHighlightsContainer.classList.add('hidden');
+                }
+
+                const suggestedMatches = DATA.filter(item =>
+                    item.type === 'match' &&
+                    item.id !== match.id &&
+                    (item.league_id === match.league_id || item.category === match.category) &&
+                    (item.status === 'Upcoming' || item.status === 'Live')
+                ).slice(0, 4);
+
+                renderGrid(suggestedMatches, suggestedMatchGrid, createMatchCard, 1);
+
+                pageTitle = `${match.title} | شاهد كورة بث مباشر وتفاصيل المباراة`;
+                pageDescription = match.short_description;
+                pageKeywords = [...(match.tags || []), "مشاهدة مباراة", "بث مباشر", "ملخص المباراة", match.home_team, match.away_team, match.league_name].join(', ');
+                pageUrl = `${window.location.origin}/#match-${match.id}`;
+                ogImage = match.thumbnail;
+                ogImageAlt = `ملصق مباراة ${match.title}`;
+                jsonLdData = match;
+
+            } else {
+                console.warn(`Match with ID ${dataId} not found. Redirecting to home.`);
+                switchView('home');
+                window.history.pushState({ view: 'home' }, '', '#home');
+                return;
+            }
+        } else if (viewName === 'search-results') {
+            const template = document.getElementById('home-view-template'); // Re-using home template for search results
+            if (!template) { console.error("ERROR: The 'home-view-template' template for search results was not found."); contentDisplay.innerHTML = '<p class="error-message">عذراً، قالب البحث غير موجود.</p>'; return; }
+            targetSectionClone = document.importNode(template.content, true).firstElementChild;
+            if (!targetSectionClone) { console.error("ERROR: Cloned content of 'home-view-template' for search results is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب البحث فارغ.</p>'; return; }
+
+            // Clear all current children of contentDisplay except heroSection (if it exists)
+            Array.from(contentDisplay.children).forEach(child => {
+                if (child.id !== 'hero-section') {
+                    child.remove();
+                }
+            });
+            contentDisplay.appendChild(targetSectionClone);
+            targetSectionClone.style.display = 'block';
+            targetSectionClone.classList.add('active-view');
+
+            const mainGridContainer = targetSectionClone.querySelector('#main-match-grid');
+            const homePaginationControls = targetSectionClone.querySelector('.pagination-controls');
+            const searchTitleElement = targetSectionClone.querySelector('#home-matches-title');
+
+            searchTitleElement.textContent = `نتائج البحث عن: "${currentSearchQuery}"`;
+
+            const query = currentSearchQuery.toLowerCase();
+            const searchResults = DATA.filter(item => {
+                const searchableText = `${item.title} ${item.short_description} ${item.league_name} ${item.home_team || ''} ${item.away_team || ''} ${item.commentators ? item.commentators.join(' ') : ''} ${item.tags ? item.tags.join(' ') : ''}`.toLowerCase();
+                return searchableText.includes(query);
+            });
+
+            renderGrid(searchResults, mainGridContainer, (item) => {
+                if (item.type === 'match') return createMatchCard(item);
+                if (item.type === 'news') return createNewsCard(item);
+                return null; // Ensure something is returned
+            }, currentPage.search, null, homePaginationControls);
+
+            pageTitle = `نتائج البحث عن "${currentSearchQuery}" | شاهد كورة`;
+            pageDescription = `نتائج البحث عن "${currentSearchQuery}" في مباريات كرة القدم وآخر الأخبار على شاهد كورة.`;
+            pageKeywords = `بحث كرة قدم، ${currentSearchQuery}, نتائج بحث، مباريات، أخبار`;
+            pageUrl = `${window.location.origin}/search?q=${encodeURIComponent(currentSearchQuery)}`;
+            jsonLdData = { "@type": "SearchResultsPage", "name": pageTitle, "url": pageUrl };
+        }
+
+        updateSEO(pageTitle, pageDescription, pageKeywords, pageUrl, ogImage, ogImageAlt);
+        generateJsonLdSchema(jsonLdData, viewName);
+    };
+
+
+    // ======== Event Listeners ========
+
+    // Delegated event listener for general clicks on the body
+    document.body.addEventListener('click', (e) => {
+        const navLink = e.target.closest('.nav-link');
+        const watchNow = e.target.closest('#watch-now-btn');
+        const homeLogo = e.target.closest('#home-logo-link');
+        // Removed backToHomeBtn check from here, as it's now handled within the match-details template's event listener
+
+        if (navLink) {
+            e.preventDefault();
+            const targetView = navLink.dataset.targetView;
+            switchView(targetView);
+            // Update URL based on view for better direct linking/SEO
+            window.history.pushState({ view: targetView }, '', `#${targetView}`);
+        } else if (watchNow) {
+            e.preventDefault();
+            switchView('live');
+            window.history.pushState({ view: 'live' }, '', '#live');
+        } else if (homeLogo) {
+            e.preventDefault();
+            switchView('home');
+            window.history.pushState({ view: 'home' }, '', '#home');
+        }
+
+        const itemCardBtn = e.target.closest('.match-details-btn .btn');
+        if (itemCardBtn) {
+            e.preventDefault();
+            const itemId = itemCardBtn.dataset.matchId || itemCardBtn.dataset.newsId;
+            const itemType = itemCardBtn.dataset.type;
+
+            if (itemType === 'match' && itemId) {
+                switchView('match-details', itemId);
+                window.history.pushState({ view: 'match-details', id: itemId }, '', `#match-${itemId}`);
+            }
+            // Add handler for news cards if they also link to details page (though current news card links externally)
+            // else if (itemType === 'news' && itemId) {
+            //     // You would need a 'news-details' template and view logic for this
+            //     console.log('News card clicked, but no news-details view is implemented for internal linking yet.');
+            //     // switchView('news-details', itemId);
+            //     // window.history.pushState({ view: 'news-details', id: itemId }, '', `#news-${itemId}`);
+            // }
+        }
+
+        // Toggle mobile menu
+        if (e.target.closest('#menu-toggle')) {
+            mainNav.classList.toggle('active');
+            menuToggle.classList.toggle('active');
+        } else if (!mainNav.contains(e.target) && !menuToggle.contains(e.target) && mainNav.classList.contains('active')) {
+            mainNav.classList.remove('active');
+            menuToggle.classList.remove('active');
         }
     });
 
-    fetchMatchesData(); // Initial data fetch
+    // Delegated event listener for pagination buttons within contentDisplay
+    contentDisplay.addEventListener('click', (e) => {
+        const prevBtn = e.target.closest('.btn-page.prev');
+        const nextBtn = e.target.closest('.btn-page.next');
+
+        if (prevBtn || nextBtn) {
+            e.preventDefault();
+            const viewKey = currentView === 'search-results' ? 'search' : currentView;
+            if (prevBtn) {
+                currentPage[viewKey] = Math.max(1, currentPage[viewKey] - 1);
+            } else if (nextBtn) {
+                // To calculate max page accurately, you'd need the total filtered items for the current view
+                // For simplicity, we'll just increment and let renderGrid disable 'next' button if no more items
+                currentPage[viewKey]++;
+            }
+            switchView(currentView, null); // Re-render the current view with updated page
+        }
+    });
+
+
+    searchButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        performSearch();
+    });
+
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            performSearch();
+        }
+    });
+
+    function performSearch() {
+        const query = searchInput.value.trim();
+        if (query) {
+            currentSearchQuery = query;
+            currentPage.search = 1;
+            switchView('search-results');
+            // Update URL for search results
+            window.history.pushState({ view: 'search-results', query: query }, '', `/search?q=${encodeURIComponent(query)}`);
+        } else if (currentView === 'search-results') {
+            // If search input is cleared and currently on search results, go to home
+            switchView('home');
+            window.history.pushState({ view: 'home' }, '', '/');
+        }
+    }
+
+    // Handle browser back/forward buttons
+    window.addEventListener('popstate', (event) => {
+        const hash = window.location.hash.substring(1);
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchQuery = urlParams.get('q');
+
+        if (hash.startsWith('match-')) {
+            const matchId = hash.split('-')[1];
+            switchView('match-details', matchId);
+        } else if (['home', 'live', 'upcoming', 'highlights', 'news'].includes(hash)) {
+            switchView(hash);
+        } else if (searchQuery) {
+            searchInput.value = searchQuery; // Populate search input if returning to search results via history
+            currentSearchQuery = searchQuery;
+            switchView('search-results');
+        } else {
+            // Default to home if no specific hash or search query
+            switchView('home');
+        }
+    });
+
+
+    // ======== Initialization ========
+
+    const fetchData = async () => {
+        try {
+            const response = await fetch(API_URL);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            DATA = await response.json();
+            console.log('Data loaded successfully:', DATA);
+
+            // Initial view based on URL hash or search query
+            const hash = window.location.hash.substring(1);
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('q');
+
+            if (hash.startsWith('match-')) {
+                const matchId = hash.split('-')[1];
+                switchView('match-details', matchId);
+            } else if (['live', 'upcoming', 'highlights', 'news'].includes(hash)) {
+                switchView(hash);
+            } else if (searchQuery) {
+                searchInput.value = searchQuery;
+                currentSearchQuery = searchQuery;
+                switchView('search-results');
+            } else {
+                switchView('home');
+            }
+
+        } catch (error) {
+            console.error('Failed to load data:', error);
+            contentDisplay.innerHTML = '<p class="error-message">عذراً، تعذر تحميل البيانات. يرجى المحاولة مرة أخرى لاحقاً.</p>';
+        }
+    };
+
+    fetchData();
 });
