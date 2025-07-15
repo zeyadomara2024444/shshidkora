@@ -188,24 +188,6 @@ a:hover {
     box-shadow: var(--up-glow-blue);
 }
 
-.btn-tertiary { /* Added for news card button */
-    background: var(--up-bg-light);
-    color: var(--up-accent-blue);
-    border: 1px solid var(--up-accent-blue);
-    padding: 0.5rem 1.2rem;
-    font-size: clamp(0.75rem, 0.85vw, 0.9rem);
-    box-shadow: var(--up-shadow-soft);
-}
-
-.btn-tertiary:hover {
-    background: var(--up-accent-blue);
-    color: var(--up-bg-dark);
-    border-color: var(--up-accent-green);
-    transform: translateY(-1px) scale(1.005);
-    box-shadow: var(--up-glow-blue);
-}
-
-
 /* Shimmer effect for all buttons on hover */
 .btn::before {
     content: '';
@@ -223,15 +205,8 @@ a:hover {
 }
 
 .btn i {
-    margin-right: 0.4rem; /* For RTL, this should be margin-left */
-    margin-left: 0; /* Ensuring default is 0 for LTR, and will be overridden by RTL below */
+    margin-right: 0.4rem;
 }
-/* RTL specific adjustment for icons in buttons */
-html[dir="rtl"] .btn i {
-    margin-right: 0;
-    margin-left: 0.4rem;
-}
-
 
 /* --- Header (Navbar) --- */
 .main-header {
@@ -275,8 +250,8 @@ html[dir="rtl"] .btn i {
 .site-logo .logo-icon {
     font-size: 0.65em;
     color: var(--up-accent-green);
-    margin-left: 0.1em; /* For RTL */
-    margin-right: 0; /* For LTR */
+    margin-left: 0.1em;
+    margin-right: 0;
     vertical-align: middle;
     line-height: 1;
 }
@@ -330,7 +305,7 @@ html[dir="rtl"] .btn i {
 }
 .main-nav ul li a:hover::before, .main-nav ul li a.active::before {
     width: 100%;
-    left: 0; /* Changed from right 0 for RTL consistency */
+    left: 0;
 }
 .main-nav ul li a:hover, .main-nav ul li a.active {
     background: var(--up-accent-blue);
@@ -363,7 +338,7 @@ html[dir="rtl"] .btn i {
     border: none;
     background: transparent;
     color: var(--up-text-primary);
-    margin-right: 0.5rem; /* For RTL */
+    margin-right: 0.5rem;
     outline: none;
     width: clamp(140px, 12vw, 200px);
     font-family: var(--font-body);
@@ -395,7 +370,7 @@ html[dir="rtl"] .btn i {
 
 /* Mobile menu toggle (الثلاث شرط) */
 .menu-toggle {
-    display: none; /* Default hidden on desktop */
+    display: none;
     font-size: 1.8rem;
     padding: 0.3rem 0.6rem;
     color: var(--up-accent-green);
@@ -404,79 +379,24 @@ html[dir="rtl"] .btn i {
     box-shadow: var(--up-shadow-soft);
     cursor: pointer;
     flex-shrink: 0;
-    order: 0; /* Changed order for mobile */
-    margin-right: auto; /* Push to the left in RTL */
-    margin-left: 0; /* Default LTR */
-    background: var(--up-bg-medium);
-    backdrop-filter: blur(6px);
+    order: 0;
+    margin-right: auto;
 }
-
-
-/* --- Hero Section (Top Banner) --- */
-.hero-section {
-    padding: 8vw 0 5vw 0; /* Adjusted padding */
-    text-align: center;
-    background: url('/images/hero-ultimate-pitch-bg.webp') no-repeat center center/cover; /* Ensure path is correct */
-    position: relative;
-    overflow: hidden;
-    z-index: 1; /* Above pitch texture */
-    animation: fadeIn 0.8s ease-out; /* Add fade in for hero section itself */
-    display: block; /* Default to visible, JS will toggle */
-    /* Add a subtle overlay to improve text readability */
-    box-shadow: var(--up-shadow-strong);
-}
-
-.hero-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to top, rgba(10,17,31,0.95) 0%, rgba(10,17,31,0.6) 50%, rgba(10,17,31,0.95) 100%);
-    z-index: 1;
-}
-.hero-section .hero-content {
-    position: relative;
-    z-index: 2; /* Above the overlay */
-}
-.hero-section h1 {
-    font-family: var(--font-heading);
-    font-size: clamp(2.8rem, 4.5vw, 3.8rem);
-    color: var(--up-accent-green);
-    margin-bottom: 0.8rem;
-    text-shadow: 0 0 15px rgba(60, 224, 144, 0.7), 0 0 30px rgba(0, 207, 255, 0.4);
-    line-height: 1.2;
-    font-weight: 800;
-}
-.hero-section p {
-    font-size: clamp(1rem, 1.3vw, 1.15rem);
-    color: var(--up-text-primary);
-    max-width: 800px;
-    margin: 0 auto 2.5rem auto;
-    line-height: 1.6;
-    opacity: 0.9;
-    text-shadow: 0 0 5px rgba(0,0,0,0.7);
-}
-/* Removed styles for #watch-now-btn as it's removed from HTML */
 
 
 /* --- Main Content Display Area --- */
 .view-section {
     padding: 5vw 0;
-    background-color: var(--up-bg-dark); /* Ensure background for seamless transition */
+    background-color: var(--up-bg-dark);
     min-height: 50vh;
     opacity: 0;
     transform: translateY(10px);
     transition: opacity var(--transition-medium), transform var(--transition-medium);
     position: relative;
-    z-index: 1;
-    display: none; /* Hide by default, JS will manage active-view */
 }
 .view-section.active-view {
     opacity: 1;
     transform: translateY(0);
-    display: block; /* Show active view */
 }
 
 /* Subtle background pattern for content sections */
@@ -577,18 +497,13 @@ html[dir="rtl"] .btn i {
     appearance: none;
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23BCC8D6'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
     background-repeat: no-repeat;
-    background-position: left 0.8rem center; /* For RTL */
+    background-position: left 0.8rem center;
     background-size: 0.9em;
-    padding-left: 2rem; /* Adjust padding for icon */
+    padding-left: 2rem;
     transition: all var(--transition-fast);
     box-shadow: var(--up-inset-shadow);
     backdrop-filter: blur(6px);
     flex-shrink: 0;
-}
-html[dir="rtl"] .filter-dropdown {
-    background-position: right 0.8rem center; /* For RTL */
-    padding-right: 2rem;
-    padding-left: 1.4rem; /* Revert left padding if needed */
 }
 .filter-dropdown:hover, .filter-dropdown:focus {
     border-color: var(--up-accent-green);
@@ -653,10 +568,11 @@ html[dir="rtl"] .filter-dropdown {
     z-index: 10;
 }
 
-/* Card image */
+/* Card image - ADJUSTED */
 .match-card img {
     width: 100%;
-    height: clamp(180px, 18vw, 250px);
+    /* تم تعديل ارتفاع الصورة لكي تتناسب مع أحجام الشاشات المختلفة */
+    height: clamp(180px, 18vw, 250px); /* للدسكتوب والأجهزة اللوحية الكبيرة */
     object-fit: cover;
     background-color: var(--up-bg-medium);
     display: block;
@@ -670,7 +586,7 @@ html[dir="rtl"] .filter-dropdown {
 }
 
 /* Card content area */
-.match-card .match-card-content { /* This class is not in the original HTML for match cards, but news cards have it */
+.match-card .match-card-content {
     padding: 0.8rem;
     display: flex;
     flex-direction: column;
@@ -685,118 +601,134 @@ html[dir="rtl"] .filter-dropdown {
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Specific elements inside match-card (as per your HTML structure) */
-.match-card .match-header {
+/* --- Team Logos & Names Adjustments --- */
+.match-card .teams-logos {
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    padding: 0.8rem 1.1rem;
-    font-size: clamp(0.75rem, 0.85vw, 0.9rem);
-    color: var(--up-text-secondary);
-    background-color: var(--up-bg-light);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: var(--border-radius-card) var(--border-radius-card) 0 0;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.match-card .match-teams {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.8rem;
-    padding: 1rem 0.8rem;
-    flex-grow: 1; /* Allow to grow in height */
-}
-
-.match-card .team {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex: 1;
-    min-width: 0; /* Allow text-overflow */
-}
-
-.match-card .team img {
-    width: 48px; /* Fixed size */
-    height: 48px; /* Fixed size */
-    object-fit: contain;
-    margin-bottom: 0.4rem;
-    border-radius: 50%;
-    background-color: rgba(255,255,255,0.02);
-    padding: 2px;
-    box-shadow: inset 0 0 3px rgba(0,0,0,0.2);
-}
-.match-card .team span {
+    gap: 0.3rem;
     font-family: var(--font-body);
     font-size: clamp(0.9rem, 1vw, 1rem);
     font-weight: 700;
     color: var(--up-text-primary);
+    text-shadow: 0 0 4px rgba(0,0,0,0.7);
+    flex-wrap: nowrap;
+    width: 100%;
+    position: relative;
+    padding: 0 0.2rem;
+    box-sizing: border-box;
+}
+
+.match-card .teams-logos .vs-text {
+    order: 0;
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-family: var(--font-heading);
+    font-size: clamp(1.1rem, 1.3vw, 1.5rem);
+    color: var(--up-accent-red);
+    font-weight: 800;
+    margin: 0 0.2rem;
+    text-shadow: 0 0 3px rgba(255, 59, 59, 0.6);
+    text-align: center;
+    line-height: 1;
+}
+
+.match-card .teams-logos > div {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    flex-shrink: 1;
+    gap: 0.2rem;
+    min-width: 0;
+}
+
+.match-card .teams-logos > div:first-of-type {
+    justify-content: flex-end;
+    text-align: right;
+}
+
+.match-card .teams-logos > div:nth-of-type(2) {
+    justify-content: flex-start;
+    text-align: left;
+}
+
+.match-card .teams-logos span {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    width: 100%;
-    text-align: center;
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
 }
 
-.match-card .vs {
-    font-family: var(--font-heading);
-    font-size: 1.5rem; /* Increased size */
-    font-weight: 800;
-    color: var(--up-accent-red);
+.match-card .team-logo {
+    width: clamp(40px, 4vw, 55px);
+    height: clamp(40px, 4vw, 55px);
+    object-fit: contain;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.1);
+    background-color: rgba(255,255,255,0.02);
+    box-shadow: inset 0 0 3px rgba(0,0,0,0.2);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    padding: 2px;
     flex-shrink: 0;
-    line-height: 1;
+    margin: 0;
 }
-.match-card .vs span { /* For score */
-    font-size: 1.3em; /* Make score bigger than 'vs' */
-    color: var(--up-accent-green);
+
+/* Hover effect for team logo */
+.match-card .team-logo:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 8px var(--up-accent-green), inset 0 0 5px rgba(0,0,0,0.3);
+}
+
+.match-card h3 {
+    font-family: var(--font-heading);
+    font-size: clamp(1rem, 1.1vw, 1.2rem);
+    color: var(--up-text-primary);
+    margin: 0;
+    font-weight: 800;
+    line-height: 1.2;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+    width: 100%;
+    max-width: 95%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .match-card .match-league {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1.1rem;
+    font-family: var(--font-body);
     font-size: clamp(0.75rem, 0.85vw, 0.85rem);
     color: var(--up-text-secondary);
-    background-color: var(--up-bg-light);
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-.match-card .match-league img {
-    width: 32px;
-    height: 32px;
-    object-fit: contain;
-    margin-bottom: 0; /* Reset img margin from team */
+    margin-top: 0.2rem;
 }
 
-.match-card .match-channels {
-    padding: 0.6rem 1.1rem;
-    font-size: clamp(0.7rem, 0.8vw, 0.8rem);
-    color: var(--up-text-secondary);
-    text-align: center;
-    background-color: var(--up-bg-medium);
-}
-.match-card .match-channels span {
-    display: block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.match-card .match-score {
+    font-family: var(--font-heading);
+    font-size: clamp(1.4rem, 1.8vw, 1.7rem);
+    font-weight: 900;
+    color: var(--up-accent-green);
+    text-shadow: 0 0 12px rgba(60, 224, 144, 0.8), 0 0 25px rgba(60, 224, 144, 0.5);
+    margin-top: 0.4rem;
 }
 
-
-.match-card .match-status { /* No longer directly on card, but on span inside header */
+.match-card .match-status {
     font-family: var(--font-body);
     font-size: clamp(0.75rem, 0.85vw, 0.85rem);
     font-weight: 700;
     padding: 0.4rem 0.8rem;
     border-radius: var(--border-radius-button);
+    margin-top: 0.4rem;
     text-transform: uppercase;
     letter-spacing: 0.2px;
     background-color: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.12);
     box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
-    flex-shrink: 0;
 }
 
 .match-card .live-status {
@@ -815,17 +747,6 @@ html[dir="rtl"] .filter-dropdown {
     color: var(--up-text-secondary);
     box-shadow: 0 0 6px rgba(0,0,0,0.4);
 }
-
-.match-card .match-details-btn {
-    padding: 0.8rem 1.1rem;
-    background-color: var(--up-bg-dark);
-    border-radius: 0 0 var(--border-radius-card) var(--border-radius-card);
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
 
 /* --- News Card (used for highlights as well) --- */
 .news-card {
@@ -867,7 +788,7 @@ html[dir="rtl"] .filter-dropdown {
     flex-grow: 1;
     gap: 0.5rem;
 }
-.news-card h3 { /* Changed from h4 to h3 to match JS createNewsCard */
+.news-card h4 {
     font-family: var(--font-heading);
     font-size: clamp(0.95rem, 1vw, 1.15rem);
     font-weight: 700;
@@ -898,12 +819,8 @@ html[dir="rtl"] .filter-dropdown {
     font-size: 0.75rem;
     color: var(--up-text-muted);
     opacity: 0.9;
-    text-align: right; /* Adjusted for RTL */
+    text-align: left;
 }
-html[dir="rtl"] .news-card .news-date {
-    text-align: right; /* Ensure it's right-aligned */
-}
-
 
 /* --- Pagination Controls --- */
 .pagination-controls {
@@ -946,20 +863,6 @@ html[dir="rtl"] .news-card .news-date {
     border-color: rgba(0, 207, 255, 0.05);
     box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
 }
-/* Pagination icons */
-.pagination-controls .btn-page.prev i {
-    margin-left: 0.4rem; /* For RTL */
-    margin-right: 0;
-    transform: rotate(180deg);
-}
-.pagination-controls .btn-page.next i {
-    margin-right: 0.4rem; /* For RTL */
-    margin-left: 0;
-    transform: rotate(180deg); /* Mirror for RTL */
-}
-html[dir="rtl"] .pagination-controls .btn-page.next i {
-    transform: rotate(0deg); /* Reset rotation for RTL */
-}
 
 
 /* --- Match Details Section --- */
@@ -979,12 +882,12 @@ html[dir="rtl"] .pagination-controls .btn-page.next i {
     padding: 0.7rem 1.6rem;
 }
 .match-details-section .back-btn i {
-    margin-left: 0.4rem; /* For RTL */
+    margin-left: 0.4rem;
     margin-right: 0;
-    transform: rotate(180deg); /* Keep arrow pointing left for "back" */
+    transform: rotate(180deg);
 }
 
-/* Video Player Wrapper (holds the iframe) */
+/* Video Player Wrapper (holds the iframe) - ADJUSTED ASPECT RATIO */
 .video-player-wrapper {
     position: relative;
     width: 100%;
@@ -1005,97 +908,64 @@ html[dir="rtl"] .pagination-controls .btn-page.next i {
 }
 
 /* Style for the embedded iframe player */
-.video-player-container {
+.match-iframe-player {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden; /* Important for iframe contents */
-    background-color: #000; /* Fallback for black background before load */
-    display: flex; /* To center spinner */
-    justify-content: center;
-    align-items: center;
-}
-
-.video-player-container iframe {
-    width: 100%;
-    height: 100%;
     border: none;
     display: block;
-    background-color: #000; /* Ensures black background for iframe */
+    background-color: #000;
 }
 
-/* Video overlay for pre-play ad interaction */
+/* Video overlay for pre-play ad interaction - Make it fully transparent and cover everything */
 .video-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7); /* Dark overlay, can be adjusted for transparency */
-    opacity: 1;
-    display: flex; /* Center its content */
-    flex-direction: column;
+    background-color: rgba(0, 0, 0, 0) !important; /* تم جعلها شفافة بالكامل وإجباري */
+    opacity: 1; /* تأكد أنها مرئية لكي تلتقط النقرات */
+    display: flex; /* لضمان تغطية كاملة ومنطقية */
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    z-index: 50; /* Ensure it's above the iframe */
-    transition: background-color 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 50; /* تأكد أنها فوق الـ iframe */
+    visibility: visible;
+    transition: none; /* مهم جدًا لعدم وجود أي تأثيرات بصرية */
 }
-.video-overlay.is-playing { /* New class for when video starts */
+.video-overlay.hidden {
     opacity: 0;
-    visibility: hidden;
-    pointer-events: none; /* Disable clicks when hidden */
+    pointer-events: none; /* تعطيل النقرات عندما تكون مخفية */
 }
 
-.overlay-thumbnail {
-    max-width: 90%;
-    max-height: 80%;
-    object-fit: contain;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-    margin-bottom: 15px; /* Space between thumb and text */
+/* إخفاء أي نص أو محتوى داخلي في الطبقة الشفافة */
+.video-overlay .video-play-text { /* تم استهداف فئة النص داخل الطبقة الشفافة */
+    display: none !important; /* إخفاء النص لضمان شفافية الطبقة تمامًا */
 }
-
-.video-play-text {
-    color: #fff;
-    font-size: 1.5rem;
-    font-weight: bold;
-    text-shadow: 0 0 8px rgba(0,0,0,0.8);
-    background-color: rgba(0,0,0,0.5); /* Background for text to improve readability */
-    padding: 0.5rem 1rem;
-    border-radius: 5px;
+.loading-spinner { /* هذه الفئة موجودة في HTML الذي أرسلته */
+    display: none !important; /* إزالة الـ spinner أيضاً إذا كان جزءاً من الطبقة الشفافة */
 }
-
-/* Loading Spinner Styles */
+/* إذا كان الـ spinner لديه ID #video-loading-spinner، تأكد من إخفائه أيضًا */
 #video-loading-spinner {
-    border: 5px solid #f3f3f3; /* Light grey */
-    border-top: 5px solid var(--up-accent-blue); /* Blue */
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    animation: spin 1s linear infinite;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 51; /* Above overlay */
-    display: none; /* Hidden by default */
+    display: none !important;
 }
 
 
-/* Match Info Box - Hidden as requested */
+/* NEW: Hide Match Info Box (Description Section) */
 .match-info-box {
-    display: none !important; /* Hides the entire info section */
+    display: none !important; /* إخفاء هذا القسم بالكامل كما طلبت */
 }
 
 
 /* Ad Banner Center (under video) */
 .ad-banner-center {
-    text-align: center;
-    margin-top: 20px;
-    margin-bottom: 20px;
+    /* تم إزالة display: none !important; للسماح بظهور هذا القسم */
+    text-align: center; /* لتوسيط البانر */
+    margin-top: 20px; /* مسافة أعلى البانر */
+    margin-bottom: 20px; /* مسافة أسفل البانر */
     position: relative;
     z-index: 1;
 }
@@ -1271,15 +1141,9 @@ html[dir="rtl"] .pagination-controls .btn-page.next i {
         padding: 0.5rem 1.1rem;
     }
     .menu-toggle {
-        display: none !important; /* Still hidden on this breakpoint by original code */
-        /* To make it visible, change to `display: block;` or `flex` */
-    }
-
-    .hero-section h1 {
-        font-size: clamp(2.4rem, 5vw, 3rem);
-    }
-    .hero-section p {
-        font-size: clamp(0.9rem, 1.5vw, 1.05rem);
+        display: none !important;
+        font-size: 1.6rem;
+        padding: 0.25rem 0.5rem;
     }
 
     .view-section {
@@ -1314,7 +1178,7 @@ html[dir="rtl"] .pagination-controls .btn-page.next i {
 
     /* Match Card Image Adjustment for Tablet */
     .match-card img {
-        height: clamp(150px, 25vw, 220px);
+        height: clamp(150px, 25vw, 220px); /* تم ضبط الارتفاع ليتناسب مع أحجام التابلت */
         object-fit: cover;
         background-color: var(--up-bg-medium);
     }
@@ -1346,9 +1210,9 @@ html[dir="rtl"] .pagination-controls .btn-page.next i {
     .match-card .teams-logos > div {
         min-width: 0;
     }
-    .match-card .team img { /* Fixed size for team logos */
-        width: 40px;
-        height: 40px;
+    .match-card .team-logo {
+        width: clamp(35px, 4.5vw, 50px);
+        height: clamp(35px, 4.5vw, 50px);
     }
 
     .match-card .match-score {
@@ -1368,7 +1232,7 @@ html[dir="rtl"] .pagination-controls .btn-page.next i {
         padding: 0.8rem 1rem;
         gap: 0.4rem;
     }
-    .news-card h3 { /* Changed to h3 here as well */
+    .news-card h4 {
         font-size: clamp(0.85rem, 1.5vw, 1.05rem);
     }
     .news-card p {
@@ -1400,6 +1264,8 @@ html[dir="rtl"] .pagination-controls .btn-page.next i {
         max-width: 800px;
         padding-bottom: 56.25%; /* Keep 16:9 for tablets */
     }
+    /* .ad-banner-center specific styles here, not hidden */
+
     .suggested-matches-section {
         margin-top: 3.5vw;
         padding-top: 3.5vw;
@@ -1423,150 +1289,127 @@ html[dir="rtl"] .pagination-controls .btn-page.next i {
 
 /* Smaller Mobile Devices (max-width: 480px) */
 @media (max-width: 480px) {
-    /* Resetting !important for better control and re-introducing only where necessary */
-    * { box-sizing: border-box; } /* No !important here */
+    * {
+        box-sizing: border-box !important;
+    }
 
     html {
-        font-size: 12px; /* Base font size, no !important */
-        width: 100vw;
-        overflow-x: hidden;
-        margin: 0;
-        padding: 0;
+        font-size: 12px !important;
+        width: 100vw !important;
+        overflow-x: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     body {
         line-height: 1.5;
-        overflow-x: hidden;
-        width: 100vw;
-        margin: 0;
-        padding: 0;
+        overflow-x: hidden !important;
+        width: 100vw !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
     img {
-        max-width: 100%;
-        height: auto;
-        display: block;
+        max-width: 100% !important;
+        height: auto !important;
+        display: block !important;
     }
     i {
-        max-width: 100%;
-        height: auto;
-        display: inline-block;
+        max-width: 100% !important;
+        height: auto !important;
+        display: inline-block !important;
     }
 
     .container {
-        width: 100%;
-        padding: 0 0.6rem;
-        max-width: 100vw;
-        margin: auto;
+        width: 100% !important;
+        padding: 0 0.6rem !important;
+        max-width: 100vw !important;
+        margin: auto !important;
     }
 
     .main-header {
         padding: 0.4rem 0;
     }
     .main-header .header-content {
-        padding: 0 0.6rem;
+        padding: 0 0.6rem !important;
         flex-wrap: wrap;
         justify-content: space-between;
         gap: 0.6rem;
-        /* max-width: 100% !important; removed as container handles it */
+        max-width: 100% !important;
     }
 
-    /* Show menu toggle on mobile */
     .menu-toggle {
-        display: block; /* Make it visible on small screens */
-        order: 0; /* Keep it at the start */
-        margin-right: auto; /* Push it to the right for RTL layout */
-        margin-left: 0; /* Ensure no left margin for LTR consistency */
+        display: none !important;
     }
 
     .site-logo {
-        order: 1; /* After menu toggle */
-        margin-left: auto; /* Push to the right to fill space */
+        order: 0 !important;
+        margin-left: auto;
         margin-right: 0.4rem;
-        font-size: clamp(1.4rem, 4.5vw, 1.8rem);
+        font-size: clamp(1.4rem, 4.5vw, 1.8rem) !important;
     }
     .site-logo .logo-icon {
         font-size: 0.55em;
     }
     .telegram-btn {
-        display: none; /* If there was a direct telegram button, hide it */
+        display: none !important;
     }
 
     .main-nav {
-        /* This entire block needs to be carefully managed for mobile menu */
-        /* By default it is flex-grow: 1, display: flex, justify-content: center. */
-        /* For mobile, it should be a vertical menu that slides out */
-        position: fixed; /* Or absolute */
-        top: 60px; /* Under header */
-        right: -300px; /* Hidden off-screen (for RTL) */
-        width: 250px;
-        height: calc(100vh - 60px);
-        background: var(--up-bg-medium);
-        box-shadow: var(--up-shadow-medium);
-        flex-direction: column;
+        display: flex !important;
+        flex-basis: auto !important;
+        order: 1 !important;
+        flex-grow: 1;
         justify-content: flex-start;
-        align-items: flex-start;
-        padding: 1.5rem 1rem;
-        transition: right 0.3s ease-out; /* Slide in from right */
-        z-index: 99; /* Below header, above content */
-        overflow-y: auto; /* Allow scrolling for many menu items */
-        border-right: 2px solid var(--up-accent-blue); /* For RTL */
-        border-bottom-left-radius: var(--border-radius-card);
-    }
-    html[dir="rtl"] .main-nav { /* Explicitly for RTL */
-        right: -300px; /* Start hidden on the right */
-        left: auto; /* Ensure no left positioning interferes */
-    }
-
-    .main-nav.active {
-        right: 0; /* Slide in */
+        align-items: center;
+        padding: 0;
+        margin: 0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+        position: relative;
+        z-index: 10;
     }
 
     .main-nav ul {
-        flex-direction: column;
-        width: 100%;
-        gap: 0.8rem;
-        padding: 0;
-        margin: 0;
-        align-items: flex-start;
+        flex-direction: row !important;
+        justify-content: flex-start !important;
+        width: auto !important;
+        gap: 0.6rem !important;
+        padding: 0 0.4rem !important;
     }
 
     .main-nav ul li {
-        width: 100%;
-        margin: 0;
+        margin: 0 !important;
+        flex-shrink: 0;
     }
 
     .main-nav ul li a {
-        font-size: clamp(0.7rem, 4vw, 1.1rem); /* Increased for readability */
-        padding: 0.8rem 1rem;
-        width: 100%;
-        text-align: right; /* Ensure text aligns right in RTL menu */
-        justify-content: flex-end; /* Align icon/text to the right */
-    }
-    html[dir="rtl"] .main-nav ul li a {
-        padding-right: 1rem; /* Adjust padding for RTL */
-        padding-left: 0.8rem; /* Adjust padding for RTL */
-    }
-    html[dir="rtl"] .main-nav ul li a i {
-        margin-left: 0.6rem; /* Space after icon in RTL */
-        margin-right: 0;
+        font-size: clamp(0.7rem, 2.5vw, 0.85rem) !important;
+        padding: 0.4rem 0.7rem !important;
+        max-width: none !important;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        height: auto;
+        white-space: nowrap;
     }
 
     .search-bar {
-        order: 2;
+        order: 2 !important;
         display: flex;
-        flex-basis: 100%;
+        flex-basis: 100% !important;
         margin: 0.6rem auto 0.4rem auto;
         padding: 0.3rem 0.6rem;
-        max-width: 95%; /* Adjust max-width on mobile */
+        max-width: 95% !important;
     }
 
     .search-bar input {
-        width: 100%;
-        font-size: clamp(0.7rem, 3vw, 0.85rem);
-        margin-right: 0.2rem;
+        width: 100% !important;
+        font-size: clamp(0.7rem, 3vw, 0.85rem) !important;
+        margin-right: 0.2rem !important;
     }
     .search-bar button {
-        font-size: 1rem;
+        font-size: 1rem !important;
     }
 
 
@@ -1582,9 +1425,9 @@ html[dir="rtl"] .pagination-controls .btn-page.next i {
     .filter-controls {
         gap: 0.4rem;
         margin-bottom: 4vw;
-        padding: 0.4rem 0.8rem;
+        padding: 0.4rem 0.8rem !important;
         flex-direction: column;
-        max-width: 100%;
+        max-width: 100% !important;
     }
     .filter-btn, .filter-dropdown {
         padding: 0.4rem 0.9rem;
@@ -1600,78 +1443,110 @@ html[dir="rtl"] .pagination-controls .btn-page.next i {
     .match-grid {
         grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
         gap: 1.5vw;
-        padding: 0 0.6rem;
+        padding: 0 0.6rem !important;
     }
     .news-grid {
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         gap: 3vw;
-        padding: 0 0.8rem;
+        padding: 0 0.8rem !important;
     }
 
 
     /* Match Card Image Adjustment for Smaller Mobile */
     .match-card img {
-        height: clamp(180px, 50vw, 250px);
-        object-fit: cover;
-        background-color: var(--up-bg-medium);
+        /* تم ضبط الارتفاع لكي يتناسب بشكل أفضل مع شاشات الموبايل الأصغر */
+        height: clamp(180px, 50vw, 250px) !important; /* للحفاظ على نسبة عرض إلى ارتفاع جيدة */
+        object-fit: cover !important;
+        background-color: var(--up-bg-medium) !important;
+        display: block !important;
     }
     .match-card .match-card-content {
         padding: 0.6rem;
         min-height: clamp(60px, 10vw, 80px);
     }
     .match-card h3 {
-        font-size: clamp(0.85rem, 3.5vw, 1.05rem);
-        line-height: 1.3;
-        -webkit-line-clamp: 2;
-        max-width: 98%;
-        margin-left: auto;
+        font-size: clamp(0.85rem, 3.5vw, 1.05rem) !important;
+        line-height: 1.3 !important;
+        -webkit-line-clamp: 2 !important;
+        max-width: 98% !important;
+        margin-left: auto !important;
         -webkit-box-orient: vertical;
         text-overflow: ellipsis;
         overflow: hidden;
-        margin-right: auto;
+        margin-right: auto !important;
     }
 
-    .match-card .match-header {
-        padding: 0.6rem 0.8rem;
-        font-size: clamp(0.7rem, 2.8vw, 0.8rem);
-    }
-    .match-card .match-teams {
-        gap: 0.4rem;
-        padding: 0.8rem 0.6rem;
-    }
-    .match-card .team img {
-        width: 35px; /* Smaller team logos */
-        height: 35px;
-        margin-bottom: 0.2rem;
-    }
-    .match-card .team span {
-        font-size: clamp(0.8rem, 3vw, 0.95rem);
-    }
-    .match-card .vs {
-        font-size: 1.2rem;
-    }
-    .match-card .vs span {
-        font-size: 1.1em;
-    }
-    .match-card .match-league img {
-        width: 28px;
-        height: 28px;
-    }
-    .match-card .match-league {
-        font-size: clamp(0.7rem, 2.8vw, 0.8rem);
-    }
-    .match-card .match-channels {
-        font-size: clamp(0.65rem, 2.5vw, 0.75rem);
-        padding: 0.5rem 0.8rem;
-    }
-    .match-card .match-details-btn {
-        padding: 0.6rem 0.8rem;
-    }
-    .match-card .match-details-btn .btn {
-        font-size: clamp(0.75rem, 3vw, 0.9rem);
-        padding: 0.6rem 1.2rem;
+    .match-card .teams-logos {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        gap: 0.05rem !important;
+        margin-top: 0.1rem !important;
+        margin-bottom: 0.1rem !important;
+        padding: 0 0.1rem !important;
+        box-sizing: border-box;
     }
 
+    .match-card .teams-logos > div {
+        display: flex;
+        align-items: center;
+        flex-grow: 1;
+        flex-shrink: 1;
+        gap: 0.1rem !important;
+        min-width: 0;
+        max-width: none;
+        padding: 0;
+    }
+
+    .match-card .teams-logos > div:first-of-type {
+        justify-content: flex-end;
+    }
+
+    .match-card .teams-logos > div:nth-of-type(2) {
+        justify-content: flex-start;
+    }
+
+    .match-card .teams-logos span {
+        font-size: clamp(0.7rem, 3.5vw, 0.85rem) !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex-grow: 1;
+        flex-shrink: 1;
+        min-width: 0;
+    }
+
+    .match-card .team-logo {
+        width: clamp(20px, 6vw, 30px) !important;
+        height: clamp(20px, 6vw, 30px) !important;
+        flex-shrink: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+    }
+
+    .match-card .teams-logos > div:nth-of-type(2) .team-logo {
+        margin-left: 0 !important;
+        margin-right: 0.05rem !important;
+    }
+    .match-card .teams-logos > div:nth-of-type(2) span {
+        text-align: left !important;
+    }
+
+    .match-card .teams-logos .vs-text {
+        font-size: clamp(0.7rem, 3vw, 1rem) !important;
+        font-weight: 900 !important;
+        color: var(--up-accent-red) !important;
+        margin: 0 0.05rem !important;
+        padding: 0 !important;
+        flex-shrink: 0 !important;
+        line-height: 1;
+        width: auto;
+        text-align: center;
+        order: 0;
+    }
 
     .pagination-controls {
         margin-top: 5vw;
@@ -1693,15 +1568,17 @@ html[dir="rtl"] .pagination-controls .btn-page.next i {
     }
     .video-player-wrapper {
         margin-bottom: 3vw;
-        max-width: 100%;
-        padding-bottom: 80%; /* Increased for a larger mobile player */
-        border-width: 1px;
+        max-width: 100% !important;
+        padding-bottom: 80% !important; /* تم زيادة هذه القيمة لتكبير المشغل */
+        border-width: 1px !important;
     }
+    /* .ad-banner-center specific styles here, not hidden */
+
     /* Suggested Matches Grid for Smaller Mobile - Changed to show 2 posters */
     .suggested-matches-section .match-grid {
-        grid-template-columns: repeat(auto-fit, minmax(45%, 1fr)); /* Adjust to show 2 columns */
-        gap: 2vw; /* Adjust gap */
-        padding: 0 1vw; /* Adjust padding if needed */
+        grid-template-columns: repeat(auto-fit, minmax(45%, 1fr)) !important; /* Adjust to show 2 columns */
+        gap: 2vw !important; /* Adjust gap */
+        padding: 0 1vw !important; /* Adjust padding if needed */
         justify-content: center; /* Center items if less than 2 full columns */
     }
 
@@ -1728,53 +1605,4 @@ html[dir="rtl"] .pagination-controls .btn-page.next i {
         width: 80%;
         max-width: 200px;
     }
-}
-
-/* Adjustments for general RTL layout */
-html[dir="rtl"] {
-    text-align: right;
-}
-html[dir="rtl"] .main-header .header-content {
-    direction: rtl;
-}
-html[dir="rtl"] .search-bar input {
-    margin-right: 0.5rem;
-    margin-left: 0;
-}
-html[dir="rtl"] .site-logo .logo-icon {
-    margin-right: 0.1em;
-    margin-left: 0;
-}
-html[dir="rtl"] .main-nav ul li a::before {
-    transform-origin: left; /* Change origin for RTL hover effect */
-}
-html[dir="rtl"] .main-nav ul li a:hover::before, html[dir="rtl"] .main-nav ul li a.active::before {
-    left: auto;
-    right: 0;
-}
-html[dir="rtl"] .match-card .team:first-of-type {
-    justify-content: flex-start; /* Home team on right for RTL */
-    text-align: left;
-}
-html[dir="rtl"] .match-card .team:last-of-type {
-    justify-content: flex-end; /* Away team on left for RTL */
-    text-align: right;
-}
-html[dir="rtl"] .match-card .team-logo {
-    margin-right: 0;
-    margin-left: 0.2rem;
-}
-html[dir="rtl"] .match-card .team:last-of-type .team-logo {
-    margin-left: 0;
-    margin-right: 0.2rem;
-}
-html[dir="rtl"] .match-card .match-details-btn .btn i {
-    margin-left: 0.4rem; /* Icon on the left of text for RTL buttons */
-    margin-right: 0;
-}
-html[dir="rtl"] .news-card .news-date {
-    text-align: right;
-}
-html[dir="rtl"] .suggested-matches-section .match-grid {
-    /* No specific RTL change needed if grid auto-fill handles it */
 }
