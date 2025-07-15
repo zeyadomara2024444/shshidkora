@@ -1,4 +1,4 @@
-/* style.css - تصميم "شاهد كورة" - Ultimate Pitch UI - الإصدار الاحترافي والعصري (تعديل 3) */
+/* style.css - تصميم "شاهد كورة" - Ultimate Pitch UI - الإصدار الاحترافي والعصري (تعديل 4) */
 
 /* --- Root Variables for Theme Customization (Lighter & Trendy - Red Accent) --- */
 :root {
@@ -136,7 +136,7 @@ body::-webkit-scrollbar-thumb:hover {
 
 .container {
     width: 95vw;
-    max-width: 1280px;
+    max-width: 1280px; /* Kept max-width to allow content to spread */
     margin: auto;
     padding: 0 1rem;
 }
@@ -423,7 +423,7 @@ a:hover {
 
 /* --- Main Content Display Area --- */
 .view-section {
-    padding: 7vw 0;
+    padding: 4vw 0; /* Reduced padding to fit more content */
     background-color: var(--up-bg-light); 
     min-height: 50vh;
     opacity: 0;
@@ -461,7 +461,7 @@ a:hover {
 .section-title {
     font-family: var(--font-heading);
     text-align: center;
-    margin-bottom: 4vw;
+    margin-bottom: 3vw; /* Reduced margin */
     font-size: clamp(1.8rem, 5vw, 2.7rem);
     color: var(--up-accent-primary);
     text-shadow: 0 0 12px rgba(255, 59, 59, 0.3), 0 0 25px rgba(0, 123, 255, 0.15);
@@ -482,7 +482,7 @@ a:hover {
     display: flex;
     justify-content: center;
     gap: 0.6rem;
-    margin-bottom: 4vw;
+    margin-bottom: 3vw; /* Reduced margin */
     flex-wrap: wrap;
     padding: 0.6rem 1rem;
     background: var(--up-bg-medium);
@@ -549,12 +549,13 @@ a:hover {
     transform: translateY(-1px);
 }
 
-/* Grids for content cards */
+/* Grids for content cards - Adjusted for more columns and full width */
 .match-grid, .news-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Adjusted minmax for mobile cards (wider) */
-    gap: 1.5vw;
-    padding: 0 1vw;
+    /* Allow more columns as screen size increases, flexible minmax */
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Min width for cards */
+    gap: 1.2vw; /* Slightly reduced gap */
+    padding: 0 0.5vw; /* Reduced padding on sides of grid */
     position: relative;
     z-index: 1;
 }
@@ -606,10 +607,10 @@ a:hover {
     z-index: 10;
 }
 
-/* Card image (poster) */
+/* Card image (poster) - Reduced height */
 .match-card img {
     width: 100%;
-    height: clamp(180px, 35vw, 250px); /* Increased height for better poster display */
+    height: clamp(120px, 25vw, 180px); /* Reduced height to make cards shorter */
     object-fit: cover;
     background-color: var(--up-bg-dark); /* Darker background for image fallback */
     display: block;
@@ -685,10 +686,10 @@ a:hover {
     flex-shrink: 0;
     white-space: nowrap;
     font-family: var(--font-heading);
-    font-size: clamp(1.8rem, 4.5vw, 2.5rem); /* Significantly larger VS */
+    font-size: clamp(1.6rem, 4vw, 2.2rem); /* Slightly reduced VS size */
     color: var(--up-accent-danger); /* Danger red for VS */
     font-weight: 800;
-    margin: 0 0.5rem; /* Larger margin around VS */
+    margin: 0 0.4rem; /* Reduced margin around VS */
     text-shadow: 0 0 5px rgba(220, 53, 69, 0.6);
     text-align: center;
     line-height: 1;
@@ -725,8 +726,8 @@ a:hover {
 }
 
 .match-card .team img {
-    width: clamp(45px, 6vw, 60px); /* Larger team logos */
-    height: clamp(45px, 6vw, 60px); /* Larger team logos */
+    width: clamp(35px, 5vw, 50px); /* Slightly smaller team logos */
+    height: clamp(35px, 5vw, 50px); /* Slightly smaller team logos */
     object-fit: contain;
     border-radius: 50%;
     border: 1px solid rgba(0,0,0,0.1);
@@ -754,8 +755,8 @@ a:hover {
     margin-top: 0.2rem;
 }
 .match-card .match-league img {
-    width: clamp(28px, 2.5vw, 32px);
-    height: clamp(28px, 2.5vw, 32px);
+    width: clamp(24px, 2.2vw, 28px); /* Slightly smaller league logos */
+    height: clamp(24px, 2.2vw, 28px); /* Slightly smaller league logos */
     object-fit: contain;
     border-radius: 0;
     box-shadow: none;
@@ -766,9 +767,9 @@ a:hover {
 /* Match Status - Centered and 'live' is red */
 .match-card .match-status {
     font-family: var(--font-body);
-    font-size: clamp(0.75rem, 0.85vw, 0.85rem);
+    font-size: clamp(0.7rem, 0.8vw, 0.8rem); /* Slightly smaller status text */
     font-weight: 700;
-    padding: 0.4rem 0.8rem;
+    padding: 0.3rem 0.6rem; /* Reduced padding */
     border-radius: var(--border-radius-button);
     margin-top: 0.4rem;
     text-transform: uppercase;
@@ -823,7 +824,7 @@ a:hover {
 }
 .news-card img {
     width: 100%;
-    height: clamp(100px, 20vw, 150px);
+    height: clamp(80px, 15vw, 120px); /* Reduced height for news images */
     object-fit: cover;
     background-color: var(--up-bg-dark);
     display: block;
@@ -835,20 +836,20 @@ a:hover {
     filter: brightness(1.05) saturate(1.05);
 }
 .news-card .news-card-content {
-    padding: 0.9rem 1.1rem;
+    padding: 0.8rem 1rem; /* Slightly reduced padding */
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    gap: 0.5rem;
+    gap: 0.4rem; /* Reduced gap */
     background-color: var(--up-bg-light);
 }
 .news-card h3 {
     font-family: var(--font-heading);
-    font-size: clamp(0.95rem, 1.2vw, 1.15rem);
+    font-size: clamp(0.9rem, 1.1vw, 1.05rem); /* Slightly smaller heading */
     font-weight: 700;
     line-height: 1.3;
     color: var(--up-text-dark);
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.2rem;
     text-shadow: 0 0 5px rgba(0,0,0,0.05);
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -858,10 +859,10 @@ a:hover {
 }
 .news-card p {
     font-family: var(--font-body);
-    font-size: clamp(0.8rem, 0.85vw, 0.9rem);
+    font-size: clamp(0.75rem, 0.8vw, 0.85rem); /* Slightly smaller paragraph */
     color: var(--up-text-medium);
     line-height: 1.5;
-    margin-bottom: 0.7rem;
+    margin-bottom: 0.6rem;
     flex-grow: 1;
     display: -webkit-box;
     -webkit-line-clamp: 3;
@@ -870,7 +871,7 @@ a:hover {
     text-overflow: ellipsis;
 }
 .news-card .news-date {
-    font-size: 0.75rem;
+    font-size: 0.7rem; /* Slightly smaller date */
     color: var(--up-text-light);
     opacity: 0.9;
     text-align: left;
@@ -1212,28 +1213,28 @@ a:hover {
         font-size: clamp(0.8rem, 3.5vw, 0.9rem);
     }
 
-    /* Cards - wider on mobile */
+    /* Cards - 2 columns on small mobile */
     .match-grid, .news-grid {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Very wide single column */
-        gap: 3vw; /* Increased gap */
-        padding: 0 1rem;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Allow 2 columns on small mobile */
+        gap: 2vw; /* Adjusted gap */
+        padding: 0 0.5rem; /* Adjusted padding */
     }
     .match-card img {
-        height: clamp(180px, 60vw, 300px); /* Make image taller for single column */
+        height: clamp(100px, 40vw, 150px); /* Adjust image height for 2 columns */
     }
     .match-card .match-teams .team img {
-        width: clamp(40px, 12vw, 60px); /* Make team logos larger on small screens */
-        height: clamp(40px, 12vw, 60px);
+        width: clamp(30px, 8vw, 45px); /* Make team logos smaller */
+        height: clamp(30px, 8vw, 45px);
     }
     .match-card .vs {
-        font-size: clamp(2.2rem, 8vw, 3rem); /* Even larger VS for mobile */
-        margin: 0 0.8rem;
+        font-size: clamp(1.8rem, 6vw, 2.5rem); /* Adjusted VS for smaller cards */
+        margin: 0 0.5rem;
     }
     .match-card .team {
-        font-size: clamp(0.9rem, 4vw, 1.2rem);
+        font-size: clamp(0.8rem, 3.5vw, 1rem); /* Adjusted font size */
     }
     .news-card img {
-        height: clamp(120px, 40vw, 200px); /* Adjust news card image height */
+        height: clamp(70px, 25vw, 100px); /* Adjust news card image height */
     }
 }
 
@@ -1306,7 +1307,7 @@ a:hover {
 
     /* Card grids start forming more columns */
     .match-grid, .news-grid {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Example: can be 3 columns on larger mobiles */
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Allow 2-3 columns on medium devices */
         gap: 1.5vw;
         padding: 0 1vw;
     }
@@ -1330,69 +1331,36 @@ a:hover {
         padding: 0 1.5rem;
     }
 
-    /* Cards - 2 columns on desktop, wider */
+    /* Cards - 3 or more columns on desktop, adjusted height */
     .match-grid, .news-grid {
-        grid-template-columns: repeat(2, 1fr); /* Exactly 2 columns */
-        gap: 2vw; /* Increased gap */
-        padding: 0 2vw;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* More columns on desktop */
+        gap: 1.5vw; /* Adjusted gap */
+        padding: 0 1.5vw; /* Adjusted padding */
     }
     .match-card img {
-        height: clamp(200px, 20vw, 300px); /* Larger height for desktop posters */
+        height: clamp(140px, 15vw, 200px); /* Adjusted height for desktop posters */
     }
     .match-card .match-teams .team img {
-        width: clamp(50px, 5vw, 70px); /* Larger team logos on desktop */
-        height: clamp(50px, 5vw, 70px);
+        width: clamp(40px, 4vw, 55px); /* Adjusted team logos on desktop */
+        height: clamp(40px, 4vw, 55px);
     }
     .match-card .vs {
-        font-size: clamp(2.5rem, 3.5vw, 3.5rem); /* Even larger VS */
-        margin: 0 1rem;
+        font-size: clamp(2rem, 3vw, 3rem); /* Adjusted VS */
+        margin: 0 0.8rem;
     }
     .match-card .team span {
-        font-size: clamp(1rem, 1.5vw, 1.2rem);
+        font-size: clamp(0.9rem, 1.2vw, 1.1rem); /* Adjusted team name font size */
     }
-
-    /* Removed hero section media queries as the section is removed */
-    /* #hero-section {
-        padding: 8vw 0;
+    .news-card img {
+        height: clamp(90px, 10vw, 140px); /* Adjusted news card image height */
     }
-    #hero-section h1 {
-        font-size: clamp(3rem, 5vw, 5rem);
-    }
-    #hero-section p {
-        font-size: clamp(1.2rem, 2vw, 1.8rem);
-    } */
 
     /* Other sections */
     .view-section {
-        padding: 4vw 0;
+        padding: 3vw 0; /* Further reduced padding */
     }
     .section-title {
         font-size: clamp(2.5rem, 3.5vw, 3.5rem);
-        margin-bottom: 3vw;
+        margin-bottom: 2.5vw; /* Further reduced margin */
     }
 }
-
-/* Removed image frame for the "ultimate pitch" image in hero section */
-/* #hero-section img.ultimate-pitch-frame {
-    border: 5px solid var(--up-accent-secondary); 
-    border-radius: var(--border-radius-card);
-    box-shadow: var(--up-shadow-medium), var(--up-glow-primary);
-    transition: all var(--transition-medium);
-    margin-bottom: 2rem;
-    max-width: 80%;
-    height: auto;
-    object-fit: cover;
-    animation: frame-glow 3s infinite alternate ease-in-out;
-} */
-
-/* @keyframes frame-glow {
-    0% {
-        box-shadow: var(--up-shadow-medium), 0 0 10px rgba(255, 59, 59, 0.4);
-    }
-    50% {
-        box-shadow: var(--up-shadow-strong), 0 0 25px rgba(255, 59, 59, 0.8);
-    }
-    100% {
-        box-shadow: var(--up-shadow-medium), 0 0 10px rgba(255, 59, 59, 0.4);
-    }
-} */
