@@ -25,7 +25,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const DAY_AFTER_TOMORROW_START = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate() + 2);
 
     // Ad-related variables
-    let popunderTriggered = false; // To ensure popunder triggers only once per session/first interaction
+    // Use an object to track multiple cooldowns and popup triggers
+    let adState = {
+        popunderTriggered: false,
+        directLinkCooldown: false // To manage cooldown for DirectLink after video overlay click
+    };
+    const DIRECT_LINK_COOLDOWN_TIME_MS = 7000; // 7 seconds cooldown
 
     // ======== DOM Elements Cache (Static references) ========
     const contentDisplay = document.getElementById('content-display');
@@ -86,8 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else if (offsetString === '+01:00') {
             timezoneAbbreviation = '(بتوقيت لندن)'; // BST (British Summer Time)
-        } else if (offsetString === '+00:00') {
-            timezoneAbbreviation = '(بتوقيت جرينتش)'; // GMT/UTC
         } else {
             // Fallback for unhandled offsets or if offset is missing
             timezoneAbbreviation = '(توقيت محلي)'; // Or try to deduce from browser's locale if desired
@@ -717,8 +720,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     videoOverlay.style.display = 'none';
 
                     // === Direct Link Ad: Opens in new tab when user clicks to play video ===
-                    // Make sure to replace this URL with your actual DirectLink_1 URL
-                    openInNewTab('https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec');
+                    // Trigger with a cooldown
+                    if (!adState.directLinkCooldown) {
+                        openInNewTab('https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec');
+                        adState.directLinkCooldown = true;
+                        setTimeout(() => {
+                            adState.directLinkCooldown = false;
+                        }, DIRECT_LINK_COOLDOWN_TIME_MS);
+                    }
 
                     const iframe = document.createElement('iframe');
                     iframe.src = match.embed_url;
@@ -734,26 +743,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         matchPlayerContainer.innerHTML = '<p class="error-message">تعذر تحميل البث. يرجى المحاولة لاحقاً.</p>';
                     };
                     matchPlayerContainer.appendChild(iframe);
-
-                    // Ad Banner Logic (320x50 Iframe Sync Ad)
-                    // This will load the 320x50 ad under the video as requested
-                    const adBannerContainer = targetSectionClone.querySelector('#ad-banner-iframe-sync');
-                    if (adBannerContainer && !adBannerContainer.hasChildNodes()) {
-                        window.atOptions = {
-                            'key' : 'd0f597100460382f12621237f055f943',
-                            'format' : 'iframe',
-                            'height' : 50,
-                            'width' : 320,
-                            'params' : {}
-                        };
-
-                        const externalAdScript = document.createElement('script');
-                        externalAdScript.type = 'text/javascript';
-                        externalAdScript.src = '//www.highperformanceformat.com/d0f597100460382f12621237f055f943/invoke.js';
-                        externalAdScript.async = true;
-
-                        adBannerContainer.appendChild(externalAdScript);
-                    }
                 };
 
                 const suggestedMatches = DATA.filter(item =>
@@ -826,12 +815,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.addEventListener('click', (e) => {
         // Popunder Trigger: At first user interaction (click anywhere on the page)
         // This will load the Popunder JS, which will then open the ad in a new tab.
-        if (!popunderTriggered) {
+        // This popup will ONLY trigger once per page load.
+        if (!adState.popunderTriggered) {
             const popunderScript = document.createElement('script');
             popunderScript.type = 'text/javascript';
             popunderScript.src = '//pl27154379.profitableratecpm.com/a3/0f/2d/a30f2d8b70097467fa7c1b724f6ef1f2.js';
             document.body.appendChild(popunderScript);
-            popunderTriggered = true; // Set flag to prevent repeated triggers
+            adState.popunderTriggered = true; // Set flag to prevent repeated triggers
         }
 
         const navLink = e.target.closest('.nav-link');
