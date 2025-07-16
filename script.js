@@ -26,10 +26,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Ad-related variables
     let adTriggers = {
-        popunderOpened: false, // Tracks if popunder has been initiated once per session
+        popunderOpened: false, // Tracks if popunder has been initiated once per session (THIS IS NOW UNUSED FOR AUTO-POPUP)
         lastDirectLinkTime: 0 // Cooldown for the direct link (video overlay click)
     };
     const DIRECT_LINK_COOLDOWN_MS = 7000; // 7 seconds cooldown for direct link
+    // Ad URL - make sure this is your actual direct link URL
+    const AD_DIRECT_LINK_URL = 'https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec';
+
 
     // ======== DOM Elements Cache (Static references) ========
     const contentDisplay = document.getElementById('content-display');
@@ -74,6 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const formattedDatePart = new Intl.DateTimeFormat('ar-EG', optionsDate).format(date);
         let formattedTimePart = new Intl.DateTimeFormat('ar-EG', optionsTime).format(date);
 
+        // Replace AM/PM symbols for Arabic
         formattedTimePart = formattedTimePart.replace('ص', 'ص').replace('م', 'م');
 
         let timezoneAbbreviation = '';
@@ -83,8 +87,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (offsetString === '+03:00') {
             timezoneAbbreviation = '(بتوقيت جدة)'; // SAST (Saudi Arabia Standard Time)
         } else if (offsetString === '+02:00') {
+            // Check for common European leagues during DST for more precise timezone name
             if (isoString.includes("الدوري الإسباني") || isoString.includes("الدوري الألماني") || isoString.includes("الدوري الفرنسي") || isoString.includes("دوري أبطال أوروبا")) {
-                timezoneAbbreviation = '(بتوقيت أوروبا/صيفي)'; // CEST for European leagues
+                timezoneAbbreviation = '(بتوقيت أوروبا/صيفي)'; // CEST for European leagues, or just CET
             } else {
                 timezoneAbbreviation = '(بتوقيت القاهرة)'; // If it's a non-DST Egyptian time or a generic +02
             }
@@ -101,28 +106,36 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
-     * Attempts to open a URL in a new tab and immediately return focus to the current window.
-     * This is the best effort for a "pop-under" behavior.
+     * Opens a URL in a new tab. This function directly uses window.open with '_blank'.
+     * Modern browsers are very strict about pop-ups not initiated by direct user action.
+     * This function should ideally be called directly from a user's click event handler.
      * @param {string} url - The URL to open.
      */
-    const openPopUnder = (url) => {
+    const openInNewTab = (url) => {
         try {
+            // Use window.open with '_blank' to explicitly request a new tab.
+            // 'noopener' and 'noreferrer' are important for security and performance.
             const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
             if (newWindow) {
-                newWindow.blur(); // Send the new window to the background
-                window.focus(); // Bring current window back to foreground
+                // If the new window was opened (not blocked),
+                // we don't try to blur or focus back, as that's trying to achieve pop-under.
+                // The goal is just a new tab, visible to the user.
             } else {
-                // Fallback for strict popup blockers: try a normal new tab
+                // Fallback for extremely strict popup blockers or if for some reason window.open fails:
+                // Create a temporary anchor element and simulate a click.
+                // This is less reliable for forcing a new tab than window.open directly on user action.
+                console.warn('window.open was blocked or failed, trying fallback with anchor tag.');
                 const link = document.createElement('a');
                 link.href = url;
                 link.target = '_blank';
                 link.rel = 'noopener noreferrer';
-                document.body.appendChild(link); // Must be in DOM to click
+                // Must be appended to body to be clickable programmatically in some browsers
+                document.body.appendChild(link);
                 link.click();
-                link.remove();
+                link.remove(); // Clean up the temporary element
             }
         } catch (e) {
-            console.error("Error opening popunder:", e);
+            console.error("Error opening URL in new tab:", e);
         }
     };
 
@@ -533,8 +546,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                          .slice(0, 2);
 
             const latestNews = DATA.filter(item => item.type === 'news')
-                                     .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
-                                     .slice(0, 2);
+                                           .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
+                                           .slice(0, 2);
 
             // Filter out any potential non-match/news items before passing to renderGrid
             const itemsToRender = [...liveMatches, ...upcomingMatchesTodayTomorrow, ...latestNews, ...finishedMatches].filter(item => item.type === 'match' || item.type === 'news');
@@ -732,7 +745,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Trigger with a cooldown
                     const currentTime = Date.now();
                     if (currentTime - adTriggers.lastDirectLinkTime > DIRECT_LINK_COOLDOWN_MS) {
-                        openPopUnder('https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec'); // Use pop-under strategy
+                        openInNewTab(AD_DIRECT_LINK_URL); // استخدم openInNewTab لضمان الفتح في تبويب جديد
                         adTriggers.lastDirectLinkTime = currentTime;
                     }
 
@@ -821,7 +834,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Delegated event listener for general clicks on the body
     document.body.addEventListener('click', (e) => {
         // === تم إزالة أو التعليق على كود البوب-أندر التلقائي عند أول نقرة ===
-        // هذا الجزء كان يسبب فتح الإعلان عند أول تفاعل للمستخدم على الصفحة
+        // هذا الجزء كان يسبب فتح الإعلان عند أول تفاعل للمستخدم على الصفحة وتم إزالته لضمان عدم فتح تبويب جديد بشكل غير مرغوب فيه
         // if (!adTriggers.popunderOpened) {
         //     openPopUnder('https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec');
         //     adTriggers.popunderOpened = true;
