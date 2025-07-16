@@ -1,6 +1,0 @@
-# Catch-all for SPA client-side routing
-/* /index.html 200
-
-# Ensure JS and CSS files are served directly (if they are causing issues)
-/script.js /script.js 200
-/style.css /style.css 200
