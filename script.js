@@ -25,12 +25,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const DAY_AFTER_TOMORROW_START = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate() + 2);
 
     // Ad-related variables
-    // Use an object to track multiple cooldowns and popup triggers
-    let adState = {
-        popunderTriggered: false,
-        directLinkCooldown: false // To manage cooldown for DirectLink after video overlay click
+    let adTriggers = {
+        popunderOpened: false, // Tracks if popunder has been initiated once per session
+        lastDirectLinkTime: 0 // Cooldown for the direct link (video overlay click)
     };
-    const DIRECT_LINK_COOLDOWN_TIME_MS = 7000; // 7 seconds cooldown
+    const DIRECT_LINK_COOLDOWN_MS = 7000; // 7 seconds cooldown for direct link
 
     // ======== DOM Elements Cache (Static references) ========
     const contentDisplay = document.getElementById('content-display');
@@ -91,6 +90,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else if (offsetString === '+01:00') {
             timezoneAbbreviation = '(بتوقيت لندن)'; // BST (British Summer Time)
+        } else if (offsetString === '+00:00') {
+            timezoneAbbreviation = '(بتوقيت جرينتش)'; // GMT/UTC
         } else {
             // Fallback for unhandled offsets or if offset is missing
             timezoneAbbreviation = '(توقيت محلي)'; // Or try to deduce from browser's locale if desired
@@ -100,23 +101,31 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
-     * Opens a URL in a new tab, handling potential popup blockers by trying multiple methods.
+     * Attempts to open a URL in a new tab and immediately return focus to the current window.
+     * This is the best effort for a "pop-under" behavior.
      * @param {string} url - The URL to open.
      */
-    const openInNewTab = (url) => {
-        const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
-        if (newWindow) {
-            newWindow.focus();
-        } else {
-            // Fallback if popup blocker prevents window.open
-            const link = document.createElement('a');
-            link.href = url;
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer';
-            link.click();
-            link.remove(); // Clean up the temporary link
+    const openPopUnder = (url) => {
+        try {
+            const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+            if (newWindow) {
+                newWindow.blur(); // Send the new window to the background
+                window.focus(); // Bring current window back to foreground
+            } else {
+                // Fallback for strict popup blockers: try a normal new tab
+                const link = document.createElement('a');
+                link.href = url;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                document.body.appendChild(link); // Must be in DOM to click
+                link.click();
+                link.remove();
+            }
+        } catch (e) {
+            console.error("Error opening popunder:", e);
         }
     };
+
 
     /**
      * Updates the page's SEO meta tags dynamically.
@@ -721,12 +730,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // === Direct Link Ad: Opens in new tab when user clicks to play video ===
                     // Trigger with a cooldown
-                    if (!adState.directLinkCooldown) {
-                        openInNewTab('https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec');
-                        adState.directLinkCooldown = true;
-                        setTimeout(() => {
-                            adState.directLinkCooldown = false;
-                        }, DIRECT_LINK_COOLDOWN_TIME_MS);
+                    const currentTime = Date.now();
+                    if (currentTime - adTriggers.lastDirectLinkTime > DIRECT_LINK_COOLDOWN_MS) {
+                        openPopUnder('https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec'); // Use pop-under strategy
+                        adTriggers.lastDirectLinkTime = currentTime;
                     }
 
                     const iframe = document.createElement('iframe');
@@ -816,12 +823,24 @@ document.addEventListener('DOMContentLoaded', () => {
         // Popunder Trigger: At first user interaction (click anywhere on the page)
         // This will load the Popunder JS, which will then open the ad in a new tab.
         // This popup will ONLY trigger once per page load.
-        if (!adState.popunderTriggered) {
-            const popunderScript = document.createElement('script');
-            popunderScript.type = 'text/javascript';
-            popunderScript.src = '//pl27154379.profitableratecpm.com/a3/0f/2d/a30f2d8b70097467fa7c1b724f6ef1f2.js';
-            document.body.appendChild(popunderScript);
-            adState.popunderTriggered = true; // Set flag to prevent repeated triggers
+        if (!adTriggers.popunderOpened) {
+            // It's generally better to use window.open and blur() directly for popunders if possible,
+            // rather than relying on a third-party script to do it, as it gives you more control over focus.
+            // However, since you provided a script for Popunder_1, we'll try to integrate it with the blur logic.
+            // The ad script itself might open a new window/tab, and then we try to move it to background.
+
+            // The code you provided for Popunder_1 is a JS script that you *include*.
+            // We need to ensure that when that script runs, it opens the popunder and we can blur it.
+            // This is tricky because the external script controls the window.open call.
+            // A common strategy is to open a dummy window first, blur it, then let the ad script fire.
+            // BUT, the simplest way is to directly open the URL provided by the ad network for Popunder.
+            // Let's use the Direct URL provided for Popunder_1 (which is the same as DirectLink_1)
+            // for more control. If you have a separate Popunder URL, use that.
+            
+            // Replaced the external Popunder JS inclusion with a direct openPopUnder call for more control.
+            // Use the Direct Link URL for the popunder.
+            openPopUnder('https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec');
+            adTriggers.popunderOpened = true; 
         }
 
         const navLink = e.target.closest('.nav-link');
