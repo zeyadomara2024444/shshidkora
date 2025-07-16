@@ -552,7 +552,8 @@ a:hover {
 /* Grids for content cards */
 .match-grid, .news-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Adjusted minmax for mobile cards (wider) */
+    /* على الموبايل، سنعتمد على Minmax لضمان عرض واسع قدر الإمكان */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
     gap: 1.5vw;
     padding: 0 1vw;
     position: relative;
@@ -606,11 +607,10 @@ a:hover {
     z-index: 10;
 }
 
-/* Card image (poster) */
+/* Card image (poster) - ضبط الطول ليصبح أقصر */
 .match-card img {
     width: 100%;
-    /* تم تقليل الطول هنا ليتناسب مع طلبك مع الحفاظ على العرض الأقصى */
-    height: clamp(100px, 20vw, 180px); /* قللت الطول وزودت المرونة للتصغير */
+    height: clamp(120px, 25vw, 180px); /* قللت الطول وزودت المرونة للتصغير أكثر على الموبايل */
     object-fit: cover;
     background-color: var(--up-bg-dark); /* Darker background for image fallback */
     display: block;
@@ -686,10 +686,10 @@ a:hover {
     flex-shrink: 0;
     white-space: nowrap;
     font-family: var(--font-heading);
-    font-size: clamp(1.8rem, 4.5vw, 2.5rem); /* Significantly larger VS */
+    font-size: clamp(2rem, 6vw, 3rem); /* تم تكبير VS أكثر للموبايل والكمبيوتر */
     color: var(--up-accent-danger); /* Danger red for VS */
     font-weight: 800;
-    margin: 0 0.5rem; /* Larger margin around VS */
+    margin: 0 0.8rem; /* Larger margin around VS */
     text-shadow: 0 0 5px rgba(220, 53, 69, 0.6);
     text-align: center;
     line-height: 1;
@@ -709,12 +709,10 @@ a:hover {
 }
 
 .match-card .home-team {
-    /* تم إزالة justify-content هنا لأننا نستخدم justify-content: center; في .team العام */
     text-align: right;
 }
 
 .match-card .away-team {
-    /* تم إزالة justify-content هنا لأننا نستخدم justify-content: center; في .team العام */
     text-align: left;
 }
 
@@ -727,13 +725,13 @@ a:hover {
 }
 
 .match-card .team img {
-    width: clamp(55px, 8vw, 70px); /* حجم أكبر لشعار الفريق */
-    height: clamp(55px, 8vw, 70px); /* حجم أكبر لشعار الفريق */
+    width: clamp(60px, 10vw, 80px); /* حجم أكبر للوجو على كل الأجهزة */
+    height: clamp(60px, 10vw, 80px); /* حجم أكبر للوجو على كل الأجهزة */
     object-fit: contain;
-    border-radius: 50%; /* تم التأكيد على أن اللوجو دائري */
-    border: 2px solid var(--up-accent-secondary); /* إطار بلون ثانوي بارز */
+    border-radius: 50%; /* تأكيد أن اللوجو دائري */
+    border: 3px solid var(--up-accent-secondary); /* إطار بلون ثانوي بارز لجذب الانتباه */
     background-color: var(--up-bg-light); /* خلفية اللوجو */
-    box-shadow: 0 0 8px rgba(0, 123, 255, 0.4); /* ظل خفيف حول اللوجو */
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5), 0 0 20px rgba(0, 123, 255, 0.3); /* توهج بارز */
     transition: transform var(--transition-fast), box-shadow var(--transition-fast);
     padding: 2px;
     flex-shrink: 0;
@@ -741,8 +739,8 @@ a:hover {
 }
 
 .match-card .team img:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 12px var(--up-accent-primary), inset 0 0 5px rgba(0,0,0,0.1); /* توهج أكبر عند التمرير */
+    transform: scale(1.12); /* تكبير أكبر عند التحويم */
+    box-shadow: 0 0 15px var(--up-accent-primary), 0 0 25px rgba(255, 59, 59, 0.6); /* توهج أكبر عند التحويم */
 }
 
 .match-card .match-league {
@@ -825,8 +823,7 @@ a:hover {
 }
 .news-card img {
     width: 100%;
-    /* تم تقليل الطول هنا ليتناسب مع طلبك مع الحفاظ على العرض الأقصى */
-    height: clamp(80px, 15vw, 120px); /* قللت الطول وزودت المرونة للتصغير */
+    height: clamp(80px, 18vw, 120px); /* قللت الطول لبوستر الأخبار أكثر هنا */
     object-fit: cover;
     background-color: var(--up-bg-dark);
     display: block;
@@ -1217,28 +1214,30 @@ a:hover {
 
     /* Cards - wider on mobile */
     .match-grid, .news-grid {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Very wide single column */
-        gap: 3vw; /* Increased gap */
+        /* تكبير عرض الكروت لتملأ الشاشة بشكل أفضل على الموبايل */
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+        gap: 4vw; /* زيادة الفراغ بين الكروت */
         padding: 0 1rem;
     }
     .match-card img {
-        /* تكبير عرض البوستر وتقليل الطول للموبايل */
-        height: clamp(100px, 30vw, 150px); /* قللت الطول للموبايل هنا */
+        /* تقصير البوستر أكثر على الموبايل ليتناسب مع العرض الأكبر */
+        height: clamp(90px, 25vw, 140px); /* طول أقصر وأكثر مرونة */
     }
     .match-card .match-teams .team img {
-        width: clamp(50px, 14vw, 70px); /* تكبير لوجو الفريق على الشاشات الصغيرة */
-        height: clamp(50px, 14vw, 70px);
+        width: clamp(55px, 16vw, 75px); /* تكبير لوجو الفريق على الشاشات الصغيرة */
+        height: clamp(55px, 16vw, 75px);
+        border-width: 4px; /* زيادة سمك الإطار */
     }
     .match-card .vs {
-        font-size: clamp(2.5rem, 10vw, 3.5rem); /* VS أكبر للموبايل */
-        margin: 0 0.8rem;
+        font-size: clamp(3rem, 12vw, 4rem); /* VS أكبر جداً للموبايل */
+        margin: 0 1rem; /* زيادة الهامش حول VS */
     }
     .match-card .team {
-        font-size: clamp(1rem, 4.5vw, 1.3rem); /* حجم خط الفريق أكبر للموبايل */
+        font-size: clamp(1rem, 5vw, 1.4rem); /* حجم خط الفريق أكبر للموبايل */
     }
     .news-card img {
-        /* تكبير عرض بوستر الأخبار وتقليل الطول للموبايل */
-        height: clamp(80px, 25vw, 120px); /* قللت الطول لبوستر الأخبار هنا */
+        /* تقصير بوستر الأخبار أكثر على الموبايل */
+        height: clamp(70px, 20vw, 110px); 
     }
 }
 
@@ -1343,18 +1342,19 @@ a:hover {
     }
     .match-card img {
         /* تكبير عرض البوستر وتقليل الطول للكمبيوتر */
-        height: clamp(120px, 12vw, 200px); /* قللت الطول هنا ليتناسب مع طلبك */
+        height: clamp(100px, 10vw, 160px); /* قللت الطول هنا ليتناسب مع طلبك */
     }
     .match-card .match-teams .team img {
-        width: clamp(60px, 6vw, 80px); /* حجم أكبر لشعار الفريق على الكمبيوتر */
-        height: clamp(60px, 6vw, 80px);
+        width: clamp(65px, 7vw, 90px); /* حجم أكبر لشعار الفريق على الكمبيوتر */
+        height: clamp(65px, 7vw, 90px);
+        border-width: 4px; /* زيادة سمك الإطار */
     }
     .match-card .vs {
-        font-size: clamp(3rem, 4.5vw, 4.5rem); /* VS أكبر للكمبيوتر */
-        margin: 0 1.2rem;
+        font-size: clamp(3.5rem, 5vw, 5rem); /* VS أكبر جداً للكمبيوتر */
+        margin: 0 1.5rem; /* زيادة الهامش حول VS */
     }
     .match-card .team span {
-        font-size: clamp(1.1rem, 1.8vw, 1.4rem); /* حجم خط الفريق أكبر للكمبيوتر */
+        font-size: clamp(1.2rem, 2vw, 1.5rem); /* حجم خط الفريق أكبر للكمبيوتر */
     }
 
     /* Removed hero section media queries as the section is removed */
