@@ -1,4 +1,4 @@
-/* style.css - تصميم "شاهد كورة" - Ultimate Pitch UI - الإصدار الاحترافي والعصري (تعديل 3) */
+/* style.css - تصميم "شاهد كورة" - Ultimate Pitch UI - الإصدار الاحترافي والعصري (تعديل 3 - نهائي) */
 
 /* --- Root Variables for Theme Customization (Lighter & Trendy - Red Accent) --- */
 :root {
@@ -553,7 +553,7 @@ a:hover {
 .match-grid, .news-grid {
     display: grid;
     /* على الموبايل، سنعتمد على Minmax لضمان عرض واسع قدر الإمكان */
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* قيم مبدئية، ستعدل في الميديا كويري للموبايل */
     gap: 1.5vw;
     padding: 0 1vw;
     position: relative;
@@ -610,7 +610,8 @@ a:hover {
 /* Card image (poster) - ضبط الطول ليصبح أقصر */
 .match-card img {
     width: 100%;
-    height: clamp(120px, 25vw, 180px); /* قللت الطول وزودت المرونة للتصغير أكثر على الموبايل */
+    /* تم تقليل الطول هنا ليتناسب مع طلبك مع الحفاظ على العرض الأقصى */
+    height: clamp(100px, 20vw, 160px); /* طول أقصر ومرونة في الحجم */
     object-fit: cover;
     background-color: var(--up-bg-dark); /* Darker background for image fallback */
     display: block;
@@ -823,7 +824,8 @@ a:hover {
 }
 .news-card img {
     width: 100%;
-    height: clamp(80px, 18vw, 120px); /* قللت الطول لبوستر الأخبار أكثر هنا */
+    /* تقصير بوستر الأخبار أكثر هنا */
+    height: clamp(60px, 15vw, 100px); 
     object-fit: cover;
     background-color: var(--up-bg-dark);
     display: block;
@@ -1215,13 +1217,13 @@ a:hover {
     /* Cards - wider on mobile */
     .match-grid, .news-grid {
         /* تكبير عرض الكروت لتملأ الشاشة بشكل أفضل على الموبايل */
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+        grid-template-columns: repeat(auto-fill, minmax(calc(100% - 2rem), 1fr)); /* العرض الأقصى الممكن (عرض الشاشة - البادينج) */
         gap: 4vw; /* زيادة الفراغ بين الكروت */
         padding: 0 1rem;
     }
     .match-card img {
         /* تقصير البوستر أكثر على الموبايل ليتناسب مع العرض الأكبر */
-        height: clamp(90px, 25vw, 140px); /* طول أقصر وأكثر مرونة */
+        height: clamp(80px, 22vw, 120px); /* طول أقصر ومرونة في الحجم */
     }
     .match-card .match-teams .team img {
         width: clamp(55px, 16vw, 75px); /* تكبير لوجو الفريق على الشاشات الصغيرة */
@@ -1237,7 +1239,7 @@ a:hover {
     }
     .news-card img {
         /* تقصير بوستر الأخبار أكثر على الموبايل */
-        height: clamp(70px, 20vw, 110px); 
+        height: clamp(50px, 12vw, 90px); 
     }
 }
 
@@ -1342,7 +1344,7 @@ a:hover {
     }
     .match-card img {
         /* تكبير عرض البوستر وتقليل الطول للكمبيوتر */
-        height: clamp(100px, 10vw, 160px); /* قللت الطول هنا ليتناسب مع طلبك */
+        height: clamp(90px, 9vw, 150px); /* قللت الطول هنا ليتناسب مع طلبك */
     }
     .match-card .match-teams .team img {
         width: clamp(65px, 7vw, 90px); /* حجم أكبر لشعار الفريق على الكمبيوتر */
