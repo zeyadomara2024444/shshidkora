@@ -25,11 +25,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const DAY_AFTER_TOMORROW_START = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate() + 2);
 
     // Ad-related variables
-    let adTriggers = {
-        popunderOpened: false, // Tracks if popunder has been initiated once per session
-        lastDirectLinkTime: 0 // Cooldown for the direct link (video overlay click)
+    let adState = {
+        popunderOpenedOnce: false, // Flag to open popunder only once per page load/session
+        lastPopunderTime: 0,     // Timestamp for popunder cooldown
+        lastDirectLinkTime: 0    // Timestamp for DirectLink cooldown (video overlay click)
     };
-    const DIRECT_LINK_COOLDOWN_MS = 7000; // 7 seconds cooldown for direct link
+    const AD_COOLDOWN_MS = 8000; // 8 seconds cooldown for all ads that open new tabs
 
     // ======== DOM Elements Cache (Static references) ========
     const contentDisplay = document.getElementById('content-display');
@@ -106,13 +107,23 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {string} url - The URL to open.
      */
     const openPopUnder = (url) => {
+        const currentTime = Date.now();
+        // Check if cooldown for ANY pop-under type ad is active
+        if (currentTime - adState.lastPopunderTime < AD_COOLDOWN_MS) {
+            console.log("Popunder cooldown active. Skipping ad.");
+            return;
+        }
+
         try {
             const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
             if (newWindow) {
                 newWindow.blur(); // Send the new window to the background
                 window.focus(); // Bring current window back to foreground
+                adState.lastPopunderTime = currentTime; // Update cooldown time
+                console.log("Popunder opened and blurred successfully.");
             } else {
-                // Fallback for strict popup blockers: try a normal new tab
+                // Fallback for strict popup blockers: try a normal new tab if window.open fails
+                // This might result in a "pop-over" on some browsers, but it's a last resort
                 const link = document.createElement('a');
                 link.href = url;
                 link.target = '_blank';
@@ -120,9 +131,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.body.appendChild(link); // Must be in DOM to click
                 link.click();
                 link.remove();
+                adState.lastPopunderTime = currentTime; // Update cooldown time even on fallback
+                console.log("Popunder opened via fallback (link click).");
             }
         } catch (e) {
             console.error("Error opening popunder:", e);
+        }
+    };
+
+    /**
+     * Attempts to open a URL in a new tab (like a regular new tab) with cooldown.
+     * @param {string} url - The URL to open.
+     */
+    const openInNewTabWithCooldown = (url) => {
+        const currentTime = Date.now();
+        if (currentTime - adState.lastDirectLinkTime < AD_COOLDOWN_MS) {
+            console.log("Direct Link cooldown active. Skipping ad.");
+            return;
+        }
+
+        try {
+            const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+            if (newWindow) {
+                newWindow.focus(); // Keep focus on the new tab if it opens
+                adState.lastDirectLinkTime = currentTime; // Update cooldown time
+                console.log("Direct link opened in new tab successfully.");
+            } else {
+                // Fallback if popup blocker prevents window.open
+                const link = document.createElement('a');
+                link.href = url;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                document.body.appendChild(link); // Must be in DOM to click
+                link.click();
+                link.remove();
+                adState.lastDirectLinkTime = currentTime; // Update cooldown time even on fallback
+                console.log("Direct link opened via fallback (link click).");
+            }
+        } catch (e) {
+            console.error("Error opening direct link:", e);
         }
     };
 
@@ -729,12 +776,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     videoOverlay.style.display = 'none';
 
                     // === Direct Link Ad: Opens in new tab when user clicks to play video ===
-                    // Trigger with a cooldown
-                    const currentTime = Date.now();
-                    if (currentTime - adTriggers.lastDirectLinkTime > DIRECT_LINK_COOLDOWN_MS) {
-                        openPopUnder('https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec'); // Use pop-under strategy
-                        adTriggers.lastDirectLinkTime = currentTime;
-                    }
+                    // Trigger with a cooldown (using the general new tab function)
+                    openInNewTabWithCooldown('https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec');
 
                     const iframe = document.createElement('iframe');
                     iframe.src = match.embed_url;
@@ -821,26 +864,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Delegated event listener for general clicks on the body
     document.body.addEventListener('click', (e) => {
         // Popunder Trigger: At first user interaction (click anywhere on the page)
-        // This will load the Popunder JS, which will then open the ad in a new tab.
-        // This popup will ONLY trigger once per page load.
-        if (!adTriggers.popunderOpened) {
-            // It's generally better to use window.open and blur() directly for popunders if possible,
-            // rather than relying on a third-party script to do it, as it gives you more control over focus.
-            // However, since you provided a script for Popunder_1, we'll try to integrate it with the blur logic.
-            // The ad script itself might open a new window/tab, and then we try to move it to background.
-
-            // The code you provided for Popunder_1 is a JS script that you *include*.
-            // We need to ensure that when that script runs, it opens the popunder and we can blur it.
-            // This is tricky because the external script controls the window.open call.
-            // A common strategy is to open a dummy window first, blur it, then let the ad script fire.
-            // BUT, the simplest way is to directly open the URL provided by the ad network for Popunder.
-            // Let's use the Direct URL provided for Popunder_1 (which is the same as DirectLink_1)
-            // for more control. If you have a separate Popunder URL, use that.
-            
-            // Replaced the external Popunder JS inclusion with a direct openPopUnder call for more control.
-            // Use the Direct Link URL for the popunder.
-            openPopUnder('https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec');
-            adTriggers.popunderOpened = true; 
+        // This will launch the Popunder ad in a new background tab.
+        // This popup will ONLY trigger once per page load and respect the cooldown.
+        if (!adState.popunderOpenedOnce) { // Check if it hasn't opened EVER on this page load
+            openPopUnder('https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec'); // Use your Direct Link URL for Popunder
+            adState.popunderOpenedOnce = true; // Mark as opened for this session
         }
 
         const navLink = e.target.closest('.nav-link');
