@@ -467,7 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     const switchView = (viewName, dataId = null) => {
         currentView = viewName;
-        
+
         // Hide all main content sections initially
         document.querySelectorAll('.view-section').forEach(section => {
             section.classList.remove('active-view');
@@ -533,8 +533,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                          .slice(0, 2);
 
             const latestNews = DATA.filter(item => item.type === 'news')
-                                       .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
-                                       .slice(0, 2);
+                                     .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
+                                     .slice(0, 2);
 
             // Filter out any potential non-match/news items before passing to renderGrid
             const itemsToRender = [...liveMatches, ...upcomingMatchesTodayTomorrow, ...latestNews, ...finishedMatches].filter(item => item.type === 'match' || item.type === 'news');
@@ -698,12 +698,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 targetSectionClone.classList.add('active-view');
 
                 const matchDetailsTitleElement = targetSectionClone.querySelector('#match-details-title-element');
-                
+
                 const matchPlayerContainer = targetSectionClone.querySelector('#match-player-container');
                 const videoOverlay = targetSectionClone.querySelector('#video-overlay');
                 const overlayThumbnail = targetSectionClone.querySelector('#overlay-thumbnail');
                 const loadingSpinner = targetSectionClone.querySelector('#video-loading-spinner');
-                
+
                 const suggestedMatchGrid = targetSectionClone.querySelector('#suggested-match-grid');
                 const backToHomeBtn = targetSectionClone.querySelector('#back-to-home-btn'); // Get the back button within the cloned template
 
@@ -820,28 +820,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Delegated event listener for general clicks on the body
     document.body.addEventListener('click', (e) => {
-        // Popunder Trigger: At first user interaction (click anywhere on the page)
-        // This will load the Popunder JS, which will then open the ad in a new tab.
-        // This popup will ONLY trigger once per page load.
-        if (!adTriggers.popunderOpened) {
-            // It's generally better to use window.open and blur() directly for popunders if possible,
-            // rather than relying on a third-party script to do it, as it gives you more control over focus.
-            // However, since you provided a script for Popunder_1, we'll try to integrate it with the blur logic.
-            // The ad script itself might open a new window/tab, and then we try to move it to background.
-
-            // The code you provided for Popunder_1 is a JS script that you *include*.
-            // We need to ensure that when that script runs, it opens the popunder and we can blur it.
-            // This is tricky because the external script controls the window.open call.
-            // A common strategy is to open a dummy window first, blur it, then let the ad script fire.
-            // BUT, the simplest way is to directly open the URL provided by the ad network for Popunder.
-            // Let's use the Direct URL provided for Popunder_1 (which is the same as DirectLink_1)
-            // for more control. If you have a separate Popunder URL, use that.
-            
-            // Replaced the external Popunder JS inclusion with a direct openPopUnder call for more control.
-            // Use the Direct Link URL for the popunder.
-            openPopUnder('https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec');
-            adTriggers.popunderOpened = true; 
-        }
+        // === تم إزالة أو التعليق على كود البوب-أندر التلقائي عند أول نقرة ===
+        // هذا الجزء كان يسبب فتح الإعلان عند أول تفاعل للمستخدم على الصفحة
+        // if (!adTriggers.popunderOpened) {
+        //     openPopUnder('https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec');
+        //     adTriggers.popunderOpened = true;
+        // }
+        // =================================================================
 
         const navLink = e.target.closest('.nav-link');
         const homeLogo = e.target.closest('#home-logo-link');
