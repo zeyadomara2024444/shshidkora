@@ -24,6 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const TOMORROW_START = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate() + 1);
     const DAY_AFTER_TOMORROW_START = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate() + 2);
 
+    // Ad-related variables
+    let popunderTriggered = false; // To ensure popunder triggers only once per session/first interaction
+
     // ======== DOM Elements Cache (Static references) ========
     const contentDisplay = document.getElementById('content-display');
     const mainNav = document.getElementById('main-nav');
@@ -32,9 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('search-input');
     const searchButton = document.getElementById('search-button');
     const homeLogoLink = document.getElementById('home-logo-link');
-
-    // Removed heroSection reference as it's no longer in HTML
-    // const heroSection = document.getElementById('hero-section'); 
 
     // SEO Elements (Meta tags)
     const dynamicTitle = document.getElementById('dynamic-title');
@@ -77,23 +77,42 @@ document.addEventListener('DOMContentLoaded', () => {
         const offsetString = timezoneOffsetMatch ? timezoneOffsetMatch[1] : null;
 
         if (offsetString === '+03:00') {
-             timezoneAbbreviation = '(بتوقيت جدة)'; // SAST (Saudi Arabia Standard Time)
+            timezoneAbbreviation = '(بتوقيت جدة)'; // SAST (Saudi Arabia Standard Time)
         } else if (offsetString === '+02:00') {
-             if (isoString.includes("الدوري الإسباني") || isoString.includes("الدوري الألماني") || isoString.includes("الدوري الفرنسي") || isoString.includes("دوري أبطال أوروبا")) {
-                 timezoneAbbreviation = '(بتوقيت أوروبا/صيفي)'; // CEST for European leagues
-             } else {
-                 timezoneAbbreviation = '(بتوقيت القاهرة)'; // If it's a non-DST Egyptian time or a generic +02
-             }
+            if (isoString.includes("الدوري الإسباني") || isoString.includes("الدوري الألماني") || isoString.includes("الدوري الفرنسي") || isoString.includes("دوري أبطال أوروبا")) {
+                timezoneAbbreviation = '(بتوقيت أوروبا/صيفي)'; // CEST for European leagues
+            } else {
+                timezoneAbbreviation = '(بتوقيت القاهرة)'; // If it's a non-DST Egyptian time or a generic +02
+            }
         } else if (offsetString === '+01:00') {
-             timezoneAbbreviation = '(بتوقيت لندن)'; // BST (British Summer Time)
+            timezoneAbbreviation = '(بتوقيت لندن)'; // BST (British Summer Time)
         } else if (offsetString === '+00:00') {
-             timezoneAbbreviation = '(بتوقيت جرينتش)'; // GMT/UTC
+            timezoneAbbreviation = '(بتوقيت جرينتش)'; // GMT/UTC
         } else {
             // Fallback for unhandled offsets or if offset is missing
             timezoneAbbreviation = '(توقيت محلي)'; // Or try to deduce from browser's locale if desired
         }
 
         return `${formattedDatePart}، ${formattedTimePart} ${timezoneAbbreviation}`;
+    };
+
+    /**
+     * Opens a URL in a new tab, handling potential popup blockers by trying multiple methods.
+     * @param {string} url - The URL to open.
+     */
+    const openInNewTab = (url) => {
+        const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+        if (newWindow) {
+            newWindow.focus();
+        } else {
+            // Fallback if popup blocker prevents window.open
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.click();
+            link.remove(); // Clean up the temporary link
+        }
     };
 
     /**
@@ -366,8 +385,9 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {number} page - Current page number for pagination.
      * @param {HTMLElement} [emptyStateElement=null] - Optional reference to the empty state div.
      * @param {HTMLElement} [paginationControlsElement=null] - Optional reference to the pagination controls div.
+     * @param {string} [viewNameForAd=''] - Current view name, used for ad placement logic
      */
-    const renderGrid = (items, container, cardCreator, page, emptyStateElement = null, paginationControlsElement = null) => {
+    const renderGrid = (items, container, cardCreator, page, emptyStateElement = null, paginationControlsElement = null, viewNameForAd = '') => {
         if (!container) {
             console.error(`renderGrid: Target container is null or undefined. This indicates an issue with template cloning or element selection. Container expected: ${container?.id || 'N/A'}`);
             return;
@@ -387,11 +407,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const endIndex = startIndex + ITEMS_PER_PAGE;
         const paginatedItems = items.slice(startIndex, endIndex);
 
-        paginatedItems.forEach(item => {
-            // Ensure cardCreator returns an HTMLElement
+        paginatedItems.forEach((item, index) => {
             const cardElement = cardCreator(item);
             if (cardElement instanceof HTMLElement) {
                 container.appendChild(cardElement);
+
+                // Insert Native Async ad strategically
+                if (viewNameForAd && ['home', 'live', 'upcoming', 'highlights', 'search-results', 'news'].includes(viewNameForAd)) {
+                    // Place Native Async ad after every 3rd card, but not on the last card to avoid awkward placement
+                    // and only if it's not the last page with fewer than 3 items remaining
+                    if ((index + 1) % 3 === 0 && (index + 1) < paginatedItems.length) {
+                        const nativeAdDiv = document.createElement('div');
+                        nativeAdDiv.className = 'native-ad-placeholder'; // Add a class for styling
+                        // Using a unique ID for each ad container to ensure proper rendering if multiple are on the page
+                        const uniqueAdContainerId = `container-b63334b55ca510415eee91e8173dc2d8-${viewNameForAd}-${page}-${index}`;
+                        nativeAdDiv.innerHTML = `
+                            <script async="async" data-cfasync="false" src="//pl27154385.profitableratecpm.com/b63334b55ca510415eee91e8173dc2d8/invoke.js"></script>
+                            <div id="${uniqueAdContainerId}"></div>
+                        `;
+                        container.appendChild(nativeAdDiv);
+                    }
+                }
             } else {
                 console.warn('cardCreator did not return an HTMLElement for item:', item);
             }
@@ -425,8 +461,6 @@ document.addEventListener('DOMContentLoaded', () => {
             section.classList.remove('active-view');
             section.style.display = 'none';
         });
-
-        // No need to manage heroSection display, as it's removed from HTML
 
         // Deactivate all nav links and activate the current one
         navLinks.forEach(link => link.classList.remove('active'));
@@ -487,8 +521,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                          .slice(0, 2);
 
             const latestNews = DATA.filter(item => item.type === 'news')
-                                   .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
-                                   .slice(0, 2);
+                                       .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
+                                       .slice(0, 2);
 
             // Filter out any potential non-match/news items before passing to renderGrid
             const itemsToRender = [...liveMatches, ...upcomingMatchesTodayTomorrow, ...latestNews, ...finishedMatches].filter(item => item.type === 'match' || item.type === 'news');
@@ -498,7 +532,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (item.type === 'match') return createMatchCard(item);
                 if (item.type === 'news') return createNewsCard(item);
                 return null; // Ensure something is returned
-            }, currentPage.home, null, homePaginationControls);
+            }, currentPage.home, null, homePaginationControls, 'home');
 
 
             pageTitle = "شاهد كورة: Ultimate Pitch - كل كرة القدم في مكان واحد";
@@ -525,7 +559,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const livePaginationControls = targetSectionClone.querySelector('.pagination-controls');
 
             const itemsToRender = DATA.filter(item => item.type === 'match' && item.status === 'Live');
-            renderGrid(itemsToRender, liveGridContainer, createMatchCard, currentPage.live, liveEmptyState, livePaginationControls);
+            renderGrid(itemsToRender, liveGridContainer, createMatchCard, currentPage.live, liveEmptyState, livePaginationControls, 'live');
 
             pageTitle = "شاهد كورة: مباريات كرة القدم مباشرة الآن | بث مباشر";
             pageDescription = "شاهد جميع مباريات كرة القدم التي تبث مباشرة الآن بجودة عالية. تابع ديربيات الكرة العالمية والمحلية لحظة بلحظة.";
@@ -580,7 +614,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             filteredUpcoming.sort((a, b) => new Date(a.date_time) - new Date(b.date_time));
 
-            renderGrid(filteredUpcoming, upcomingGridContainer, createMatchCard, currentPage.upcoming, upcomingEmptyState, upcomingPaginationControls);
+            renderGrid(filteredUpcoming, upcomingGridContainer, createMatchCard, currentPage.upcoming, upcomingEmptyState, upcomingPaginationControls, 'upcoming');
 
             pageTitle = "شاهد كورة: مواعيد مباريات كرة القدم القادمة | جدول المباريات";
             pageDescription = "اكتشف مواعيد مباريات كرة القدم القادمة في جميع الدوريات والبطولات الكبرى. لا تفوت أي مباراة حاسمة!";
@@ -605,7 +639,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const itemsToRender = DATA.filter(item => item.type === 'match' && item.highlights_url);
             itemsToRender.sort((a, b) => new Date(b.date_time) - new Date(a.date_time));
-            renderGrid(itemsToRender, highlightsGridContainer, createMatchCard, currentPage.highlights, highlightsEmptyState, highlightsPaginationControls);
+            renderGrid(itemsToRender, highlightsGridContainer, createMatchCard, currentPage.highlights, highlightsEmptyState, highlightsPaginationControls, 'highlights');
 
             pageTitle = "شاهد كورة: أهداف وملخصات المباريات | أبرز اللقطات";
             pageDescription = "شاهد أهداف جميع المباريات وملخصات كاملة لأبرز اللقاءات في الدوريات والبطولات الكبرى. استمتع بأجمل اللحظات الكروية.";
@@ -630,7 +664,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const itemsToRender = DATA.filter(item => item.type === 'news');
             itemsToRender.sort((a, b) => new Date(b.date_time) - new Date(a.date_time));
-            renderGrid(itemsToRender, newsGridContainer, createNewsCard, currentPage.news, newsEmptyState, newsPaginationControls);
+            renderGrid(itemsToRender, newsGridContainer, createNewsCard, currentPage.news, newsEmptyState, newsPaginationControls, 'news');
 
             pageTitle = "شاهد كورة: آخر أخبار كرة القدم | تحديثات حصرية";
             pageDescription = "تابع آخر أخبار كرة القدم العالمية والمحلية، انتقالات اللاعبين، تحديثات الأندية، وتحليلات حصرية لأبرز الأحداث الكروية.";
@@ -652,19 +686,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 targetSectionClone.classList.add('active-view');
 
                 const matchDetailsTitleElement = targetSectionClone.querySelector('#match-details-title-element');
-                // The following elements are not in HTML after match-info-box removal, so we remove their references here to avoid errors
-                // const matchDetailsDescription = targetSectionClone.querySelector('#match-details-description');
-                // const matchDetailsDateTime = targetSectionClone.querySelector('#match-details-date-time');
-                // const matchDetailsLeague = targetSectionClone.querySelector('#match-details-league');
-                // const matchDetailsCommentators = targetSectionClone.querySelector('#match-details-commentators');
-                // const matchDetailsTeams = targetSectionClone.querySelector('#match-details-teams');
-                // const matchDetailsStadium = targetSectionClone.querySelector('#match-details-stadium');
-                // const matchDetailsStatus = targetSectionClone.querySelector('#match-details-status');
-                // const matchDetailsScoreContainer = targetSectionClone.querySelector('#match-details-score-container');
-                // const matchDetailsScore = targetSectionClone.querySelector('#match-details-score');
-                // const matchDetailsHighlightsContainer = targetSectionClone.querySelector('#match-details-highlights-container');
-                // const matchDetailsHighlightsLink = targetSectionClone.querySelector('#match-details-highlights-link');
-
+                
                 const matchPlayerContainer = targetSectionClone.querySelector('#match-player-container');
                 const videoOverlay = targetSectionClone.querySelector('#video-overlay');
                 const overlayThumbnail = targetSectionClone.querySelector('#overlay-thumbnail');
@@ -682,16 +704,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     };
                 }
 
-
                 matchDetailsTitleElement.textContent = match.title;
-                // Since match-info-box is removed, these elements won't be found, removed their assignment
-                // matchDetailsDescription.textContent = match.short_description;
-                // matchDetailsDateTime.textContent = formatDateTime(match.date_time);
-                // matchDetailsLeague.textContent = match.league_name;
-                // matchDetailsCommentators.textContent = match.commentators.join(', ') || 'غير متاح';
-                // matchDetailsTeams.textContent = `${match.home_team} ضد ${match.away_team}`;
-                // matchDetailsStadium.textContent = match.stadium;
-                // matchDetailsStatus.textContent = match.status === 'Live' ? 'مباشرة' : match.status === 'Finished' ? 'انتهت' : 'قادمة';
 
                 // Video Player & Overlay logic
                 matchPlayerContainer.innerHTML = '';
@@ -702,6 +715,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 videoOverlay.onclick = () => {
                     loadingSpinner.style.display = 'block';
                     videoOverlay.style.display = 'none';
+
+                    // === Direct Link Ad: Opens in new tab when user clicks to play video ===
+                    // Make sure to replace this URL with your actual DirectLink_1 URL
+                    openInNewTab('https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec');
 
                     const iframe = document.createElement('iframe');
                     iframe.src = match.embed_url;
@@ -718,7 +735,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     };
                     matchPlayerContainer.appendChild(iframe);
 
-                    // Ad Banner Logic (already present and looks good)
+                    // Ad Banner Logic (320x50 Iframe Sync Ad)
+                    // This will load the 320x50 ad under the video as requested
                     const adBannerContainer = targetSectionClone.querySelector('#ad-banner-iframe-sync');
                     if (adBannerContainer && !adBannerContainer.hasChildNodes()) {
                         window.atOptions = {
@@ -737,21 +755,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         adBannerContainer.appendChild(externalAdScript);
                     }
                 };
-
-                // These elements were part of match-info-box, so they will not be found. Removed their conditional display logic.
-                // if (match.status === 'Finished' && match.score) {
-                //     matchDetailsScoreContainer.classList.remove('hidden');
-                //     matchDetailsScore.textContent = match.score;
-                // } else {
-                //     matchDetailsScoreContainer.classList.add('hidden');
-                // }
-
-                // if (match.status === 'Finished' && match.highlights_url) {
-                //     matchDetailsHighlightsContainer.classList.remove('hidden');
-                //     matchDetailsHighlightsLink.href = match.highlights_url;
-                // } else {
-                //     matchDetailsHighlightsContainer.classList.add('hidden');
-                // }
 
                 const suggestedMatches = DATA.filter(item =>
                     item.type === 'match' &&
@@ -803,7 +806,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (item.type === 'match') return createMatchCard(item);
                 if (item.type === 'news') return createNewsCard(item);
                 return null; // Ensure something is returned
-            }, currentPage.search, null, homePaginationControls);
+            }, currentPage.search, null, homePaginationControls, 'search-results');
 
             pageTitle = `نتائج البحث عن "${currentSearchQuery}" | شاهد كورة`;
             pageDescription = `نتائج البحث عن "${currentSearchQuery}" في مباريات كرة القدم وآخر الأخبار على شاهد كورة.`;
@@ -821,6 +824,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Delegated event listener for general clicks on the body
     document.body.addEventListener('click', (e) => {
+        // Popunder Trigger: At first user interaction (click anywhere on the page)
+        // This will load the Popunder JS, which will then open the ad in a new tab.
+        if (!popunderTriggered) {
+            const popunderScript = document.createElement('script');
+            popunderScript.type = 'text/javascript';
+            popunderScript.src = '//pl27154379.profitableratecpm.com/a3/0f/2d/a30f2d8b70097467fa7c1b724f6ef1f2.js';
+            document.body.appendChild(popunderScript);
+            popunderTriggered = true; // Set flag to prevent repeated triggers
+        }
+
         const navLink = e.target.closest('.nav-link');
         const homeLogo = e.target.closest('#home-logo-link');
 
