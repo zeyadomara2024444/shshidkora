@@ -1,965 +1,1404 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // ======== Configuration & Data Management ========
-    const API_URL = './matches.json'; // Path to your JSON data file
-    const ITEMS_PER_PAGE = 6;
-
-    let DATA = []; // Will store fetched data
-    let currentPage = {
-        home: 1,
-        live: 1,
-        upcoming: 1,
-        highlights: 1,
-        news: 1,
-        search: 1
-    };
-    let currentView = 'home';
-    let currentFilter = {
-        upcoming: 'upcoming' // Default filter for upcoming: 'upcoming' (all), 'today', 'tomorrow'
-    };
-    let currentSearchQuery = '';
-
-    // Constants for date comparisons
-    const NOW = new Date();
-    const TODAY_START = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate());
-    const TOMORROW_START = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate() + 1);
-    const DAY_AFTER_TOMORROW_START = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate() + 2);
-
-    // ======== DOM Elements Cache (Static references) ========
-    const contentDisplay = document.getElementById('content-display');
-    const mainNav = document.getElementById('main-nav');
-    const navLinks = document.querySelectorAll('.nav-link');
-    const menuToggle = document.getElementById('menu-toggle');
-    const searchInput = document.getElementById('search-input');
-    const searchButton = document.getElementById('search-button');
-    const homeLogoLink = document.getElementById('home-logo-link');
-
-    // Removed heroSection reference as it's no longer in HTML
-    // const heroSection = document.getElementById('hero-section'); 
-
-    // SEO Elements (Meta tags)
-    const dynamicTitle = document.getElementById('dynamic-title');
-    const dynamicDescription = document.getElementById('dynamic-description');
-    const dynamicKeywords = document.getElementById('dynamic-keywords');
-    const dynamicCanonical = document.getElementById('dynamic-canonical');
-    const dynamicOgType = document.getElementById('dynamic-og-type');
-    const dynamicOgUrl = document.getElementById('dynamic-og-url');
-    const dynamicOgTitle = document.getElementById('dynamic-og-title');
-    const dynamicOgDescription = document.getElementById('dynamic-og-description');
-    const dynamicOgImage = document.getElementById('dynamic-og-image');
-    const dynamicOgImageAlt = document.getElementById('dynamic-og-image-alt');
-    const dynamicTwitterCard = document.getElementById('dynamic-twitter-card');
-    const dynamicTwitterUrl = document.getElementById('dynamic-twitter-url');
-    const dynamicTwitterTitle = document.getElementById('dynamic-twitter-title');
-    const dynamicTwitterDescription = document.getElementById('dynamic-twitter-description');
-    const dynamicTwitterImage = document.getElementById('dynamic-twitter-image');
-
-    const jsonLdSchema = document.getElementById('json-ld-schema');
-
-    // ======== Utility Functions ========
-
-    /**
-     * Formats an ISO date string to a readable Arabic date and time with a relevant timezone abbreviation.
-     * @param {string} isoString - The ISO date string.
-     * @returns {string} Formatted date string.
-     */
-    const formatDateTime = (isoString) => {
-        const date = new Date(isoString);
-        const optionsDate = { year: 'numeric', month: 'long', day: 'numeric' };
-        const optionsTime = { hour: '2-digit', minute: '2-digit', hour12: true };
-
-        const formattedDatePart = new Intl.DateTimeFormat('ar-EG', optionsDate).format(date);
-        let formattedTimePart = new Intl.DateTimeFormat('ar-EG', optionsTime).format(date);
-
-        formattedTimePart = formattedTimePart.replace('ص', 'ص').replace('م', 'م');
-
-        let timezoneAbbreviation = '';
-        const timezoneOffsetMatch = isoString.match(/([+-]\d{2}:\d{2})$/);
-        const offsetString = timezoneOffsetMatch ? timezoneOffsetMatch[1] : null;
-
-        if (offsetString === '+03:00') {
-             timezoneAbbreviation = '(بتوقيت جدة)'; // SAST (Saudi Arabia Standard Time)
-        } else if (offsetString === '+02:00') {
-             if (isoString.includes("الدوري الإسباني") || isoString.includes("الدوري الألماني") || isoString.includes("الدوري الفرنسي") || isoString.includes("دوري أبطال أوروبا")) {
-                 timezoneAbbreviation = '(بتوقيت أوروبا/صيفي)'; // CEST for European leagues
-             } else {
-                 timezoneAbbreviation = '(بتوقيت القاهرة)'; // If it's a non-DST Egyptian time or a generic +02
-             }
-        } else if (offsetString === '+01:00') {
-             timezoneAbbreviation = '(بتوقيت لندن)'; // BST (British Summer Time)
-        } else if (offsetString === '+00:00') {
-             timezoneAbbreviation = '(بتوقيت جرينتش)'; // GMT/UTC
-        } else {
-            // Fallback for unhandled offsets or if offset is missing
-            timezoneAbbreviation = '(توقيت محلي)'; // Or try to deduce from browser's locale if desired
-        }
-
-        return `${formattedDatePart}، ${formattedTimePart} ${timezoneAbbreviation}`;
-    };
-
-    /**
-     * Updates the page's SEO meta tags dynamically.
-     * @param {string} title - Page title.
-     * @param {string} description - Meta description.
-     * @param {string} keywords - Meta keywords.
-     * @param {string} url - Canonical URL.
-     * @param {string} [image=''] - Open Graph/Twitter image URL.
-     * @param {string} [imageAlt=''] - Open Graph image alt text.
-     */
-    const updateSEO = (title, description, keywords, url, image = '', imageAlt = '') => {
-        dynamicTitle.textContent = title;
-        dynamicDescription.setAttribute('content', description);
-        dynamicKeywords.setAttribute('content', keywords);
-        dynamicCanonical.setAttribute('href', url);
-
-        dynamicOgTitle.setAttribute('content', title);
-        dynamicOgDescription.setAttribute('content', description);
-        dynamicOgUrl.setAttribute('content', url);
-        dynamicOgImage.setAttribute('content', image || "https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png");
-        dynamicOgImageAlt.setAttribute('content', imageAlt || title);
-        dynamicOgType.setAttribute('content', 'website'); // Default, can be 'article', 'video.other'
-
-        dynamicTwitterTitle.setAttribute('content', title);
-        dynamicTwitterDescription.setAttribute('content', description);
-        dynamicTwitterUrl.setAttribute('content', url);
-        dynamicTwitterImage.setAttribute('content', image || "https://shahidkora.online/images/shahidkora-ultimate-pitch-twitter.png");
-        dynamicTwitterCard.setAttribute('content', 'summary_large_image');
-    };
-
-    /**
-     * Generates and updates JSON-LD structured data for SEO.
-     * @param {object} data - The data object (match or news).
-     * @param {string} viewName - The current view name.
-     */
-    const generateJsonLdSchema = (data, viewName) => {
-        let schema = {};
-        const siteUrl = window.location.origin + '/';
-
-        if (viewName === 'match-details' && data && data.type === 'match') {
-            schema = {
-                "@context": "https://schema.org",
-                "@type": "SportsEvent",
-                "name": data.title,
-                "description": data.short_description,
-                "startDate": data.date_time,
-                "location": {
-                    "@type": "Place",
-                    "name": data.stadium
-                },
-                "competitor": [
-                    {
-                        "@type": "SportsTeam",
-                        "name": data.home_team,
-                        "logo": data.home_team_logo
-                    },
-                    {
-                        "@type": "SportsTeam",
-                        "name": data.away_team,
-                        "logo": data.away_team_logo
-                    }
-                ],
-                "sport": "Football",
-                "eventStatus": `https://schema.org/EventStatus/${data.status === 'Live' ? 'EventScheduled' : data.status === 'Finished' ? 'EventEnded' : 'EventScheduled'}`,
-                "image": data.thumbnail,
-                "url": `${siteUrl}#match-${data.id}`
-            };
-            if (data.score) {
-                schema.result = data.score;
-            }
-            if (data.commentators && data.commentators.length > 0) {
-                schema.performer = data.commentators.map(c => ({
-                    "@type": "Person",
-                    "name": c
-                }));
-            }
-            if (data.channel_info && data.channel_info.length > 0) {
-                schema.broadcastOfEvent = data.channel_info.map(channel => ({
-                    "@type": "BroadcastService",
-                    "name": channel.name,
-                    "url": channel.link
-                }));
-            }
-        } else if (viewName === 'news-details' && data && data.type === 'news') { // Assuming a news details view might exist
-            schema = {
-                "@context": "https://schema.org",
-                "@type": "NewsArticle",
-                "headline": data.title,
-                "image": [data.article_image],
-                "datePublished": data.date_time,
-                "dateModified": data.date_time,
-                "author": {
-                    "@type": "Person",
-                    "name": "فريق شاهد كورة"
-                },
-                "publisher": {
-                    "@type": "Organization",
-                    "name": "شاهد كورة - Ultimate Pitch",
-                    "logo": {
-                        "@type": "ImageObject",
-                        "url": "https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png"
-                    }
-                },
-                "description": data.short_description,
-                "mainEntityOfPage": {
-                    "@type": "WebPage",
-                    "@id": data.article_url
-                }
-            };
-        } else if (viewName === 'home') {
-            schema = {
-                "@context": "https://schema.org",
-                "@type": "WebSite",
-                "name": "شاهد كورة - Ultimate Pitch",
-                "url": siteUrl,
-                "potentialAction": {
-                    "@type": "SearchAction",
-                    "target": `${siteUrl}?q={search_term_string}`,
-                    "queryInput": "required name=search_term_string"
-                }
-            };
-        } else if (['live', 'upcoming', 'highlights', 'search-results'].includes(viewName)) {
-            schema = {
-                "@context": "https://schema.org",
-                "@type": "CollectionPage",
-                "name": dynamicTitle.textContent,
-                "description": dynamicDescription.getAttribute('content'),
-                "url": dynamicCanonical.getAttribute('href')
-            };
-        }
-
-        jsonLdSchema.textContent = JSON.stringify(schema, null, 2);
-    };
-
-    /**
-     * Lazy loads images using Intersection Observer or native loading.
-     * Applied to images with data-src and 'lazy' class.
-     * Added placeholder src for better UX during loading.
-     */
-    const lazyLoadImages = () => {
-        const lazyImages = document.querySelectorAll('img.lazy[data-src]');
-
-        if ('loading' in HTMLImageElement.prototype) {
-            // Native lazy loading supported
-            lazyImages.forEach((img) => {
-                img.src = img.dataset.src;
-                img.removeAttribute('data-src');
-                img.classList.remove('lazy');
-                img.onload = () => img.classList.add('loaded');
-            });
-        } else if ('IntersectionObserver' in window) {
-            // Fallback to Intersection Observer
-            let lazyImageObserver = new IntersectionObserver((entries, observer) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        const lazyImage = entry.target;
-                        lazyImage.src = lazyImage.dataset.src;
-                        lazyImage.removeAttribute('data-src');
-                        lazyImage.classList.remove('lazy');
-                        lazyImage.onload = () => lazyImage.classList.add('loaded');
-                        observer.unobserve(lazyImage);
-                    }
-                });
-            }, {
-                rootMargin: '0px 0px 200px 0px' // Load images when 200px from viewport
-            });
-
-            lazyImages.forEach((lazyImage) => {
-                lazyImageObserver.observe(lazyImage);
-            });
-        } else {
-            // Fallback for browsers that don't support Intersection Observer (load all immediately)
-            lazyImages.forEach((img) => {
-                img.src = img.dataset.src;
-                img.removeAttribute('data-src');
-                img.classList.remove('lazy');
-            });
-        }
-    };
-
-    /**
-     * Creates a match card HTML element.
-     * @param {object} match - Match data object.
-     * @returns {HTMLElement} The created match card element.
-     */
-    const createMatchCard = (match) => {
-        const card = document.createElement('div');
-        card.classList.add('match-card', match.status.toLowerCase());
-        card.dataset.matchId = match.id;
-        card.dataset.type = 'match';
-
-        let statusText = '';
-        let statusClass = '';
-        let timeDisplay = '';
-        let scoreOrVs = '<span>vs</span>';
-
-        if (match.status === 'Live') {
-            statusText = 'مباشر';
-            statusClass = 'live-status';
-            timeDisplay = 'الآن';
-        } else if (match.status === 'Finished') {
-            statusText = 'انتهت';
-            statusClass = 'finished-status';
-            timeDisplay = formatDateTime(match.date_time);
-            scoreOrVs = match.score ? `<span>${match.score}</span>` : '<span>-</span>';
-        } else if (match.status === 'Upcoming') {
-            statusText = 'قريباً';
-            statusClass = 'upcoming-status';
-            timeDisplay = formatDateTime(match.date_time);
-        }
-
-        card.innerHTML = `
-            <div class="match-header">
-                <span class="match-status ${statusClass}">${statusText}</span>
-                <span class="match-time">${timeDisplay}</span>
-            </div>
-            <div class="match-teams">
-                <div class="team home-team">
-                    <span>${match.home_team}</span>
-                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" data-src="${match.home_team_logo}" alt="شعار ${match.home_team}" class="lazy" loading="lazy" width="48" height="48">
-                </div>
-                <div class="vs">${scoreOrVs}</div>
-                <div class="team away-team">
-                    <span>${match.away_team}</span>
-                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" data-src="${match.away_team_logo}" alt="شعار ${match.away_team}" class="lazy" loading="lazy" width="48" height="48">
-                </div>
-            </div>
-            <div class="match-league">
-                <img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" data-src="${match.league_logo}" alt="شعار ${match.league_name}" class="lazy" loading="lazy" width="32" height="32">
-                <span>${match.league_name}</span>
-            </div>
-            ${match.channel_info && match.channel_info.length > 0 && match.status !== 'Finished' ?
-                `<div class="match-channels"><span>القنوات: ${match.channel_info.map(c => c.name).join(', ')}</span></div>` : ''}
-            <div class="match-details-btn">
-                <a href="#match-${match.id}" class="btn btn-tertiary" data-match-id="${match.id}" data-type="match">عرض التفاصيل <i class="fas fa-info-circle"></i></a>
-            </div>
-        `;
-        return card;
-    };
-
-    /**
-     * Creates a news card HTML element.
-     * @param {object} news - News data object.
-     * @returns {HTMLElement} The created news card element.
-     */
-    const createNewsCard = (news) => {
-        const card = document.createElement('div');
-        card.classList.add('news-card');
-        card.dataset.newsId = news.id;
-        card.dataset.type = 'news';
-        // Use data-src for lazy loading thumbnail, along with native loading="lazy"
-        card.innerHTML = `
-            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" data-src="${news.thumbnail}" alt="صورة خبر ${news.title}" class="lazy" loading="lazy" width="250" height="150">
-            <div class="news-card-content">
-                <h3>${news.title}</h3>
-                <p>${news.short_description}</p>
-                <span class="news-date">${formatDateTime(news.date_time)}</span>
-                <a href="${news.article_url}" target="_blank" rel="noopener noreferrer" class="btn btn-tertiary">اقرأ المزيد <i class="fas fa-arrow-left"></i></a>
-            </div>
-        `;
-        return card;
-    };
-
-    /**
-     * Renders items into a specified grid container with pagination.
-     * @param {Array<object>} items - Array of data items (matches or news).
-     * @param {HTMLElement} container - The HTML container element to render into.
-     * @param {Function} cardCreator - Function to create an individual card (createMatchCard or createNewsCard).
-     * @param {number} page - Current page number for pagination.
-     * @param {HTMLElement} [emptyStateElement=null] - Optional reference to the empty state div.
-     * @param {HTMLElement} [paginationControlsElement=null] - Optional reference to the pagination controls div.
-     */
-    const renderGrid = (items, container, cardCreator, page, emptyStateElement = null, paginationControlsElement = null) => {
-        if (!container) {
-            console.error(`renderGrid: Target container is null or undefined. This indicates an issue with template cloning or element selection. Container expected: ${container?.id || 'N/A'}`);
-            return;
-        }
-        container.innerHTML = ''; // Clear previous content
-
-        if (items.length === 0) {
-            if (emptyStateElement) emptyStateElement.style.display = 'block';
-            if (paginationControlsElement) paginationControlsElement.style.display = 'none';
-            return;
-        } else {
-            if (emptyStateElement) emptyStateElement.style.display = 'none';
-            if (paginationControlsElement) paginationControlsElement.style.display = 'flex';
-        }
-
-        const startIndex = (page - 1) * ITEMS_PER_PAGE;
-        const endIndex = startIndex + ITEMS_PER_PAGE;
-        const paginatedItems = items.slice(startIndex, endIndex);
-
-        paginatedItems.forEach(item => {
-            // Ensure cardCreator returns an HTMLElement
-            const cardElement = cardCreator(item);
-            if (cardElement instanceof HTMLElement) {
-                container.appendChild(cardElement);
-            } else {
-                console.warn('cardCreator did not return an HTMLElement for item:', item);
-            }
-        });
-
-        // Update pagination button states (pagination controls are now display: none in CSS, so this won't be visible)
-        if (paginationControlsElement) {
-            const prevBtn = paginationControlsElement.querySelector('.btn-page.prev');
-            const nextBtn = paginationControlsElement.querySelector('.btn-page.next');
-            if (prevBtn) prevBtn.disabled = page === 1;
-            if (nextBtn) nextBtn.disabled = endIndex >= items.length;
-        }
-
-        // Apply lazy loading to newly rendered images
-        lazyLoadImages();
-    };
-
-
-    // ======== View Management & Content Rendering ========
-
-    /**
-     * Main function to switch between different sections (views) of the application.
-     * @param {string} viewName - The name of the view to switch to (e.g., 'home', 'live', 'match-details').
-     * @param {string|number} [dataId=null] - Optional ID for specific item details (e.g., match ID).
-     */
-    const switchView = (viewName, dataId = null) => {
-        currentView = viewName;
-        
-        // Hide all main content sections initially
-        document.querySelectorAll('.view-section').forEach(section => {
-            section.classList.remove('active-view');
-            section.style.display = 'none';
-        });
-
-        // No need to manage heroSection display, as it's removed from HTML
-
-        // Deactivate all nav links and activate the current one
-        navLinks.forEach(link => link.classList.remove('active'));
-        const activeNavLink = document.querySelector(`.nav-link[data-target-view="${viewName}"]`);
-        if (activeNavLink) activeNavLink.classList.add('active');
-        // Close mobile menu if open
-        mainNav.classList.remove('active');
-        menuToggle.classList.remove('active');
-
-        let pageTitle = "شاهد كورة: Ultimate Pitch - كل كرة القدم في مكان واحد";
-        let pageDescription = "شاهد كورة - ملعبك النهائي لكرة القدم. بث مباشر بجودة فائقة، أهداف مجنونة، تحليلات عميقة، وآخر الأخبار من قلب الحدث. انغمس في عالم الكرة الحقيقية.";
-        let pageKeywords = "شاهد كورة، بث مباشر، مباريات اليوم، أهداف، ملخصات، أخبار كرة قدم، دوريات عالمية، كرة القدم، مشاهدة مجانية، تحليل كروي، Ultimate Pitch";
-        let pageUrl = window.location.origin + '/';
-        let ogImage = "https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png";
-        let ogImageAlt = "شاهد كورة | ملعبك النهائي لكرة القدم";
-        let jsonLdData = {}; // Data for schema markup
-
-        let targetSectionClone; // Holds the cloned template content's root element
-
-        // Render content based on the viewName
-        if (viewName === 'home') {
-            const template = document.getElementById('home-view-template');
-            if (!template) {
-                console.error("ERROR: The <template id='home-view-template'> element was not found in the DOM. Ensure it's in index.html.");
-                contentDisplay.innerHTML = '<p class="error-message">عذراً، حدث خطأ في تحميل المحتوى الأساسي للموقع (قالب الصفحة الرئيسية غير موجود).</p>';
-                return;
-            }
-            targetSectionClone = document.importNode(template.content, true).firstElementChild;
-
-            if (!targetSectionClone) {
-                console.error("ERROR: The cloned content of 'home-view-template' is empty or does not have a first element child. Check the template structure in index.html.");
-                contentDisplay.innerHTML = '<p class="error-message">عذراً، لم يتم العثور على القسم الرئيسي في القالب (قالب الصفحة الرئيسية فارغ).</p>';
-                return;
-            }
-
-            // Clear previous content from contentDisplay
-            contentDisplay.innerHTML = '';
-            contentDisplay.appendChild(targetSectionClone);
-            targetSectionClone.style.display = 'block';
-            targetSectionClone.classList.add('active-view');
-
-            // Get references to elements *inside the cloned section*
-            const mainGridContainer = targetSectionClone.querySelector('#main-match-grid');
-            const homePaginationControls = targetSectionClone.querySelector('.pagination-controls');
-            const homeMatchesTitle = targetSectionClone.querySelector('#home-matches-title');
-
-            // Filter for home: Live + Upcoming (Today/Tomorrow) + 2 latest finished + 2 latest news
-            const liveMatches = DATA.filter(item => item.type === 'match' && item.status === 'Live');
-            const upcomingMatchesTodayTomorrow = DATA.filter(item => {
-                if (item.type !== 'match' || item.status !== 'Upcoming') return false;
-                const matchDate = new Date(item.date_time);
-                return (matchDate >= TODAY_START && matchDate < TOMORROW_START) ||
-                       (matchDate >= TOMORROW_START && matchDate < DAY_AFTER_TOMORROW_START);
-            }).sort((a, b) => new Date(a.date_time) - new Date(b.date_time));
-
-            const finishedMatches = DATA.filter(item => item.type === 'match' && item.status === 'Finished')
-                                         .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
-                                         .slice(0, 2);
-
-            const latestNews = DATA.filter(item => item.type === 'news')
-                                   .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
-                                   .slice(0, 2);
-
-            // Filter out any potential non-match/news items before passing to renderGrid
-            const itemsToRender = [...liveMatches, ...upcomingMatchesTodayTomorrow, ...latestNews, ...finishedMatches].filter(item => item.type === 'match' || item.type === 'news');
-
-            homeMatchesTitle.textContent = "أبرز المباريات والجديد";
-            renderGrid(itemsToRender, mainGridContainer, (item) => {
-                if (item.type === 'match') return createMatchCard(item);
-                if (item.type === 'news') return createNewsCard(item);
-                return null; // Ensure something is returned
-            }, currentPage.home, null, homePaginationControls);
-
-
-            pageTitle = "شاهد كورة: Ultimate Pitch - كل كرة القدم في مكان واحد";
-            pageDescription = "شاهد كورة - ملعبك النهائي لكرة القدم. بث مباشر بجودة فائقة، أهداف مجنونة، تحليلات عميقة، وآخر الأخبار من قلب الحدث. انغمس في عالم الكرة الحقيقية.";
-            pageKeywords = "شاهد كورة، بث مباشر، مباريات اليوم، أهداف، ملخصات، أخبار كرة قدم، دوريات عالمية، كرة القدم، مشاهدة مجانية، تحليل كروي، Ultimate Pitch, مباريات اليوم, بث مباشر الأهلي والزمالك, أخبار مبابي, ملخصات الدوري الإسباني";
-            pageUrl = window.location.origin + '/';
-            jsonLdData = { "@type": "WebSite", "name": "شاهد كورة - Ultimate Pitch", "url": pageUrl };
-
-
-        } else if (viewName === 'live') {
-            const template = document.getElementById('live-matches-template');
-            if (!template) { console.error("ERROR: The 'live-matches-template' template was not found."); contentDisplay.innerHTML = '<p class="error-message">عذراً، قالب المباريات المباشرة غير موجود.</p>'; return; }
-            targetSectionClone = document.importNode(template.content, true).firstElementChild;
-            if (!targetSectionClone) { console.error("ERROR: Cloned content of 'live-matches-template' is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب المباريات المباشرة فارغ.</p>'; return; }
-
-            // Clear all current children of contentDisplay
-            contentDisplay.innerHTML = '';
-            contentDisplay.appendChild(targetSectionClone);
-            targetSectionClone.style.display = 'block';
-            targetSectionClone.classList.add('active-view');
-
-            const liveGridContainer = targetSectionClone.querySelector('#live-match-grid');
-            const liveEmptyState = targetSectionClone.querySelector('#live-empty-state');
-            const livePaginationControls = targetSectionClone.querySelector('.pagination-controls');
-
-            const itemsToRender = DATA.filter(item => item.type === 'match' && item.status === 'Live');
-            renderGrid(itemsToRender, liveGridContainer, createMatchCard, currentPage.live, liveEmptyState, livePaginationControls);
-
-            pageTitle = "شاهد كورة: مباريات كرة القدم مباشرة الآن | بث مباشر";
-            pageDescription = "شاهد جميع مباريات كرة القدم التي تبث مباشرة الآن بجودة عالية. تابع ديربيات الكرة العالمية والمحلية لحظة بلحظة.";
-            pageKeywords = "مباريات مباشرة، بث مباشر، شاهد الآن، كرة قدم لايف، مشاهدة مباريات، بث مجاني، الدوري المصري مباشر، الدوري السعودي مباشر";
-            pageUrl = window.location.origin + '/live';
-
-
-        } else if (viewName === 'upcoming') {
-            const template = document.getElementById('upcoming-matches-template');
-            if (!template) { console.error("ERROR: The 'upcoming-matches-template' template was not found."); contentDisplay.innerHTML = '<p class="error-message">عذراً، قالب المباريات القادمة غير موجود.</p>'; return; }
-            targetSectionClone = document.importNode(template.content, true).firstElementChild;
-            if (!targetSectionClone) { console.error("ERROR: Cloned content of 'upcoming-matches-template' is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب المباريات القادمة فارغ.</p>'; return; }
-
-            contentDisplay.innerHTML = '';
-            contentDisplay.appendChild(targetSectionClone);
-            targetSectionClone.style.display = 'block';
-            targetSectionClone.classList.add('active-view');
-
-            const upcomingGridContainer = targetSectionClone.querySelector('#upcoming-match-grid');
-            const upcomingEmptyState = targetSectionClone.querySelector('#upcoming-empty-state');
-            const upcomingPaginationControls = targetSectionClone.querySelector('.pagination-controls');
-
-
-            const filterBtns = targetSectionClone.querySelectorAll('.filter-btn');
-            filterBtns.forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.dataset.filterValue === currentFilter.upcoming) {
-                    btn.classList.add('active');
-                }
-                btn.onclick = (e) => {
-                    e.preventDefault();
-                    filterBtns.forEach(b => b.classList.remove('active'));
-                    e.target.classList.add('active');
-                    currentFilter.upcoming = e.target.dataset.filterValue;
-                    currentPage.upcoming = 1;
-                    switchView('upcoming');
-                };
-            });
-
-            let filteredUpcoming = DATA.filter(item => item.type === 'match' && item.status === 'Upcoming');
-
-            if (currentFilter.upcoming === 'today') {
-                filteredUpcoming = filteredUpcoming.filter(item => {
-                    const matchDate = new Date(item.date_time);
-                    return matchDate >= TODAY_START && matchDate < TOMORROW_START;
-                });
-            } else if (currentFilter.upcoming === 'tomorrow') {
-                filteredUpcoming = filteredUpcoming.filter(item => {
-                    const matchDate = new Date(item.date_time);
-                    return matchDate >= TOMORROW_START && matchDate < DAY_AFTER_TOMORROW_START;
-                });
-            }
-            filteredUpcoming.sort((a, b) => new Date(a.date_time) - new Date(b.date_time));
-
-            renderGrid(filteredUpcoming, upcomingGridContainer, createMatchCard, currentPage.upcoming, upcomingEmptyState, upcomingPaginationControls);
-
-            pageTitle = "شاهد كورة: مواعيد مباريات كرة القدم القادمة | جدول المباريات";
-            pageDescription = "اكتشف مواعيد مباريات كرة القدم القادمة في جميع الدوريات والبطولات الكبرى. لا تفوت أي مباراة حاسمة!";
-            pageKeywords = "مواعيد مباريات، مباريات اليوم، مباريات الغد، جدول المباريات، كرة قدم قادمة، دوري أبطال أوروبا، الدوري الإسباني، الدوري الإنجليزي";
-            pageUrl = window.location.origin + '/upcoming';
-
-
-        } else if (viewName === 'highlights') {
-            const template = document.getElementById('highlights-template');
-            if (!template) { console.error("ERROR: The 'highlights-template' template was not found."); contentDisplay.innerHTML = '<p class="error-message">عذراً، قالب الملخصات غير موجود.</p>'; return; }
-            targetSectionClone = document.importNode(template.content, true).firstElementChild;
-            if (!targetSectionClone) { console.error("ERROR: Cloned content of 'highlights-template' is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب الملخصات فارغ.</p>'; return; }
-
-            contentDisplay.innerHTML = '';
-            contentDisplay.appendChild(targetSectionClone);
-            targetSectionClone.style.display = 'block';
-            targetSectionClone.classList.add('active-view');
-
-            const highlightsGridContainer = targetSectionClone.querySelector('#highlights-grid');
-            const highlightsEmptyState = targetSectionClone.querySelector('#highlights-empty-state');
-            const highlightsPaginationControls = targetSectionClone.querySelector('.pagination-controls');
-
-            const itemsToRender = DATA.filter(item => item.type === 'match' && item.highlights_url);
-            itemsToRender.sort((a, b) => new Date(b.date_time) - new Date(a.date_time));
-            renderGrid(itemsToRender, highlightsGridContainer, createMatchCard, currentPage.highlights, highlightsEmptyState, highlightsPaginationControls);
-
-            pageTitle = "شاهد كورة: أهداف وملخصات المباريات | أبرز اللقطات";
-            pageDescription = "شاهد أهداف جميع المباريات وملخصات كاملة لأبرز اللقاءات في الدوريات والبطولات الكبرى. استمتع بأجمل اللحظات الكروية.";
-            pageKeywords = "أهداف المباريات، ملخصات كرة القدم، أهداف اليوم، لقطات حاسمة، أفضل الأهداف، ملخصات الدوري الإسباني، ملخصات الدوري الإنجليزي";
-            pageUrl = window.location.origin + '/highlights';
-
-
-        } else if (viewName === 'news') {
-            const template = document.getElementById('news-template');
-            if (!template) { console.error("ERROR: The 'news-template' template was not found."); contentDisplay.innerHTML = '<p class="error-message">عذراً، قالب الأخبار غير موجود.</p>'; return; }
-            targetSectionClone = document.importNode(template.content, true).firstElementChild;
-            if (!targetSectionClone) { console.error("ERROR: Cloned content of 'news-template' is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب الأخبار فارغ.</p>'; return; }
-
-            contentDisplay.innerHTML = '';
-            contentDisplay.appendChild(targetSectionClone);
-            targetSectionClone.style.display = 'block';
-            targetSectionClone.classList.add('active-view');
-
-            const newsGridContainer = targetSectionClone.querySelector('#news-grid');
-            const newsEmptyState = targetSectionClone.querySelector('#news-empty-state');
-            const newsPaginationControls = targetSectionClone.querySelector('.pagination-controls');
-
-            const itemsToRender = DATA.filter(item => item.type === 'news');
-            itemsToRender.sort((a, b) => new Date(b.date_time) - new Date(a.date_time));
-            renderGrid(itemsToRender, newsGridContainer, createNewsCard, currentPage.news, newsEmptyState, newsPaginationControls);
-
-            pageTitle = "شاهد كورة: آخر أخبار كرة القدم | تحديثات حصرية";
-            pageDescription = "تابع آخر أخبار كرة القدم العالمية والمحلية، انتقالات اللاعبين، تحديثات الأندية، وتحليلات حصرية لأبرز الأحداث الكروية.";
-            pageKeywords = "أخبار كرة قدم، انتقالات اللاعبين، أخبار ريال مدريد، أخبار ليفربول، أخبار مبابي، تحديثات رياضية، أخبار الدوري الإنجليزي، أخبار الدوري الإسباني";
-            pageUrl = window.location.origin + '/news';
-
-
-        } else if (viewName === 'match-details' && dataId) {
-            const match = DATA.find(item => item.type === 'match' && item.id === parseInt(dataId));
-            if (match) {
-                const template = document.getElementById('match-details-view-template');
-                if (!template) { console.error("ERROR: The 'match-details-view-template' template was not found."); contentDisplay.innerHTML = '<p class="error-message">عذراً، قالب تفاصيل المباراة غير موجود.</p>'; return; }
-                targetSectionClone = document.importNode(template.content, true).firstElementChild;
-                if (!targetSectionClone) { console.error("ERROR: Cloned content of 'match-details-view-template' is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب تفاصيل المباراة فارغ.</p>'; return; }
-
-                contentDisplay.innerHTML = ''; // Clear all current children of contentDisplay
-                contentDisplay.appendChild(targetSectionClone);
-                targetSectionClone.style.display = 'block';
-                targetSectionClone.classList.add('active-view');
-
-                const matchDetailsTitleElement = targetSectionClone.querySelector('#match-details-title-element');
-                // The following elements are not in HTML after match-info-box removal, so we remove their references here to avoid errors
-                // const matchDetailsDescription = targetSectionClone.querySelector('#match-details-description');
-                // const matchDetailsDateTime = targetSectionClone.querySelector('#match-details-date-time');
-                // const matchDetailsLeague = targetSectionClone.querySelector('#match-details-league');
-                // const matchDetailsCommentators = targetSectionClone.querySelector('#match-details-commentators');
-                // const matchDetailsTeams = targetSectionClone.querySelector('#match-details-teams');
-                // const matchDetailsStadium = targetSectionClone.querySelector('#match-details-stadium');
-                // const matchDetailsStatus = targetSectionClone.querySelector('#match-details-status');
-                // const matchDetailsScoreContainer = targetSectionClone.querySelector('#match-details-score-container');
-                // const matchDetailsScore = targetSectionClone.querySelector('#match-details-score');
-                // const matchDetailsHighlightsContainer = targetSectionClone.querySelector('#match-details-highlights-container');
-                // const matchDetailsHighlightsLink = targetSectionClone.querySelector('#match-details-highlights-link');
-
-                const matchPlayerContainer = targetSectionClone.querySelector('#match-player-container');
-                const videoOverlay = targetSectionClone.querySelector('#video-overlay');
-                const overlayThumbnail = targetSectionClone.querySelector('#overlay-thumbnail');
-                const loadingSpinner = targetSectionClone.querySelector('#video-loading-spinner');
-                
-                const suggestedMatchGrid = targetSectionClone.querySelector('#suggested-match-grid');
-                const backToHomeBtn = targetSectionClone.querySelector('#back-to-home-btn'); // Get the back button within the cloned template
-
-                // Add event listener for the back button, if it exists
-                if (backToHomeBtn) {
-                    backToHomeBtn.onclick = (e) => {
-                        e.preventDefault();
-                        switchView('home');
-                        window.history.pushState({ view: 'home' }, '', '#home');
-                    };
-                }
-
-
-                matchDetailsTitleElement.textContent = match.title;
-                // Since match-info-box is removed, these elements won't be found, removed their assignment
-                // matchDetailsDescription.textContent = match.short_description;
-                // matchDetailsDateTime.textContent = formatDateTime(match.date_time);
-                // matchDetailsLeague.textContent = match.league_name;
-                // matchDetailsCommentators.textContent = match.commentators.join(', ') || 'غير متاح';
-                // matchDetailsTeams.textContent = `${match.home_team} ضد ${match.away_team}`;
-                // matchDetailsStadium.textContent = match.stadium;
-                // matchDetailsStatus.textContent = match.status === 'Live' ? 'مباشرة' : match.status === 'Finished' ? 'انتهت' : 'قادمة';
-
-                // Video Player & Overlay logic
-                matchPlayerContainer.innerHTML = '';
-                overlayThumbnail.src = match.thumbnail;
-                videoOverlay.style.display = 'flex';
-                loadingSpinner.style.display = 'none';
-
-                videoOverlay.onclick = () => {
-                    loadingSpinner.style.display = 'block';
-                    videoOverlay.style.display = 'none';
-
-                    const iframe = document.createElement('iframe');
-                    iframe.src = match.embed_url;
-                    iframe.allow = "autoplay; fullscreen; picture-in-picture"; // Added picture-in-picture
-                    iframe.frameBorder = "0";
-                    iframe.scrolling = "no";
-                    iframe.setAttribute('referrerpolicy', 'origin');
-                    iframe.onload = () => {
-                        loadingSpinner.style.display = 'none';
-                    };
-                    iframe.onerror = () => {
-                        loadingSpinner.style.display = 'none';
-                        matchPlayerContainer.innerHTML = '<p class="error-message">تعذر تحميل البث. يرجى المحاولة لاحقاً.</p>';
-                    };
-                    matchPlayerContainer.appendChild(iframe);
-
-                    // Ad Banner Logic (already present and looks good)
-                    const adBannerContainer = targetSectionClone.querySelector('#ad-banner-iframe-sync');
-                    if (adBannerContainer && !adBannerContainer.hasChildNodes()) {
-                        window.atOptions = {
-                            'key' : 'd0f597100460382f12621237f055f943',
-                            'format' : 'iframe',
-                            'height' : 50,
-                            'width' : 320,
-                            'params' : {}
-                        };
-
-                        const externalAdScript = document.createElement('script');
-                        externalAdScript.type = 'text/javascript';
-                        externalAdScript.src = '//www.highperformanceformat.com/d0f597100460382f12621237f055f943/invoke.js';
-                        externalAdScript.async = true;
-
-                        adBannerContainer.appendChild(externalAdScript);
-                    }
-                };
-
-                // These elements were part of match-info-box, so they will not be found. Removed their conditional display logic.
-                // if (match.status === 'Finished' && match.score) {
-                //     matchDetailsScoreContainer.classList.remove('hidden');
-                //     matchDetailsScore.textContent = match.score;
-                // } else {
-                //     matchDetailsScoreContainer.classList.add('hidden');
-                // }
-
-                // if (match.status === 'Finished' && match.highlights_url) {
-                //     matchDetailsHighlightsContainer.classList.remove('hidden');
-                //     matchDetailsHighlightsLink.href = match.highlights_url;
-                // } else {
-                //     matchDetailsHighlightsContainer.classList.add('hidden');
-                // }
-
-                const suggestedMatches = DATA.filter(item =>
-                    item.type === 'match' &&
-                    item.id !== match.id &&
-                    (item.league_id === match.league_id || item.category === match.category) &&
-                    (item.status === 'Upcoming' || item.status === 'Live')
-                ).slice(0, 4);
-
-                renderGrid(suggestedMatches, suggestedMatchGrid, createMatchCard, 1);
-
-                pageTitle = `${match.title} | شاهد كورة بث مباشر وتفاصيل المباراة`;
-                pageDescription = match.short_description;
-                pageKeywords = [...(match.tags || []), "مشاهدة مباراة", "بث مباشر", "ملخص المباراة", match.home_team, match.away_team, match.league_name].join(', ');
-                pageUrl = `${window.location.origin}/#match-${match.id}`;
-                ogImage = match.thumbnail;
-                ogImageAlt = `ملصق مباراة ${match.title}`;
-                jsonLdData = match;
-
-            } else {
-                console.warn(`Match with ID ${dataId} not found. Redirecting to home.`);
-                switchView('home');
-                window.history.pushState({ view: 'home' }, '', '#home');
-                return;
-            }
-        } else if (viewName === 'search-results') {
-            const template = document.getElementById('home-view-template'); // Re-using home template for search results
-            if (!template) { console.error("ERROR: The 'home-view-template' template for search results was not found."); contentDisplay.innerHTML = '<p class="error-message">عذراً، قالب البحث غير موجود.</p>'; return; }
-            targetSectionClone = document.importNode(template.content, true).firstElementChild;
-            if (!targetSectionClone) { console.error("ERROR: Cloned content of 'home-view-template' for search results is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب البحث فارغ.</p>'; return; }
-
-            contentDisplay.innerHTML = '';
-            contentDisplay.appendChild(targetSectionClone);
-            targetSectionClone.style.display = 'block';
-            targetSectionClone.classList.add('active-view');
-
-            const mainGridContainer = targetSectionClone.querySelector('#main-match-grid');
-            const homePaginationControls = targetSectionClone.querySelector('.pagination-controls');
-            const searchTitleElement = targetSectionClone.querySelector('#home-matches-title');
-
-            searchTitleElement.textContent = `نتائج البحث عن: "${currentSearchQuery}"`;
-
-            const query = currentSearchQuery.toLowerCase();
-            const searchResults = DATA.filter(item => {
-                const searchableText = `${item.title} ${item.short_description} ${item.league_name} ${item.home_team || ''} ${item.away_team || ''} ${item.commentators ? item.commentators.join(' ') : ''} ${item.tags ? item.tags.join(' ') : ''}`.toLowerCase();
-                return searchableText.includes(query);
-            });
-
-            renderGrid(searchResults, mainGridContainer, (item) => {
-                if (item.type === 'match') return createMatchCard(item);
-                if (item.type === 'news') return createNewsCard(item);
-                return null; // Ensure something is returned
-            }, currentPage.search, null, homePaginationControls);
-
-            pageTitle = `نتائج البحث عن "${currentSearchQuery}" | شاهد كورة`;
-            pageDescription = `نتائج البحث عن "${currentSearchQuery}" في مباريات كرة القدم وآخر الأخبار على شاهد كورة.`;
-            pageKeywords = `بحث كرة قدم، ${currentSearchQuery}, نتائج بحث، مباريات، أخبار`;
-            pageUrl = `${window.location.origin}/search?q=${encodeURIComponent(currentSearchQuery)}`;
-            jsonLdData = { "@type": "SearchResultsPage", "name": pageTitle, "url": pageUrl };
-        }
-
-        updateSEO(pageTitle, pageDescription, pageKeywords, pageUrl, ogImage, ogImageAlt);
-        generateJsonLdSchema(jsonLdData, viewName);
-    };
-
-
-    // ======== Event Listeners ========
-
-    // Delegated event listener for general clicks on the body
-    document.body.addEventListener('click', (e) => {
-        const navLink = e.target.closest('.nav-link');
-        const homeLogo = e.target.closest('#home-logo-link');
-
-        if (navLink) {
-            e.preventDefault();
-            const targetView = navLink.dataset.targetView;
-            switchView(targetView);
-            window.history.pushState({ view: targetView }, '', `#${targetView}`);
-        } else if (homeLogo) {
-            e.preventDefault();
-            switchView('home');
-            window.history.pushState({ view: 'home' }, '', '#home');
-        }
-
-        // Click event for the entire match card (or its detail button within)
-        const itemCard = e.target.closest('.match-card');
-        if (itemCard && itemCard.dataset.type === 'match') { // Ensure it's a match card click
-             e.preventDefault(); // Prevent default link behavior if any internal links are clicked
-             const itemId = itemCard.dataset.matchId;
-             if (itemId) {
-                 switchView('match-details', itemId);
-                 window.history.pushState({ view: 'match-details', id: itemId }, '', `#match-${itemId}`);
-             }
-        }
-        // News cards link externally, so no special JS handler needed for them beyond their own <a> tag.
-
-
-        // Toggle mobile menu
-        if (e.target.closest('#menu-toggle')) {
-            mainNav.classList.toggle('active');
-            menuToggle.classList.toggle('active');
-        } else if (!mainNav.contains(e.target) && !menuToggle.contains(e.target) && mainNav.classList.contains('active')) {
-            mainNav.classList.remove('active');
-            menuToggle.classList.remove('active');
-        }
-    });
-
-    // Delegated event listener for pagination buttons within contentDisplay
-    contentDisplay.addEventListener('click', (e) => {
-        const prevBtn = e.target.closest('.btn-page.prev');
-        const nextBtn = e.target.closest('.btn-page.next');
-
-        if (prevBtn || nextBtn) {
-            e.preventDefault();
-            const viewKey = currentView === 'search-results' ? 'search' : currentView;
-            if (prevBtn) {
-                currentPage[viewKey] = Math.max(1, currentPage[viewKey] - 1);
-            } else if (nextBtn) {
-                currentPage[viewKey]++;
-            }
-            switchView(currentView, null); // Re-render the current view with updated page
-        }
-    });
-
-
-    searchButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        performSearch();
-    });
-
-    searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            performSearch();
-        }
-    });
-
-    function performSearch() {
-        const query = searchInput.value.trim();
-        if (query) {
-            currentSearchQuery = query;
-            currentPage.search = 1;
-            switchView('search-results');
-            // Update URL for search results
-            window.history.pushState({ view: 'search-results', query: query }, '', `/search?q=${encodeURIComponent(query)}`);
-        } else if (currentView === 'search-results') {
-            // If search input is cleared and currently on search results, go to home
-            switchView('home');
-            window.history.pushState({ view: 'home' }, '', '/');
-        }
+/* style.css - تصميم "شاهد كورة" - Ultimate Pitch UI - الإصدار الاحترافي والعصري (تعديل 3) */
+
+/* --- Root Variables for Theme Customization (Lighter & Trendy - Red Accent) --- */
+:root {
+    /* Backgrounds - Moved to warmer, slightly off-white tones */
+    --up-bg-light: #F7F9FA; /* Very light, almost white, subtle warmth */
+    --up-bg-medium: #EFF2F5; /* Light gray for cards/sections, softer than white */
+    --up-bg-dark: #E1E7ED; /* Deeper light gray for subtle depth/borders */
+
+    /* Accents - Retained vibrant Red and Blue */
+    --up-accent-primary: #FF3B3B; /* Vibrant Red - Main accent, powerful */
+    --up-accent-secondary: #007BFF; /* Bright Blue - Secondary accent, contrasting */
+    --up-accent-warning: #FFC107; /* Orange/Yellow - For upcoming/highlights */
+    --up-accent-success: #28A745; /* Green - For positive elements/glows */
+    --up-accent-danger: #DC3545; /* Specific danger red for 'live' status */
+
+    /* Text Colors */
+    --up-text-dark: #2C3A47; /* Dark charcoal for primary text */
+    --up-text-medium: #5F6E7D; /* Medium gray for secondary text */
+    --up-text-light: #8E9BAA; /* Lighter gray for muted text */
+    --up-text-on-accent: #FFFFFF; /* White text for accent backgrounds */
+
+    /* Gradients & Shadows */
+    --up-gradient-btn-primary: linear-gradient(45deg, var(--up-accent-primary) 0%, var(--up-accent-secondary) 100%);
+    --up-gradient-btn-hover: linear-gradient(45deg, var(--up-accent-secondary) 0%, var(--up-accent-primary) 100%);
+    --up-gradient-header: linear-gradient(to bottom, rgba(247, 249, 250, 0.98), rgba(239, 242, 245, 0.95)); /* Adjusted for new light background */
+    
+    --up-shadow-soft: 0 4px 10px rgba(0, 0, 0, 0.08); /* Lighter shadows */
+    --up-shadow-medium: 0 8px 20px rgba(0, 0, 0, 0.12);
+    --up-shadow-strong: 0 12px 30px rgba(0, 0, 0, 0.18);
+    --up-glow-primary: 0 0 15px rgba(255, 59, 59, 0.5), 0 0 25px rgba(255, 59, 59, 0.3); /* Slightly less intense glow */
+    --up-glow-secondary: 0 0 15px rgba(0, 123, 255, 0.5), 0 0 25px rgba(0, 123, 255, 0.3);
+    --up-inset-shadow: inset 0 0 6px rgba(0, 0, 0, 0.03); /* Very subtle inset shadow */
+
+    /* Typography */
+    --font-heading: 'Oswald', sans-serif;
+    --font-body: 'Roboto', sans-serif;
+
+    /* Transitions */
+    --transition-fast: 0.2s ease-out;
+    --transition-medium: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Borders & Radius */
+    --border-radius-card: 10px;
+    --border-radius-button: 6px;
+    --border-radius-full: 50%;
+
+    /* Aspect Ratio for video player */
+    --aspect-ratio-16-9: 16 / 9;
+}
+
+/* --- Base Reset & Global Styles (Mobile First Defaults) --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html {
+    font-size: 13px;  
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--up-bg-light);  
+    color: var(--up-text-dark);  
+    line-height: 1.6;
+    direction: rtl;  
+    text-align: right;  
+    overflow-x: hidden;
+    min-height: 100vh;
+    position: relative;
+    overflow-y: scroll;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+i {
+    max-width: 100%;
+    height: auto;
+    display: inline-block;
+}
+
+:focus-visible {
+    outline: 2px solid var(--up-accent-primary);
+    outline-offset: 3px;
+    border-radius: var(--border-radius-button);
+}
+
+/* Custom Scrollbar (Adjusted for light theme) */
+body::-webkit-scrollbar {
+    width: 8px;
+}
+body::-webkit-scrollbar-track {
+    background: var(--up-bg-light);
+}
+body::-webkit-scrollbar-thumb {
+    background: var(--up-accent-primary); /* Red thumb */
+    border-radius: 4px;
+    border: 2px solid var(--up-bg-light);
+}
+body::-webkit-scrollbar-thumb:hover {
+    background: var(--up-accent-secondary); /* Blue hover */
+}
+
+/* Background texture overlay - Adjusted opacity and color for light theme */
+.pitch-texture-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        repeating-linear-gradient(45deg, rgba(0,0,0,0.01) 0, rgba(0,0,0,0.01) 1px, transparent 1px, transparent 60px),
+        repeating-linear-gradient(-45deg, rgba(0,0,0,0.01) 0, rgba(0,0,0,0.01) 1px, transparent 1px, transparent 60px);
+    background-color: var(--up-bg-light); /* Ensure it matches the light theme */
+    background-size: 60px 60px;
+    opacity: 1; /* Keep it subtle */
+    z-index: -2;
+    filter: brightness(1.0);
+}
+
+.site-wrapper {
+    position: relative;
+    z-index: 1;
+}
+
+.container {
+    width: 95vw;
+    max-width: 1280px;
+    margin: auto;
+    padding: 0 1rem;
+}
+
+a {
+    color: var(--up-accent-primary); /* Primary red link color */
+    text-decoration: none;
+    transition: all var(--transition-fast);
+}
+a:hover {
+    color: var(--up-accent-secondary); /* Secondary blue on hover */
+    transform: translateY(-1px);
+    text-shadow: 0 0 8px rgba(255, 59, 59, 0.3);
+}
+
+/* --- Buttons --- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.8rem 1.6rem;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: clamp(0.8rem, 2.5vw, 0.9rem);  
+    border-radius: var(--border-radius-button);
+    transition: all var(--transition-medium);
+    box-shadow: var(--up-shadow-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+    font-weight: 700;
+    border: 2px solid transparent;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);  
+    transform: translateZ(0);
+    perspective: 1000px;
+}
+
+.btn-primary {
+    background: var(--up-gradient-btn-primary);
+    color: var(--up-text-on-accent); /* White text on primary gradient */
+}
+.btn-primary:hover {
+    background: var(--up-gradient-btn-hover);
+    transform: translateY(-2px) scale(1.005) rotateX(5deg);
+    box-shadow: var(--up-glow-primary), 0 0 20px var(--up-accent-secondary);
+    border-color: var(--up-accent-secondary);
+    color: var(--up-text-on-accent);
+    text-shadow: none;
+}
+
+.btn-secondary {
+    background: var(--up-bg-medium);
+    color: var(--up-accent-primary); /* Primary red text */
+    border-color: var(--up-accent-primary);
+}
+.btn-secondary:hover {
+    background: var(--up-accent-primary);
+    color: var(--up-text-on-accent); /* White text on primary background */
+    border-color: var(--up-accent-secondary);
+    transform: translateY(-1px) rotateX(3deg);
+    box-shadow: var(--up-glow-primary);
+}
+
+.btn-tertiary { /* Added for news card link */
+    background: var(--up-bg-dark);
+    color: var(--up-text-dark);
+    border: 1px solid var(--up-bg-dark);
+    box-shadow: var(--up-inset-shadow);
+}
+.btn-tertiary:hover {
+    background: var(--up-accent-secondary);
+    color: var(--up-text-on-accent);
+    border-color: var(--up-accent-secondary);
+    box-shadow: var(--up-glow-secondary);
+}
+
+
+/* Shimmer effect for all buttons on hover */
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -120%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+    transform: skewX(-20deg);
+    transition: left var(--transition-medium) ease-out;
+}
+.btn:hover::before {
+    left: 120%;
+}
+
+.btn i {
+    margin-right: 0.4rem;
+}
+/* RTL adjustment for icons in buttons */
+.btn-secondary.back-btn i {
+    margin-left: 0.4rem;
+    margin-right: 0;
+    transform: rotate(180deg);
+}
+.btn-page.prev i {
+    margin-left: 0.4rem;
+    margin-right: 0;
+    transform: rotate(180deg);
+}
+.btn-page.next i {
+    margin-left: 0;
+    margin-right: 0.4rem;
+}
+.btn-tertiary i {
+    margin-left: 0.4rem;
+    margin-right: 0;
+    transform: rotate(180deg);
+}
+
+
+/* --- Header (Navbar) --- */
+.main-header {
+    background: var(--up-gradient-header);
+    backdrop-filter: blur(12px);
+    color: var(--up-text-dark);
+    padding: 0.7rem 0;
+    border-bottom: 2px solid var(--up-accent-primary); /* Primary red border */
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--up-shadow-medium);
+    transition: all var(--transition-medium);
+}
+
+.main-header .header-content {
+    display: flex;
+    flex-wrap: nowrap; /* Default: no wrap */
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 0 1rem;
+}
+
+/* Site Logo */
+.site-logo {
+    display: flex;
+    align-items: center;
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 3.2vw, 2.4rem);
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    transition: all var(--transition-medium);
+    position: relative;
+    color: var(--up-accent-primary); /* Red accent for logo text */
+    text-shadow: 0 0 8px rgba(255, 59, 59, 0.2), 0 0 15px rgba(0, 123, 255, 0.15);
+}
+
+.site-logo .logo-icon {
+    font-size: 0.65em;
+    color: var(--up-accent-secondary); /* Blue accent for icon */
+    margin-left: 0.1em;
+    margin-right: 0;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+/* Main Navigation (Desktop styles) */
+.main-nav {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.main-nav ul {
+    list-style: none;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+}
+.main-nav ul li {
+    margin: 0 1rem;
+    position: relative;
+    list-style: none;
+}
+.main-nav ul li a {
+    font-family: var(--font-body);
+    font-size: clamp(0.85rem, 0.85vw, 0.95rem);
+    padding: 0.7rem 1.4rem;
+    border-radius: var(--border-radius-button);
+    transition: all var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+    font-weight: 600;
+    color: var(--up-text-medium);
+    text-shadow: 0 0 3px rgba(0,0,0,0.2);
+    background: var(--up-bg-medium);
+    border: 1px solid rgba(255, 59, 59, 0.2); /* Primary accent border */
+    backdrop-filter: blur(6px);
+}
+.main-nav ul li a::before {
+    background: var(--up-gradient-btn-primary);
+    box-shadow: 0 0 8px var(--up-accent-primary), 0 0 15px var(--up-accent-secondary);
+}
+.main-nav ul li a:hover, .main-nav ul li a.active {
+    background: var(--up-accent-primary);
+    color: var(--up-text-on-accent);
+    box-shadow: var(--up-glow-primary);
+    border-color: var(--up-accent-secondary);
+    transform: translateY(-1px) scale(1.003);
+    text-shadow: none;
+}
+
+/* Search Bar */
+.search-bar {
+    display: flex;
+    align-items: center;
+    background: var(--up-bg-medium);
+    border-radius: var(--border-radius-button);
+    padding: 0.4rem 0.7rem;
+    box-shadow: var(--up-inset-shadow);
+    border: 1px solid var(--up-accent-primary);
+    transition: all var(--transition-fast);
+    backdrop-filter: blur(6px);
+    order: 2;
+}
+.search-bar:focus-within {
+    border-color: var(--up-accent-secondary);
+    box-shadow: 0 0 8px var(--up-accent-secondary), var(--up-inset-shadow);
+}
+.search-bar input {
+    padding: 0.5rem 0.7rem;
+    border: none;
+    background: transparent;
+    color: var(--up-text-dark);
+    margin-right: 0.5rem;
+    outline: none;
+    width: clamp(140px, 12vw, 200px);
+    font-family: var(--font-body);
+    font-size: clamp(0.8rem, 0.8vw, 0.9rem);
+    transition: all var(--transition-fast);
+}
+.search-bar input::placeholder {
+    color: var(--up-text-light);
+    opacity: 0.8;
+}
+.search-bar input:focus {
+    color: var(--up-accent-primary);
+    transform: scale(1.003);
+}
+.search-bar button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--up-accent-primary);
+    font-size: 1.1rem;
+    padding: 0.3rem;
+    transition: all var(--transition-fast);
+}
+.search-bar button:hover {
+    color: var(--up-accent-secondary);
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 6px var(--up-accent-secondary));
+}
+
+/* Mobile menu toggle (Three bars icon) */
+.menu-toggle {
+    display: none; /* Default to hidden on desktop */
+    font-size: 1.8rem;
+    padding: 0.3rem 0.6rem;
+    color: var(--up-accent-secondary);
+    border: 1px solid var(--up-accent-secondary);
+    border-radius: var(--border-radius-button);
+    box-shadow: var(--up-shadow-soft);
+    cursor: pointer;
+    flex-shrink: 0;
+    order: 0;
+    margin-right: auto;
+}
+
+
+/* --- Main Content Display Area --- */
+.view-section {
+    padding: 7vw 0;
+    background-color: var(--up-bg-light);  
+    min-height: 50vh;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity var(--transition-medium), transform var(--transition-medium);
+    position: relative;
+    z-index: 1;
+}
+.view-section.active-view {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.view-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        repeating-linear-gradient(45deg, rgba(0,0,0,0.01) 0, rgba(0,0,0,0.01) 1px, transparent 1px, transparent 20px),
+        repeating-linear-gradient(-45deg, rgba(0,0,0,0.01) 0, rgba(0,0,0,0.01) 1px, transparent 1px, transparent 20px);
+    background-size: 20px 20px;
+    opacity: 0.1;
+    z-index: 0;
+    animation: inner-pattern-flow 20s linear infinite alternate;
+}
+@keyframes inner-pattern-flow {
+    from { background-position: 0 0; }
+    to { background-position: 200px 200px; }
+}
+
+
+.section-title {
+    font-family: var(--font-heading);
+    text-align: center;
+    margin-bottom: 4vw;
+    font-size: clamp(1.8rem, 5vw, 2.7rem);
+    color: var(--up-accent-primary);
+    text-shadow: 0 0 12px rgba(255, 59, 59, 0.3), 0 0 25px rgba(0, 123, 255, 0.15);
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--up-accent-secondary);
+    display: inline-block;
+    margin-left: auto;
+    margin-right: auto;
+    width: fit-content;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+}
+
+/* Filter Controls */
+.filter-controls {
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-bottom: 4vw;
+    flex-wrap: wrap;
+    padding: 0.6rem 1rem;
+    background: var(--up-bg-medium);
+    border-radius: var(--border-radius-button);
+    box-shadow: var(--up-inset-shadow);
+    border: 1px solid var(--up-accent-primary);
+    max-width: 650px;
+    margin-left: auto;
+    margin-right: auto;
+    backdrop-filter: blur(6px);
+    position: relative;
+    z-index: 1;
+}
+
+.filter-btn {
+    background: rgba(255, 59, 59, 0.08); /* Light accent primary background */
+    color: var(--up-text-dark);
+    border: 1px solid var(--up-accent-primary);
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--border-radius-button);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-family: var(--font-body);
+    font-size: clamp(0.8rem, 1.2vw, 0.95rem);
+    font-weight: 600;
+    white-space: nowrap;
+    text-shadow: 0 0 4px rgba(0,0,0,0.1);
+    box-shadow: var(--up-shadow-soft);
+    flex-shrink: 0;
+}
+.filter-btn:hover:not(.active), .filter-btn.active {
+    background: var(--up-accent-primary);
+    color: var(--up-text-on-accent);
+    box-shadow: var(--up-glow-primary);
+    border-color: var(--up-accent-secondary);
+    transform: translateY(-2px);
+    text-shadow: none;
+}
+
+.filter-dropdown {
+    background: var(--up-bg-medium);
+    color: var(--up-text-dark);
+    border: 1px solid var(--up-accent-primary);
+    padding: 0.6rem 1.4rem;
+    border-radius: var(--border-radius-button);
+    font-family: var(--font-body);
+    font-size: clamp(0.85rem, 0.9vw, 0.95rem);
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%235F6E7D'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e"); /* Darker arrow for light background */
+    background-repeat: no-repeat;
+    background-position: left 0.8rem center;
+    background-size: 0.9em;
+    padding-left: 2rem;
+    transition: all var(--transition-fast);
+    box-shadow: var(--up-inset-shadow);
+    backdrop-filter: blur(6px);
+    flex-shrink: 0;
+}
+.filter-dropdown:hover, .filter-dropdown:focus {
+    border-color: var(--up-accent-secondary);
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.6);
+    transform: translateY(-1px);
+}
+
+/* Grids for content cards */
+.match-grid, .news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Adjusted minmax for mobile cards (wider) */
+    gap: 1.5vw;
+    padding: 0 1vw;
+    position: relative;
+    z-index: 1;
+}
+
+/* Empty State Message */
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 20px 15px;
+    background-color: var(--up-bg-medium);
+    border-radius: var(--border-radius-card);
+    box-shadow: var(--up-shadow-soft);
+    border: 1px solid var(--up-accent-primary);
+    margin-top: 15px;
+    backdrop-filter: blur(8px);
+    animation: fadeIn var(--transition-medium) ease-out;
+}
+.empty-state p {
+    font-family: var(--font-heading);
+    font-size: clamp(0.9rem, 1vw, 1rem);
+    line-height: 1.4;
+    margin-bottom: 10px;
+    text-shadow: 0 0 3px rgba(0,0,0,0.1);
+}
+.empty-state button {
+    margin-top: 8px;
+}
+
+/* --- Match Card Design --- */
+.match-card {
+    background: var(--up-bg-medium);
+    border-radius: var(--border-radius-card);
+    overflow: hidden;
+    box-shadow: var(--up-shadow-soft);
+    transition: all var(--transition-medium);
+    cursor: pointer;
+    text-align: center;
+    position: relative;
+    border: 1px solid rgba(255, 59, 59, 0.1); /* Primary accent border */
+    display: flex;
+    flex-direction: column;
+    z-index: 1;
+    backdrop-filter: blur(5px);
+}
+.match-card:hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: var(--up-shadow-medium), 0 0 25px var(--up-accent-primary);
+    border-color: var(--up-accent-secondary);
+    z-index: 10;
+}
+
+/* Card image (poster) */
+.match-card img {
+    width: 100%;
+    /* تم تقليل الطول هنا ليتناسب مع طلبك مع الحفاظ على العرض الأقصى */
+    height: clamp(100px, 20vw, 180px); /* قللت الطول وزودت المرونة للتصغير */
+    object-fit: cover;
+    background-color: var(--up-bg-dark); /* Darker background for image fallback */
+    display: block;
+    border-bottom: 1px solid rgba(255, 59, 59, 0.1);
+    transition: transform var(--transition-fast), filter var(--transition-fast);
+    flex-shrink: 0;
+}
+.match-card:hover img {
+    transform: scale(1.02);
+    filter: brightness(1.05) saturate(1.05);
+}
+
+/* Card content area */
+.match-card .match-card-content {
+    padding: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    gap: 0.4rem;
+    background-color: var(--up-bg-light);
+    border-radius: 0 0 var(--border-radius-card) var(--border-radius-card);
+    min-height: clamp(90px, 7vw, 110px);
+    text-align: center;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* --- Team Logos & Names - Adjusted for text before logo --- */
+.match-card .match-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0.8rem;
+    background-color: var(--up-bg-medium);
+    border-bottom: 1px solid rgba(255, 59, 59, 0.1);
+    flex-shrink: 0;
+    color: var(--up-text-medium);
+    font-size: clamp(0.75rem, 2.2vw, 0.85rem);
+}
+
+/* Match Time - Added styling for the 'box' */
+.match-card .match-time {
+    font-weight: 600;
+    background-color: var(--up-bg-dark); /* Background for the time box */
+    padding: 0.3rem 0.6rem;
+    border-radius: var(--border-radius-button); /* Rounded corners for the box */
+    border: 1px solid rgba(0,0,0,0.1); /* Subtle border */
+    color: var(--up-text-dark); /* Text color inside the box */
+    box-shadow: var(--up-inset-shadow);
+    white-space: nowrap; /* Prevent time from wrapping */
+}
+
+.match-card .match-teams {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center the whole block */
+    gap: 0.2rem; /* Small gap between logo/name and vs */
+    font-family: var(--font-body);
+    font-weight: 700;
+    color: var(--up-text-dark);
+    text-shadow: 0 0 4px rgba(0,0,0,0.05);
+    flex-wrap: nowrap;
+    width: 100%;
+    position: relative;
+    padding: 0 0.2rem;
+    box-sizing: border-box;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.match-card .vs {
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-family: var(--font-heading);
+    font-size: clamp(1.8rem, 4.5vw, 2.5rem); /* Significantly larger VS */
+    color: var(--up-accent-danger); /* Danger red for VS */
+    font-weight: 800;
+    margin: 0 0.5rem; /* Larger margin around VS */
+    text-shadow: 0 0 5px rgba(220, 53, 69, 0.6);
+    text-align: center;
+    line-height: 1;
+}
+
+.match-card .team {
+    display: flex;
+    align-items: center;
+    /* Changed flex-direction to row-reverse for text before logo in RTL */
+    flex-direction: row-reverse;  
+    flex-grow: 1;  
+    flex-shrink: 1;
+    gap: 0.3rem;
+    min-width: 0; /* Allow content to shrink */
+    font-size: clamp(0.9rem, 1.2vw, 1rem); /* Font size for team name */
+    justify-content: center; /* تمركز الفريقين ليصبحوا حلقتين حول الـ VS */
+}
+
+.match-card .home-team {
+    /* تم إزالة justify-content هنا لأننا نستخدم justify-content: center; في .team العام */
+    text-align: right;
+}
+
+.match-card .away-team {
+    /* تم إزالة justify-content هنا لأننا نستخدم justify-content: center; في .team العام */
+    text-align: left;
+}
+
+.match-card .team span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 1;  
+    min-width: 0; /* Allow text to truncate */
+}
+
+.match-card .team img {
+    width: clamp(55px, 8vw, 70px); /* حجم أكبر لشعار الفريق */
+    height: clamp(55px, 8vw, 70px); /* حجم أكبر لشعار الفريق */
+    object-fit: contain;
+    border-radius: 50%; /* تم التأكيد على أن اللوجو دائري */
+    border: 2px solid var(--up-accent-secondary); /* إطار بلون ثانوي بارز */
+    background-color: var(--up-bg-light); /* خلفية اللوجو */
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.4); /* ظل خفيف حول اللوجو */
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    padding: 2px;
+    flex-shrink: 0;
+    margin: 0; /* Reset margin from default img styles */
+}
+
+.match-card .team img:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 12px var(--up-accent-primary), inset 0 0 5px rgba(0,0,0,0.1); /* توهج أكبر عند التمرير */
+}
+
+.match-card .match-league {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    font-family: var(--font-body);
+    font-size: clamp(0.75rem, 0.85vw, 0.85rem);
+    color: var(--up-text-light);
+    margin-top: 0.2rem;
+}
+.match-card .match-league img {
+    width: clamp(28px, 2.5vw, 32px);
+    height: clamp(28px, 2.5vw, 32px);
+    object-fit: contain;
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
+    padding: 0;
+}
+
+/* Match Status - Centered and 'live' is red */
+.match-card .match-status {
+    font-family: var(--font-body);
+    font-size: clamp(0.75rem, 0.85vw, 0.85rem);
+    font-weight: 700;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--border-radius-button);
+    margin-top: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+    background-color: rgba(0,0,0,0.05);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+    color: var(--up-text-dark);
+    /* Centering the status */
+    margin-left: auto;
+    margin-right: auto;
+    display: block; /* Ensures margin auto works horizontally */
+    width: fit-content; /* Ensures it only takes necessary width */
+}
+
+.match-card .live-status {
+    background-color: var(--up-accent-danger); /* Explicit Red for 'Live' */
+    color: var(--up-text-on-accent);
+    box-shadow: 0 0 12px rgba(220, 53, 69, 0.6), 0 0 20px rgba(220, 53, 69, 0.4);
+    animation: pulse-danger 1.5s infinite alternate;
+}
+.match-card .upcoming-status {
+    background-color: var(--up-accent-warning);
+    color: var(--up-text-dark);
+    box-shadow: 0 0 12px rgba(255, 193, 7, 0.6), 0 0 20px rgba(255, 193, 7, 0.4);
+}
+.match-card .finished-status {
+    background-color: var(--up-bg-dark);
+    color: var(--up-text-medium);
+    box-shadow: 0 0 6px rgba(0,0,0,0.2);
+}
+
+/* --- News Card --- */
+.news-card {
+    background: var(--up-bg-medium);
+    border-radius: var(--border-radius-card);
+    overflow: hidden;
+    box-shadow: var(--up-shadow-soft);
+    transition: all var(--transition-medium);
+    cursor: pointer;
+    text-align: right;
+    position: relative;
+    border: 1px solid rgba(255, 59, 59, 0.1);
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(5px);
+}
+.news-card:hover {
+    transform: translateY(-3px) scale(1.005);
+    box-shadow: var(--up-shadow-medium), 0 0 20px var(--up-accent-primary);
+    border-color: var(--up-accent-secondary);
+}
+.news-card img {
+    width: 100%;
+    /* تم تقليل الطول هنا ليتناسب مع طلبك مع الحفاظ على العرض الأقصى */
+    height: clamp(80px, 15vw, 120px); /* قللت الطول وزودت المرونة للتصغير */
+    object-fit: cover;
+    background-color: var(--up-bg-dark);
+    display: block;
+    border-bottom: 1px solid rgba(255, 59, 59, 0.1);
+    transition: transform var(--transition-fast), filter var(--transition-fast);
+}
+.news-card:hover img {
+    transform: scale(1.02);
+    filter: brightness(1.05) saturate(1.05);
+}
+.news-card .news-card-content {
+    padding: 0.9rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    gap: 0.5rem;
+    background-color: var(--up-bg-light);
+}
+.news-card h3 {
+    font-family: var(--font-heading);
+    font-size: clamp(0.95rem, 1.2vw, 1.15rem);
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--up-text-dark);
+    margin-bottom: 0.3rem;
+    text-shadow: 0 0 5px rgba(0,0,0,0.05);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.news-card p {
+    font-family: var(--font-body);
+    font-size: clamp(0.8rem, 0.85vw, 0.9rem);
+    color: var(--up-text-medium);
+    line-height: 1.5;
+    margin-bottom: 0.7rem;
+    flex-grow: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.news-card .news-date {
+    font-size: 0.75rem;
+    color: var(--up-text-light);
+    opacity: 0.9;
+    text-align: left;
+}
+
+/* --- Pagination Controls (Removed) --- */
+.pagination-controls {
+    display: none !important; /* Completely hide pagination controls */
+}
+
+
+/* --- Match Details Section --- */
+.match-details-section {
+    padding: 6vw 3vw;
+    background-color: var(--up-bg-light);  
+    border-top: 2px solid var(--up-accent-primary);
+    box-shadow: 0 0 20px rgba(0,0,0,0.05) inset; /* Lighter inset shadow */
+    animation: fadeIn var(--transition-medium) ease-out;
+    position: relative;
+    z-index: 1;
+}
+
+.match-details-section .back-btn {
+    margin-bottom: clamp(1.8rem, 2.5vw, 2.2rem);
+    font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+    padding: 0.7rem 1.6rem;
+}
+
+/* Video Player Wrapper (holds the iframe) */
+.video-player-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    aspect-ratio: var(--aspect-ratio-16-9);
+    margin: 0 auto 2vw auto;
+    background-color: #000;
+    border-radius: var(--border-radius-card);
+    overflow: hidden;
+    box-shadow: var(--up-shadow-strong);
+    border: 2px solid var(--up-accent-primary);
+    transition: all var(--transition-medium);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.video-player-wrapper:hover {
+    transform: scale(1.001);
+    box-shadow: var(--up-glow-primary), 0 0 30px rgba(0, 123, 255, 0.3);
+}
+
+/* Style for the embedded iframe player */
+.video-player-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+    background-color: #000;
+}
+
+/* Video overlay for pre-play ad interaction */
+.video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    cursor: pointer;
+    z-index: 50;
+    opacity: 1;
+    transition: opacity var(--transition-fast);
+}
+.video-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.video-overlay .overlay-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+
+.video-overlay .video-play-text {
+    display: block;
+    color: var(--up-text-on-accent);
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    margin-top: 10px;
+    text-shadow: 0 0 8px rgba(0,0,0,0.8);
+    font-weight: 700;
+}
+
+/* Loading Spinner */
+#video-loading-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(255, 255, 255, 0.3);
+    border-top: 5px solid var(--up-accent-secondary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    z-index: 51;
+    display: none;
+}
+
+
+/* Match Info Box (Description Section) - Removed completely */
+.match-info-box {
+    display: none !important;  
+}
+
+
+/* Ad Banner Center (under video) */
+.ad-banner-center {
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Suggested Matches Section */
+.suggested-matches-section {
+    margin-top: 3vw;
+    padding-top: 3vw;
+    border-top: 2px solid var(--up-accent-secondary);
+}
+.suggested-matches-section .section-title {
+    color: var(--up-text-dark);
+    border-bottom: 2px solid var(--up-accent-primary);
+}
+
+
+/* --- Footer --- */
+.main-footer {
+    background-color: var(--up-bg-medium);
+    color: var(--up-text-medium);
+    padding: 3vw 0;
+    text-align: center;
+    font-family: var(--font-body);
+    border-top: 2px solid var(--up-accent-primary);
+    box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+    z-index: 1;
+}
+
+.main-footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(var(--up-accent-secondary) 0.25px, transparent 0.25px);
+    background-size: 50px 50px;
+    background-position: 0 0;
+    opacity: 0.08;
+    animation: footer-particles-flow 25s linear infinite;
+    z-index: 0;
+}
+
+.main-footer .footer-content {
+    max-width: 750px;
+    margin: 0 auto;
+    padding: 0 1.2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.main-footer p {
+    margin-bottom: 1.2vw;
+    font-size: clamp(0.8rem, 0.85vw, 0.9rem);
+    line-height: 1.6;
+    opacity: 0.95;
+    text-shadow: 0 0 2px rgba(0,0,0,0.1);
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1vw;
+}
+
+.footer-links a {
+    color: var(--up-accent-primary);
+    text-decoration: none;
+    font-family: var(--font-body);
+    font-size: clamp(0.8rem, 0.85vw, 0.9rem);
+    font-weight: 600;
+    padding: 0.6rem 1.4rem;
+    border: 1px solid var(--up-accent-primary);
+    border-radius: var(--border-radius-button);
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    box-shadow: var(--up-shadow-soft);
+    background: var(--up-bg-light);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    backdrop-filter: blur(6px);
+}
+.footer-links a:hover {
+    background-color: var(--up-accent-secondary);
+    color: var(--up-text-on-accent);
+    transform: translateY(-2px) scale(1.005);
+    box-shadow: var(--up-glow-secondary), 0 0 15px var(--up-accent-primary);
+    border-color: var(--up-accent-primary);
+}
+
+/* --- Animations --- */
+@keyframes pulse-icon {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.06); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse-danger {
+    0% { box-shadow: 0 0 8px rgba(220, 53, 69, 0.5), 0 0 15px rgba(220, 53, 69, 0.3); }
+    50% { box-shadow: 0 0 12px rgba(220, 53, 69, 0.6), 0 0 25px rgba(220, 53, 69, 0.4); }
+    100% { box-shadow: 0 0 8px rgba(220, 53, 69, 0.5), 0 0 15px rgba(220, 53, 69, 0.3); }
+}
+
+@keyframes border-glow-anim {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 400% 0%; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes inner-pattern-flow {
+    from { background-position: 0 0; }
+    to { background-position: 200px 200px; }
+}
+
+@keyframes footer-particles-flow {
+    from { background-position: 0 0; }
+    to { background-position: 400px 400px; }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* --- Responsive Design (Media Queries - Mobile First) --- */
+
+/* Smallest devices (up to 479px) - Base styles for mobile */
+@media (max-width: 479px) {
+    .container {
+        padding: 0 0.8rem;
     }
 
-    // Handle browser back/forward buttons
-    window.addEventListener('popstate', (event) => {
-        const hash = window.location.hash.substring(1);
-        const urlParams = new URLSearchParams(window.location.search);
-        const searchQuery = urlParams.get('q');
+    /* Navbar specific adjustments for original mobile look */
+    .main-header .header-content {
+        flex-wrap: wrap; /* Allow wrapping */
+        justify-content: space-between;
+        gap: 0.6rem;
+        padding: 0 0.8rem;
+    }
+    .site-logo {
+        order: 0;
+        margin-right: auto;
+        font-size: clamp(1.6rem, 5vw, 2rem);
+    }
+    .menu-toggle {
+        display: block; /* Show hamburger menu toggle */
+    }
+    .main-nav {
+        display: none; /* Hide nav by default on mobile */
+        flex-basis: 100%;
+        order: 1;
+        flex-direction: column;
+        align-items: flex-end; /* Align links to right */
+        background: var(--up-bg-medium);
+        padding: 1rem 0;
+        border-radius: var(--border-radius-card);
+        box-shadow: var(--up-shadow-soft);
+    }
+    .main-nav.active { /* Class added by JS for active mobile menu */
+        display: flex;
+    }
+    .main-nav ul {
+        flex-direction: column;
+        width: 100%;
+        padding: 0;
+    }
+    .main-nav ul li {
+        margin: 0;
+        width: 100%;
+        text-align: right;
+    }
+    .main-nav ul li a {
+        display: block;
+        padding: 0.8rem 1.5rem;
+        border-radius: 0;
+        border: none;
+        background: transparent;
+        color: var(--up-text-dark);
+        font-size: clamp(0.9rem, 4vw, 1.1rem);
+        text-align: right;
+    }
+    .main-nav ul li a::before {
+        display: none; /* Hide underline on mobile menu */
+    }
+    .main-nav ul li a:hover, .main-nav ul li a.active {
+        background: var(--up-accent-primary);
+        color: var(--up-text-on-accent);
+        transform: none;
+        box-shadow: none;
+        text-shadow: none;
+    }
+    .search-bar {
+        order: 2;
+        flex-basis: 100%;
+        margin: 0.6rem auto 0.4rem auto;
+    }
+    .search-bar input {
+        width: 100%;
+        font-size: clamp(0.8rem, 3.5vw, 0.9rem);
+    }
 
-        if (hash.startsWith('match-')) {
-            const matchId = hash.split('-')[1];
-            switchView('match-details', matchId);
-        } else if (['home', 'live', 'upcoming', 'highlights', 'news'].includes(hash)) {
-            switchView(hash);
-        } else if (searchQuery) {
-            searchInput.value = searchQuery; // Populate search input if returning to search results via history
-            currentSearchQuery = searchQuery;
-            switchView('search-results');
-        } else {
-            // Default to home if no specific hash or search query
-            switchView('home');
-        }
-    });
+    /* Cards - wider on mobile */
+    .match-grid, .news-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Very wide single column */
+        gap: 3vw; /* Increased gap */
+        padding: 0 1rem;
+    }
+    .match-card img {
+        /* تكبير عرض البوستر وتقليل الطول للموبايل */
+        height: clamp(100px, 30vw, 150px); /* قللت الطول للموبايل هنا */
+    }
+    .match-card .match-teams .team img {
+        width: clamp(50px, 14vw, 70px); /* تكبير لوجو الفريق على الشاشات الصغيرة */
+        height: clamp(50px, 14vw, 70px);
+    }
+    .match-card .vs {
+        font-size: clamp(2.5rem, 10vw, 3.5rem); /* VS أكبر للموبايل */
+        margin: 0 0.8rem;
+    }
+    .match-card .team {
+        font-size: clamp(1rem, 4.5vw, 1.3rem); /* حجم خط الفريق أكبر للموبايل */
+    }
+    .news-card img {
+        /* تكبير عرض بوستر الأخبار وتقليل الطول للموبايل */
+        height: clamp(80px, 25vw, 120px); /* قللت الطول لبوستر الأخبار هنا */
+    }
+}
 
+/* Medium devices (480px and up) */
+@media (min-width: 480px) {
+    html {
+        font-size: 14px;  
+    }
+    .container {
+        padding: 0 1rem;
+    }
+    .main-header .header-content {
+        flex-wrap: nowrap; /* No wrap on larger screens */
+        padding: 0 1rem;
+        gap: 1.2rem;
+    }
+    .site-logo {
+        font-size: clamp(2rem, 3.2vw, 2.4rem);
+        margin-right: 0; /* Reset margin */
+        order: 0;
+    }
+    .menu-toggle {
+        display: none; /* Hide hamburger menu */
+    }
+    .main-nav {
+        display: flex; /* Always flex on larger screens */
+        flex-basis: auto;
+        order: 1;
+        flex-direction: row; /* Row direction for desktop nav */
+        overflow-x: hidden; /* No horizontal scroll */
+        background: transparent; /* Transparent background */
+        padding: 0;
+        box-shadow: none;
+    }
+    .main-nav ul {
+        flex-direction: row;
+        width: auto;
+        padding: 0;
+        gap: 0;
+    }
+    .main-nav ul li {
+        margin: 0 1rem;
+        width: auto;
+        text-align: right;
+    }
+    .main-nav ul li a {
+        display: inline-flex;
+        padding: 0.7rem 1.4rem;
+        border-radius: var(--border-radius-button);
+        border: 1px solid rgba(255, 59, 59, 0.1);
+        background: var(--up-bg-medium);
+        color: var(--up-text-medium);
+        font-size: clamp(0.85rem, 0.85vw, 0.95rem);
+    }
+    .main-nav ul li a::before {
+        display: block; /* Show underline */
+    }
+    .main-nav ul li a:hover, .main-nav ul li a.active {
+        background: var(--up-accent-primary);
+        color: var(--up-text-on-accent);
+        transform: translateY(-1px) scale(1.003);
+        box-shadow: var(--up-glow-primary);
+    }
+    .search-bar {
+        order: 2;
+        flex-basis: auto;
+        margin: 0;
+        max-width: none;
+    }
 
-    // ======== Initialization ========
+    /* Card grids start forming more columns */
+    .match-grid, .news-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Example: can be 3 columns on larger mobiles */
+        gap: 1.5vw;
+        padding: 0 1vw;
+    }
 
-    const fetchData = async () => {
-        try {
-            const response = await fetch(API_URL);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            DATA = await response.json();
-            console.log('Data loaded successfully:', DATA);
+    /* Video player on larger mobile/tablet */
+    .video-player-wrapper {
+        margin-bottom: 2vw;
+        max-width: 800px;
+    }
+}
 
-            // Initial view based on URL hash or search query
-            const hash = window.location.hash.substring(1);
-            const urlParams = new URLSearchParams(window.location.search);
-            const searchQuery = urlParams.get('q');
+/* Large devices (992px and up) */
+@media (min-width: 992px) {
+    html {
+        font-size: 15px; /* Final desktop base font */
+    }
+    .container {
+        padding: 0 1.5rem; /* Larger padding for desktops */
+    }
+    .main-header .header-content {
+        padding: 0 1.5rem;
+    }
 
-            if (hash.startsWith('match-')) {
-                const matchId = hash.split('-')[1];
-                switchView('match-details', matchId);
-            } else if (['live', 'upcoming', 'highlights', 'news'].includes(hash)) {
-                switchView(hash);
-            } else if (searchQuery) {
-                searchInput.value = searchQuery;
-                currentSearchQuery = searchQuery;
-                switchView('search-results');
-            } else {
-                // Default to home if no specific hash or search query
-                switchView('home');
-            }
+    /* Cards - 2 columns on desktop, wider */
+    .match-grid, .news-grid {
+        grid-template-columns: repeat(2, 1fr); /* Exactly 2 columns */
+        gap: 2vw; /* Increased gap */
+        padding: 0 2vw;
+    }
+    .match-card img {
+        /* تكبير عرض البوستر وتقليل الطول للكمبيوتر */
+        height: clamp(120px, 12vw, 200px); /* قللت الطول هنا ليتناسب مع طلبك */
+    }
+    .match-card .match-teams .team img {
+        width: clamp(60px, 6vw, 80px); /* حجم أكبر لشعار الفريق على الكمبيوتر */
+        height: clamp(60px, 6vw, 80px);
+    }
+    .match-card .vs {
+        font-size: clamp(3rem, 4.5vw, 4.5rem); /* VS أكبر للكمبيوتر */
+        margin: 0 1.2rem;
+    }
+    .match-card .team span {
+        font-size: clamp(1.1rem, 1.8vw, 1.4rem); /* حجم خط الفريق أكبر للكمبيوتر */
+    }
 
-        } catch (error) {
-            console.error('Failed to load data:', error);
-            contentDisplay.innerHTML = '<p class="error-message">عذراً، تعذر تحميل البيانات. يرجى المحاولة مرة أخرى لاحقاً.</p>';
-        }
-    };
+    /* Removed hero section media queries as the section is removed */
+    /* #hero-section {
+        padding: 8vw 0;
+    }
+    #hero-section h1 {
+        font-size: clamp(3rem, 5vw, 5rem);
+    }
+    #hero-section p {
+        font-size: clamp(1.2rem, 2vw, 1.8rem);
+    } */
 
-    fetchData();
-});
+    /* Other sections */
+    .view-section {
+        padding: 4vw 0;
+    }
+    .section-title {
+        font-size: clamp(2.5rem, 3.5vw, 3.5rem);
+        margin-bottom: 3vw;
+    }
+}
+
+/* Removed image frame for the "ultimate pitch" image in hero section */
+/* #hero-section img.ultimate-pitch-frame {
+    border: 5px solid var(--up-accent-secondary);  
+    border-radius: var(--border-radius-card);
+    box-shadow: var(--up-shadow-medium), var(--up-glow-primary);
+    transition: all var(--transition-medium);
+    margin-bottom: 2rem;
+    max-width: 80%;
+    height: auto;
+    object-fit: cover;
+    animation: frame-glow 3s infinite alternate ease-in-out;
+} */
+
+/* @keyframes frame-glow {
+    0% {
+        box-shadow: var(--up-shadow-medium), 0 0 10px rgba(255, 59, 59, 0.4);
+    }
+    50% {
+        box-shadow: var(--up-shadow-strong), 0 0 25px rgba(255, 59, 59, 0.8);
+    }
+    100% {
+        box-shadow: var(--up-shadow-medium), 0 0 10px rgba(255, 59, 59, 0.4);
+    }
+} */
