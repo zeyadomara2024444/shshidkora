@@ -26,11 +26,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Ad-related variables
     let adTriggers = {
-        popunderOpened: false, // Tracks if popunder has been initiated once per session (THIS IS NOW UNUSED FOR AUTO-POPUP)
+        popunderOpened: false, // This variable is now effectively UNUSED as auto-popunder is removed.
         lastDirectLinkTime: 0 // Cooldown for the direct link (video overlay click)
     };
     const DIRECT_LINK_COOLDOWN_MS = 7000; // 7 seconds cooldown for direct link
-    // Ad URL - make sure this is your actual direct link URL
+    // **عنوان URL الخاص بالإعلان المباشر الذي تريده أن يفتح في تبويب جديد.**
     const AD_DIRECT_LINK_URL = 'https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec';
 
 
@@ -106,33 +106,31 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
-     * Opens a URL in a new tab. This function directly uses window.open with '_blank'.
-     * Modern browsers are very strict about pop-ups not initiated by direct user action.
-     * This function should ideally be called directly from a user's click event handler.
+     * **هذه هي الدالة المسؤولة عن فتح الروابط في تبويب جديد.**
+     * **نقطة حاسمة:** لكي تنجح هذه الدالة وتتجنب مانع النوافذ المنبثقة، يجب استدعاؤها **مباشرة** من داخل معالج حدث تفاعل المستخدم (مثل `click`).
      * @param {string} url - The URL to open.
      */
     const openInNewTab = (url) => {
         try {
-            // Use window.open with '_blank' to explicitly request a new tab.
-            // 'noopener' and 'noreferrer' are important for security and performance.
+            // استخدام '_blank' يطلب من المتصفح فتح في تبويب جديد.
+            // 'noopener' و 'noreferrer' مهمان للأمان والأداء (يمنعان التبويب الجديد من الوصول إلى التبويب الأصلي).
             const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
             if (newWindow) {
-                // If the new window was opened (not blocked),
-                // we don't try to blur or focus back, as that's trying to achieve pop-under.
-                // The goal is just a new tab, visible to the user.
+                // إذا تم فتح النافذة بنجاح (ولم يتم حظرها)، فلا داعي لمحاولة blur() أو focus()
+                // لأن هدفنا هو فتح تبويب جديد، بغض النظر عما إذا كان في المقدمة أو الخلفية.
+                // المتصفح هو من يقرر ذلك بناءً على إعداداته وسلوك المستخدم.
             } else {
-                // Fallback for extremely strict popup blockers or if for some reason window.open fails:
-                // Create a temporary anchor element and simulate a click.
-                // This is less reliable for forcing a new tab than window.open directly on user action.
+                // حل بديل في حال قام مانع النوافذ المنبثقة بحظر window.open.
+                // هذا الحل أقل موثوقية في فرض فتح تبويب جديد وقد يفتح في نفس التبويب.
                 console.warn('window.open was blocked or failed, trying fallback with anchor tag.');
                 const link = document.createElement('a');
                 link.href = url;
                 link.target = '_blank';
                 link.rel = 'noopener noreferrer';
-                // Must be appended to body to be clickable programmatically in some browsers
+                // يجب إلحاق الرابط بـ body لكي يمكن النقر عليه برمجيًا في بعض المتصفحات
                 document.body.appendChild(link);
                 link.click();
-                link.remove(); // Clean up the temporary element
+                link.remove(); // تنظيف العنصر المؤقت
             }
         } catch (e) {
             console.error("Error opening URL in new tab:", e);
@@ -437,7 +435,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cardElement instanceof HTMLElement) {
                 container.appendChild(cardElement);
 
-                // Insert Native Async ad strategically
+                // **إدراج إعلانات Native Async:**
+                // **ملاحظة هامة:** الكود هنا يقوم فقط بإضافة حاوية HTML لسكريبت الإعلان.
+                // **شبكة الإعلانات (profitableratecpm.com) هي من تتحكم في سلوك هذا الإعلان**
+                // (مثل هل يفتح في نفس التبويب، أو تبويب جديد، أو يظهر كـ Pop-up/Pop-under).
+                // لا يمكنك التحكم بهذا السلوك مباشرة من JavaScript الخاص بك هنا.
                 if (viewNameForAd && ['home', 'live', 'upcoming', 'highlights', 'search-results', 'news'].includes(viewNameForAd)) {
                     // Place Native Async ad after every 3rd card, but not on the last card to avoid awkward placement
                     // and only if it's not the last page with fewer than 3 items remaining
@@ -741,11 +743,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadingSpinner.style.display = 'block';
                     videoOverlay.style.display = 'none';
 
-                    // === Direct Link Ad: Opens in new tab when user clicks to play video ===
-                    // Trigger with a cooldown
+                    // **إعلان الرابط المباشر:**
+                    // **هنا، نضمن أن هذا الإعلان (الذي تتحكم في رابطه أنت)**
+                    // **سيُفتح في تبويب جديد بسبب التفاعل الصريح من المستخدم.**
                     const currentTime = Date.now();
                     if (currentTime - adTriggers.lastDirectLinkTime > DIRECT_LINK_COOLDOWN_MS) {
-                        openInNewTab(AD_DIRECT_LINK_URL); // استخدم openInNewTab لضمان الفتح في تبويب جديد
+                        openInNewTab(AD_DIRECT_LINK_URL); // استخدام openInNewTab لضمان الفتح في تبويب جديد
                         adTriggers.lastDirectLinkTime = currentTime;
                     }
 
@@ -833,13 +836,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Delegated event listener for general clicks on the body
     document.body.addEventListener('click', (e) => {
-        // === تم إزالة أو التعليق على كود البوب-أندر التلقائي عند أول نقرة ===
-        // هذا الجزء كان يسبب فتح الإعلان عند أول تفاعل للمستخدم على الصفحة وتم إزالته لضمان عدم فتح تبويب جديد بشكل غير مرغوب فيه
+        // **الآن، تم إزالة أي كود يحاول فتح إعلانات تلقائيًا أو كـ "pop-under"**
+        // هذا يعني أن الكود الخاص بك لن يفتح أي شيء في الخلفية دون نقرة صريحة.
+        // إذا حدث ذلك، فالسبب هو سكريبتات الشبكة الإعلانية.
+        // تم حذف الكود التالي:
         // if (!adTriggers.popunderOpened) {
-        //     openPopUnder('https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec');
+        //     openPopUnder('YOUR_AD_URL_HERE');
         //     adTriggers.popunderOpened = true;
         // }
-        // =================================================================
 
         const navLink = e.target.closest('.nav-link');
         const homeLogo = e.target.closest('#home-logo-link');
