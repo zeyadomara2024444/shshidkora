@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     // ======== Configuration & Data Management ========
-    const API_URL = './matches.json'; // Path to your JSON data file
+    const API_URL = './matches.json'; // المسار لملف بيانات JSON الخاص بك
     const ITEMS_PER_PAGE = 6;
 
-    let DATA = []; // Will store fetched data
+    let DATA = []; // سيخزن البيانات المجلوبة
     let currentPage = {
         home: 1,
         live: 1,
@@ -14,23 +14,24 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     let currentView = 'home';
     let currentFilter = {
-        upcoming: 'upcoming' // Default filter for upcoming: 'upcoming' (all), 'today', 'tomorrow'
+        upcoming: 'upcoming' // الفلتر الافتراضي للمباريات القادمة: 'upcoming' (الكل), 'today', 'tomorrow'
     };
     let currentSearchQuery = '';
 
-    // Constants for date comparisons
+    // ثوابت مقارنة التاريخ
     const NOW = new Date();
     const TODAY_START = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate());
     const TOMORROW_START = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate() + 1);
     const DAY_AFTER_TOMORROW_START = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate() + 2);
 
-    // Ad-related variables
+    // متغيرات الإعلانات
+    // **ملاحظة هامة:** adTriggers.popunderOpened لم يعد يُستخدم لفتح نوافذ تلقائية.
     let adTriggers = {
-        popunderOpened: false, // This variable is now effectively UNUSED as auto-popunder is removed.
-        lastDirectLinkTime: 0 // Cooldown for the direct link (video overlay click)
+        popunderOpened: false, // لم يعد يُستخدم لفتح تلقائي
+        lastDirectLinkTime: 0 // فترة تهدئة لرابط الإعلان المباشر (عند النقر على الفيديو)
     };
-    const DIRECT_LINK_COOLDOWN_MS = 7000; // 7 seconds cooldown for direct link
-    // **عنوان URL الخاص بالإعلان المباشر الذي تريده أن يفتح في تبويب جديد.**
+    const DIRECT_LINK_COOLDOWN_MS = 7000; // 7 ثوانٍ فترة تهدئة لرابط الإعلان المباشر
+    // **هذا هو رابط الإعلان المباشر الوحيد الذي سيفتحه الكود الخاص بك في تبويب جديد.**
     const AD_DIRECT_LINK_URL = 'https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec';
 
 
@@ -43,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchButton = document.getElementById('search-button');
     const homeLogoLink = document.getElementById('home-logo-link');
 
-    // SEO Elements (Meta tags)
+    // عناصر الـ SEO (Meta tags)
     const dynamicTitle = document.getElementById('dynamic-title');
     const dynamicDescription = document.getElementById('dynamic-description');
     const dynamicKeywords = document.getElementById('dynamic-keywords');
@@ -65,9 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ======== Utility Functions ========
 
     /**
-     * Formats an ISO date string to a readable Arabic date and time with a relevant timezone abbreviation.
-     * @param {string} isoString - The ISO date string.
-     * @returns {string} Formatted date string.
+     * تنسيق سلسلة تاريخ ISO إلى تاريخ ووقت عربي مقروء مع اختصار المنطقة الزمنية ذات الصلة.
+     * @param {string} isoString - سلسلة تاريخ ISO.
+     * @returns {string} سلسلة التاريخ المنسقة.
      */
     const formatDateTime = (isoString) => {
         const date = new Date(isoString);
@@ -77,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const formattedDatePart = new Intl.DateTimeFormat('ar-EG', optionsDate).format(date);
         let formattedTimePart = new Intl.DateTimeFormat('ar-EG', optionsTime).format(date);
 
-        // Replace AM/PM symbols for Arabic
+        // استبدال رموز الصباح/المساء للغة العربية
         formattedTimePart = formattedTimePart.replace('ص', 'ص').replace('م', 'م');
 
         let timezoneAbbreviation = '';
@@ -87,37 +88,37 @@ document.addEventListener('DOMContentLoaded', () => {
         if (offsetString === '+03:00') {
             timezoneAbbreviation = '(بتوقيت جدة)'; // SAST (Saudi Arabia Standard Time)
         } else if (offsetString === '+02:00') {
-            // Check for common European leagues during DST for more precise timezone name
+            // التحقق من الدوريات الأوروبية الشائعة خلال التوقيت الصيفي لاسم منطقة زمنية أكثر دقة
             if (isoString.includes("الدوري الإسباني") || isoString.includes("الدوري الألماني") || isoString.includes("الدوري الفرنسي") || isoString.includes("دوري أبطال أوروبا")) {
                 timezoneAbbreviation = '(بتوقيت أوروبا/صيفي)'; // CEST for European leagues, or just CET
             } else {
-                timezoneAbbreviation = '(بتوقيت القاهرة)'; // If it's a non-DST Egyptian time or a generic +02
+                timezoneAbbreviation = '(بتوقيت القاهرة)'; // إذا كان توقيت مصري غير صيفي أو +02 عام
             }
         } else if (offsetString === '+01:00') {
             timezoneAbbreviation = '(بتوقيت لندن)'; // BST (British Summer Time)
         } else if (offsetString === '+00:00') {
             timezoneAbbreviation = '(بتوقيت جرينتش)'; // GMT/UTC
         } else {
-            // Fallback for unhandled offsets or if offset is missing
-            timezoneAbbreviation = '(توقيت محلي)'; // Or try to deduce from browser's locale if desired
+            // حل بديل للأوفستات غير المعالجة أو في حالة عدم وجود الأوفست
+            timezoneAbbreviation = '(توقيت محلي)'; // أو محاولة الاستنتاج من إعدادات المتصفح المحلية إذا رغبت
         }
 
         return `${formattedDatePart}، ${formattedTimePart} ${timezoneAbbreviation}`;
     };
 
     /**
-     * **هذه هي الدالة المسؤولة عن فتح الروابط في تبويب جديد.**
-     * **نقطة حاسمة:** لكي تنجح هذه الدالة وتتجنب مانع النوافذ المنبثقة، يجب استدعاؤها **مباشرة** من داخل معالج حدث تفاعل المستخدم (مثل `click`).
-     * @param {string} url - The URL to open.
+     * **النسخة المحدثة من دالة فتح الرابط في تبويب جديد.**
+     * **مهم جدًا:** لكي يعمل هذا بكفاءة ويتجنب مانعات النوافذ المنبثقة، يجب استدعاء هذه الدالة **مباشرةً** داخل معالج حدث نقرة المستخدم.
+     * @param {string} url - الرابط لفتحه.
      */
     const openInNewTab = (url) => {
         try {
-            // استخدام '_blank' يطلب من المتصفح فتح في تبويب جديد.
-            // 'noopener' و 'noreferrer' مهمان للأمان والأداء (يمنعان التبويب الجديد من الوصول إلى التبويب الأصلي).
+            // "_blank" يطلب فتح في تبويب جديد.
+            // "noopener" و "noreferrer" مهمان للأمان والأداء.
             const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
             if (newWindow) {
                 // إذا تم فتح النافذة بنجاح (ولم يتم حظرها)، فلا داعي لمحاولة blur() أو focus()
-                // لأن هدفنا هو فتح تبويب جديد، بغض النظر عما إذا كان في المقدمة أو الخلفية.
+                // لأن هدفنا هو فتح تبويب جديد، سواء كان في المقدمة أو الخلفية.
                 // المتصفح هو من يقرر ذلك بناءً على إعداداته وسلوك المستخدم.
             } else {
                 // حل بديل في حال قام مانع النوافذ المنبثقة بحظر window.open.
@@ -127,8 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 link.href = url;
                 link.target = '_blank';
                 link.rel = 'noopener noreferrer';
-                // يجب إلحاق الرابط بـ body لكي يمكن النقر عليه برمجيًا في بعض المتصفحات
-                document.body.appendChild(link);
+                document.body.appendChild(link); // يجب إلحاق الرابط بـ body
                 link.click();
                 link.remove(); // تنظيف العنصر المؤقت
             }
@@ -139,13 +139,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     /**
-     * Updates the page's SEO meta tags dynamically.
-     * @param {string} title - Page title.
-     * @param {string} description - Meta description.
-     * @param {string} keywords - Meta keywords.
-     * @param {string} url - Canonical URL.
-     * @param {string} [image=''] - Open Graph/Twitter image URL.
-     * @param {string} [imageAlt=''] - Open Graph image alt text.
+     * تحديث علامات Meta لـ SEO للصفحة ديناميكيًا.
+     * @param {string} title - عنوان الصفحة.
+     * @param {string} description - وصف Meta.
+     * @param {string} keywords - كلمات مفتاحية Meta.
+     * @param {string} url - الرابط الأساسي.
+     * @param {string} [image=''] - رابط صورة Open Graph/Twitter.
+     * @param {string} [imageAlt=''] - نص بديل لصورة Open Graph.
      */
     const updateSEO = (title, description, keywords, url, image = '', imageAlt = '') => {
         dynamicTitle.textContent = title;
@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dynamicOgUrl.setAttribute('content', url);
         dynamicOgImage.setAttribute('content', image || "https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png");
         dynamicOgImageAlt.setAttribute('content', imageAlt || title);
-        dynamicOgType.setAttribute('content', 'website'); // Default, can be 'article', 'video.other'
+        dynamicOgType.setAttribute('content', 'website'); // افتراضي، يمكن أن يكون 'article', 'video.other'
 
         dynamicTwitterTitle.setAttribute('content', title);
         dynamicTwitterDescription.setAttribute('content', description);
@@ -168,9 +168,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
-     * Generates and updates JSON-LD structured data for SEO.
-     * @param {object} data - The data object (match or news).
-     * @param {string} viewName - The current view name.
+     * إنشاء وتحديث بيانات JSON-LD المهيكلة لـ SEO.
+     * @param {object} data - كائن البيانات (مباراة أو خبر).
+     * @param {string} viewName - اسم العرض الحالي.
      */
     const generateJsonLdSchema = (data, viewName) => {
         let schema = {};
@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     "url": channel.link
                 }));
             }
-        } else if (viewName === 'news-details' && data && data.type === 'news') { // Assuming a news details view might exist
+        } else if (viewName === 'news-details' && data && data.type === 'news') { // افتراض وجود عرض تفاصيل الأخبار
             schema = {
                 "@context": "https://schema.org",
                 "@type": "NewsArticle",
@@ -272,15 +272,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
-     * Lazy loads images using Intersection Observer or native loading.
-     * Applied to images with data-src and 'lazy' class.
-     * Added placeholder src for better UX during loading.
+     * تحميل الصور بشكل كسول باستخدام Intersection Observer أو التحميل الأصلي.
+     * يُطبق على الصور ذات سمة data-src و class 'lazy'.
      */
     const lazyLoadImages = () => {
         const lazyImages = document.querySelectorAll('img.lazy[data-src]');
 
         if ('loading' in HTMLImageElement.prototype) {
-            // Native lazy loading supported
+            // التحميل الكسول الأصلي مدعوم
             lazyImages.forEach((img) => {
                 img.src = img.dataset.src;
                 img.removeAttribute('data-src');
@@ -288,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 img.onload = () => img.classList.add('loaded');
             });
         } else if ('IntersectionObserver' in window) {
-            // Fallback to Intersection Observer
+            // حل بديل لـ Intersection Observer
             let lazyImageObserver = new IntersectionObserver((entries, observer) => {
                 entries.forEach((entry) => {
                     if (entry.isIntersecting) {
@@ -301,14 +300,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             }, {
-                rootMargin: '0px 0px 200px 0px' // Load images when 200px from viewport
+                rootMargin: '0px 0px 200px 0px' // تحميل الصور عندما تكون على بعد 200 بكسل من منفذ العرض
             });
 
             lazyImages.forEach((lazyImage) => {
                 lazyImageObserver.observe(lazyImage);
             });
         } else {
-            // Fallback for browsers that don't support Intersection Observer (load all immediately)
+            // حل بديل للمتصفحات التي لا تدعم Intersection Observer (تحميل الكل فورًا)
             lazyImages.forEach((img) => {
                 img.src = img.dataset.src;
                 img.removeAttribute('data-src');
@@ -318,9 +317,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
-     * Creates a match card HTML element.
-     * @param {object} match - Match data object.
-     * @returns {HTMLElement} The created match card element.
+     * إنشاء عنصر HTML لبطاقة مباراة.
+     * @param {object} match - كائن بيانات المباراة.
+     * @returns {HTMLElement} عنصر بطاقة المباراة الذي تم إنشاؤه.
      */
     const createMatchCard = (match) => {
         const card = document.createElement('div');
@@ -378,16 +377,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
-     * Creates a news card HTML element.
-     * @param {object} news - News data object.
-     * @returns {HTMLElement} The created news card element.
+     * إنشاء عنصر HTML لبطاقة خبر.
+     * @param {object} news - كائن بيانات الخبر.
+     * @returns {HTMLElement} عنصر بطاقة الخبر الذي تم إنشاؤه.
      */
     const createNewsCard = (news) => {
         const card = document.createElement('div');
         card.classList.add('news-card');
         card.dataset.newsId = news.id;
         card.dataset.type = 'news';
-        // Use data-src for lazy loading thumbnail, along with native loading="lazy"
+        // استخدام data-src للتحميل الكسول للصورة المصغرة، بالإضافة إلى loading="lazy" الأصلي
         card.innerHTML = `
             <img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" data-src="${news.thumbnail}" alt="صورة خبر ${news.title}" class="lazy" loading="lazy" width="250" height="150">
             <div class="news-card-content">
@@ -401,21 +400,21 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
-     * Renders items into a specified grid container with pagination.
-     * @param {Array<object>} items - Array of data items (matches or news).
-     * @param {HTMLElement} container - The HTML container element to render into.
-     * @param {Function} cardCreator - Function to create an individual card (createMatchCard or createNewsCard).
-     * @param {number} page - Current page number for pagination.
-     * @param {HTMLElement} [emptyStateElement=null] - Optional reference to the empty state div.
-     * @param {HTMLElement} [paginationControlsElement=null] - Optional reference to the pagination controls div.
-     * @param {string} [viewNameForAd=''] - Current view name, used for ad placement logic
+     * عرض العناصر في حاوية شبكة محددة مع تقسيم الصفحات.
+     * @param {Array<object>} items - مصفوفة من عناصر البيانات (مباريات أو أخبار).
+     * @param {HTMLElement} container - عنصر HTML الحاوية للعرض.
+     * @param {Function} cardCreator - دالة لإنشاء بطاقة فردية (createMatchCard أو createNewsCard).
+     * @param {number} page - رقم الصفحة الحالي لتقسيم الصفحات.
+     * @param {HTMLElement} [emptyStateElement=null] - مرجع اختياري لعنصر الحالة الفارغة.
+     * @param {HTMLElement} [paginationControlsElement=null] - مرجع اختياري لعنصر التحكم في تقسيم الصفحات.
+     * @param {string} [viewNameForAd=''] - اسم العرض الحالي، يُستخدم لمنطق وضع الإعلانات.
      */
     const renderGrid = (items, container, cardCreator, page, emptyStateElement = null, paginationControlsElement = null, viewNameForAd = '') => {
         if (!container) {
             console.error(`renderGrid: Target container is null or undefined. This indicates an issue with template cloning or element selection. Container expected: ${container?.id || 'N/A'}`);
             return;
         }
-        container.innerHTML = ''; // Clear previous content
+        container.innerHTML = ''; // مسح المحتوى السابق
 
         if (items.length === 0) {
             if (emptyStateElement) emptyStateElement.style.display = 'block';
@@ -436,17 +435,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 container.appendChild(cardElement);
 
                 // **إدراج إعلانات Native Async:**
-                // **ملاحظة هامة:** الكود هنا يقوم فقط بإضافة حاوية HTML لسكريبت الإعلان.
-                // **شبكة الإعلانات (profitableratecpm.com) هي من تتحكم في سلوك هذا الإعلان**
-                // (مثل هل يفتح في نفس التبويب، أو تبويب جديد، أو يظهر كـ Pop-up/Pop-under).
-                // لا يمكنك التحكم بهذا السلوك مباشرة من JavaScript الخاص بك هنا.
+                // **ملاحظة هامة جداً:** هذا الجزء من الكود يقوم فقط بإضافة حاوية HTML (div) وسكريبت الإعلان
+                // من profitableratecpm.com.
+                // **السلوك الفعلي لفتح الإعلان (هل يفتح تبويب جديد، أو يحل محل الموقع، أو غير ذلك)
+                // يتم التحكم فيه بالكامل بواسطة السكريبت الذي يتم تحميله من profitableratecpm.com.**
+                // **لا يمكنك التحكم في هذا السلوك من كودك هذا.**
                 if (viewNameForAd && ['home', 'live', 'upcoming', 'highlights', 'search-results', 'news'].includes(viewNameForAd)) {
-                    // Place Native Async ad after every 3rd card, but not on the last card to avoid awkward placement
-                    // and only if it's not the last page with fewer than 3 items remaining
+                    // ضع إعلان Native Async بعد كل 3 بطاقات، ولكن ليس في البطاقة الأخيرة لتجنب الوضع الغريب
+                    // وفقط إذا لم تكن الصفحة الأخيرة بأقل من 3 عناصر متبقية
                     if ((index + 1) % 3 === 0 && (index + 1) < paginatedItems.length) {
                         const nativeAdDiv = document.createElement('div');
-                        nativeAdDiv.className = 'native-ad-placeholder'; // Add a class for styling
-                        // Using a unique ID for each ad container to ensure proper rendering if multiple are on the page
+                        nativeAdDiv.className = 'native-ad-placeholder'; // إضافة فئة للتنسيق
+                        // استخدام ID فريد لكل حاوية إعلان لضمان العرض الصحيح إذا كان هناك العديد في الصفحة
                         const uniqueAdContainerId = `container-b63334b55ca510415eee91e8173dc2d8-${viewNameForAd}-${page}-${index}`;
                         nativeAdDiv.innerHTML = `
                             <script async="async" data-cfasync="false" src="//pl27154385.profitableratecpm.com/b63334b55ca510415eee91e8173dc2d8/invoke.js"></script>
@@ -460,7 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Update pagination button states (pagination controls are now display: none in CSS, so this won't be visible)
+        // تحديث حالة أزرار تقسيم الصفحات
         if (paginationControlsElement) {
             const prevBtn = paginationControlsElement.querySelector('.btn-page.prev');
             const nextBtn = paginationControlsElement.querySelector('.btn-page.next');
@@ -468,7 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (nextBtn) nextBtn.disabled = endIndex >= items.length;
         }
 
-        // Apply lazy loading to newly rendered images
+        // تطبيق التحميل الكسول على الصور التي تم عرضها حديثًا
         lazyLoadImages();
     };
 
@@ -476,24 +476,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // ======== View Management & Content Rendering ========
 
     /**
-     * Main function to switch between different sections (views) of the application.
-     * @param {string} viewName - The name of the view to switch to (e.g., 'home', 'live', 'match-details').
-     * @param {string|number} [dataId=null] - Optional ID for specific item details (e.g., match ID).
+     * الوظيفة الرئيسية للتبديل بين أقسام (شاشات) التطبيق المختلفة.
+     * @param {string} viewName - اسم العرض للتبديل إليه (مثال: 'home', 'live', 'match-details').
+     * @param {string|number} [dataId=null] - ID اختياري لتفاصيل عنصر محدد (مثال: ID المباراة).
      */
     const switchView = (viewName, dataId = null) => {
         currentView = viewName;
 
-        // Hide all main content sections initially
+        // إخفاء جميع أقسام المحتوى الرئيسية في البداية
         document.querySelectorAll('.view-section').forEach(section => {
             section.classList.remove('active-view');
             section.style.display = 'none';
         });
 
-        // Deactivate all nav links and activate the current one
+        // إلغاء تفعيل جميع روابط التنقل وتفعيل الرابط الحالي
         navLinks.forEach(link => link.classList.remove('active'));
         const activeNavLink = document.querySelector(`.nav-link[data-target-view="${viewName}"]`);
         if (activeNavLink) activeNavLink.classList.add('active');
-        // Close mobile menu if open
+        // إغلاق قائمة الجوال إذا كانت مفتوحة
         mainNav.classList.remove('active');
         menuToggle.classList.remove('active');
 
@@ -503,11 +503,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let pageUrl = window.location.origin + '/';
         let ogImage = "https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png";
         let ogImageAlt = "شاهد كورة | ملعبك النهائي لكرة القدم";
-        let jsonLdData = {}; // Data for schema markup
+        let jsonLdData = {}; // بيانات لترميز Schema
 
-        let targetSectionClone; // Holds the cloned template content's root element
+        let targetSectionClone; // سيحتوي على العنصر الجذر للمحتوى المستنسخ من القالب
 
-        // Render content based on the viewName
+        // عرض المحتوى بناءً على اسم العرض
         if (viewName === 'home') {
             const template = document.getElementById('home-view-template');
             if (!template) {
@@ -523,18 +523,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Clear previous content from contentDisplay
+            // مسح المحتوى السابق من contentDisplay
             contentDisplay.innerHTML = '';
             contentDisplay.appendChild(targetSectionClone);
             targetSectionClone.style.display = 'block';
             targetSectionClone.classList.add('active-view');
 
-            // Get references to elements *inside the cloned section*
+            // الحصول على مراجع للعناصر *داخل القسم المستنسخ*
             const mainGridContainer = targetSectionClone.querySelector('#main-match-grid');
             const homePaginationControls = targetSectionClone.querySelector('.pagination-controls');
             const homeMatchesTitle = targetSectionClone.querySelector('#home-matches-title');
 
-            // Filter for home: Live + Upcoming (Today/Tomorrow) + 2 latest finished + 2 latest news
+            // تصفية الصفحة الرئيسية: مباريات مباشرة + قادمة (اليوم/الغد) + أحدث مباراتين منتهيتين + أحدث خبرين
             const liveMatches = DATA.filter(item => item.type === 'match' && item.status === 'Live');
             const upcomingMatchesTodayTomorrow = DATA.filter(item => {
                 if (item.type !== 'match' || item.status !== 'Upcoming') return false;
@@ -551,14 +551,14 @@ document.addEventListener('DOMContentLoaded', () => {
                                            .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
                                            .slice(0, 2);
 
-            // Filter out any potential non-match/news items before passing to renderGrid
+            // تصفية أي عناصر غير مباريات/أخبار محتملة قبل تمريرها إلى renderGrid
             const itemsToRender = [...liveMatches, ...upcomingMatchesTodayTomorrow, ...latestNews, ...finishedMatches].filter(item => item.type === 'match' || item.type === 'news');
 
             homeMatchesTitle.textContent = "أبرز المباريات والجديد";
             renderGrid(itemsToRender, mainGridContainer, (item) => {
                 if (item.type === 'match') return createMatchCard(item);
                 if (item.type === 'news') return createNewsCard(item);
-                return null; // Ensure something is returned
+                return null; // التأكد من إرجاع شيء
             }, currentPage.home, null, homePaginationControls, 'home');
 
 
@@ -575,7 +575,7 @@ document.addEventListener('DOMContentLoaded', () => {
             targetSectionClone = document.importNode(template.content, true).firstElementChild;
             if (!targetSectionClone) { console.error("ERROR: Cloned content of 'live-matches-template' is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب المباريات المباشرة فارغ.</p>'; return; }
 
-            // Clear all current children of contentDisplay
+            // مسح جميع العناصر الحالية من contentDisplay
             contentDisplay.innerHTML = '';
             contentDisplay.appendChild(targetSectionClone);
             targetSectionClone.style.display = 'block';
@@ -707,7 +707,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 targetSectionClone = document.importNode(template.content, true).firstElementChild;
                 if (!targetSectionClone) { console.error("ERROR: Cloned content of 'match-details-view-template' is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب تفاصيل المباراة فارغ.</p>'; return; }
 
-                contentDisplay.innerHTML = ''; // Clear all current children of contentDisplay
+                contentDisplay.innerHTML = ''; // مسح جميع العناصر الحالية من contentDisplay
                 contentDisplay.appendChild(targetSectionClone);
                 targetSectionClone.style.display = 'block';
                 targetSectionClone.classList.add('active-view');
@@ -720,9 +720,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const loadingSpinner = targetSectionClone.querySelector('#video-loading-spinner');
 
                 const suggestedMatchGrid = targetSectionClone.querySelector('#suggested-match-grid');
-                const backToHomeBtn = targetSectionClone.querySelector('#back-to-home-btn'); // Get the back button within the cloned template
+                const backToHomeBtn = targetSectionClone.querySelector('#back-to-home-btn'); // الحصول على زر الرجوع ضمن القالب المستنسخ
 
-                // Add event listener for the back button, if it exists
+                // إضافة مستمع حدث لزر الرجوع، إذا كان موجودًا
                 if (backToHomeBtn) {
                     backToHomeBtn.onclick = (e) => {
                         e.preventDefault();
@@ -733,7 +733,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 matchDetailsTitleElement.textContent = match.title;
 
-                // Video Player & Overlay logic
+                // منطق مشغل الفيديو والـ Overlay
                 matchPlayerContainer.innerHTML = '';
                 overlayThumbnail.src = match.thumbnail;
                 videoOverlay.style.display = 'flex';
@@ -743,18 +743,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadingSpinner.style.display = 'block';
                     videoOverlay.style.display = 'none';
 
-                    // **إعلان الرابط المباشر:**
-                    // **هنا، نضمن أن هذا الإعلان (الذي تتحكم في رابطه أنت)**
-                    // **سيُفتح في تبويب جديد بسبب التفاعل الصريح من المستخدم.**
+                    // **الإعلان الوحيد الذي نتحكم فيه بفتحه في تبويب جديد:**
+                    // يتم تشغيله هنا لأنها نقرة مباشرة من المستخدم على Overlay الفيديو،
+                    // مما يزيد من فرصة عدم حظر المتصفح للإعلان كـ Pop-up.
                     const currentTime = Date.now();
                     if (currentTime - adTriggers.lastDirectLinkTime > DIRECT_LINK_COOLDOWN_MS) {
-                        openInNewTab(AD_DIRECT_LINK_URL); // استخدام openInNewTab لضمان الفتح في تبويب جديد
+                        openInNewTab(AD_DIRECT_LINK_URL); // استخدم openInNewTab لضمان الفتح في تبويب جديد
                         adTriggers.lastDirectLinkTime = currentTime;
                     }
 
                     const iframe = document.createElement('iframe');
                     iframe.src = match.embed_url;
-                    iframe.allow = "autoplay; fullscreen; picture-in-picture"; // Added picture-in-picture
+                    iframe.allow = "autoplay; fullscreen; picture-in-picture";
                     iframe.frameBorder = "0";
                     iframe.scrolling = "no";
                     iframe.setAttribute('referrerpolicy', 'origin');
@@ -792,7 +792,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
         } else if (viewName === 'search-results') {
-            const template = document.getElementById('home-view-template'); // Re-using home template for search results
+            const template = document.getElementById('home-view-template'); // إعادة استخدام قالب الصفحة الرئيسية لنتائج البحث
             if (!template) { console.error("ERROR: The 'home-view-template' template for search results was not found."); contentDisplay.innerHTML = '<p class="error-message">عذراً، قالب البحث غير موجود.</p>'; return; }
             targetSectionClone = document.importNode(template.content, true).firstElementChild;
             if (!targetSectionClone) { console.error("ERROR: Cloned content of 'home-view-template' for search results is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب البحث فارغ.</p>'; return; }
@@ -817,7 +817,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderGrid(searchResults, mainGridContainer, (item) => {
                 if (item.type === 'match') return createMatchCard(item);
                 if (item.type === 'news') return createNewsCard(item);
-                return null; // Ensure something is returned
+                return null; // التأكد من إرجاع شيء
             }, currentPage.search, null, homePaginationControls, 'search-results');
 
             pageTitle = `نتائج البحث عن "${currentSearchQuery}" | شاهد كورة`;
@@ -834,17 +834,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ======== Event Listeners ========
 
-    // Delegated event listener for general clicks on the body
+    // مستمع حدث مفوض للنقرات العامة على الجسم
     document.body.addEventListener('click', (e) => {
-        // **الآن، تم إزالة أي كود يحاول فتح إعلانات تلقائيًا أو كـ "pop-under"**
-        // هذا يعني أن الكود الخاص بك لن يفتح أي شيء في الخلفية دون نقرة صريحة.
-        // إذا حدث ذلك، فالسبب هو سكريبتات الشبكة الإعلانية.
-        // تم حذف الكود التالي:
-        // if (!adTriggers.popunderOpened) {
-        //     openPopUnder('YOUR_AD_URL_HERE');
-        //     adTriggers.popunderOpened = true;
-        // }
-
+        // **تم التأكد من إزالة أي كود هنا كان يحاول فتح إعلانات تلقائيًا أو كـ "pop-under".**
+        // هذا يعني أن الكود الخاص بك لا يقوم بفتح إعلانات غير مرغوبة.
         const navLink = e.target.closest('.nav-link');
         const homeLogo = e.target.closest('#home-logo-link');
 
@@ -859,20 +852,20 @@ document.addEventListener('DOMContentLoaded', () => {
             window.history.pushState({ view: 'home' }, '', '#home');
         }
 
-        // Click event for the entire match card (or its detail button within)
+        // حدث النقر لبطاقة المباراة بالكامل (أو زر التفاصيل بداخلها)
         const itemCard = e.target.closest('.match-card');
-        if (itemCard && itemCard.dataset.type === 'match') { // Ensure it's a match card click
-             e.preventDefault(); // Prevent default link behavior if any internal links are clicked
+        if (itemCard && itemCard.dataset.type === 'match') { // التأكد من أنها نقرة على بطاقة مباراة
+             e.preventDefault(); // منع سلوك الرابط الافتراضي لأي روابط داخلية
              const itemId = itemCard.dataset.matchId;
              if (itemId) {
                  switchView('match-details', itemId);
                  window.history.pushState({ view: 'match-details', id: itemId }, '', `#match-${itemId}`);
              }
         }
-        // News cards link externally, so no special JS handler needed for them beyond their own <a> tag.
+        // روابط بطاقات الأخبار تفتح خارجيًا، لذلك لا تحتاج إلى معالج JavaScript خاص بها بخلاف وسم <a> الخاص بها.
 
 
-        // Toggle mobile menu
+        // تبديل قائمة الجوال
         if (e.target.closest('#menu-toggle')) {
             mainNav.classList.toggle('active');
             menuToggle.classList.toggle('active');
@@ -882,7 +875,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Delegated event listener for pagination buttons within contentDisplay
+    // مستمع حدث مفوض لأزرار تقسيم الصفحات داخل contentDisplay
     contentDisplay.addEventListener('click', (e) => {
         const prevBtn = e.target.closest('.btn-page.prev');
         const nextBtn = e.target.closest('.btn-page.next');
@@ -895,7 +888,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (nextBtn) {
                 currentPage[viewKey]++;
             }
-            switchView(currentView, null); // Re-render the current view with updated page
+            switchView(currentView, null); // إعادة عرض العرض الحالي بالصفحة المحدثة
         }
     });
 
@@ -918,16 +911,16 @@ document.addEventListener('DOMContentLoaded', () => {
             currentSearchQuery = query;
             currentPage.search = 1;
             switchView('search-results');
-            // Update URL for search results
+            // تحديث رابط URL لنتائج البحث
             window.history.pushState({ view: 'search-results', query: query }, '', `/search?q=${encodeURIComponent(query)}`);
         } else if (currentView === 'search-results') {
-            // If search input is cleared and currently on search results, go to home
+            // إذا تم مسح حقل البحث وأنت حاليًا في نتائج البحث، انتقل إلى الصفحة الرئيسية
             switchView('home');
             window.history.pushState({ view: 'home' }, '', '/');
         }
     }
 
-    // Handle browser back/forward buttons
+    // التعامل مع أزرار الرجوع/الأمام في المتصفح
     window.addEventListener('popstate', (event) => {
         const hash = window.location.hash.substring(1);
         const urlParams = new URLSearchParams(window.location.search);
@@ -939,11 +932,11 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (['home', 'live', 'upcoming', 'highlights', 'news'].includes(hash)) {
             switchView(hash);
         } else if (searchQuery) {
-            searchInput.value = searchQuery; // Populate search input if returning to search results via history
+            searchInput.value = searchQuery; // تعبئة حقل البحث إذا عُدت إلى نتائج البحث عبر السجل
             currentSearchQuery = searchQuery;
             switchView('search-results');
         } else {
-            // Default to home if no specific hash or search query
+            // افتراضيًا، انتقل إلى الصفحة الرئيسية إذا لم يكن هناك هاش أو استعلام بحث محدد
             switchView('home');
         }
     });
@@ -960,7 +953,7 @@ document.addEventListener('DOMContentLoaded', () => {
             DATA = await response.json();
             console.log('Data loaded successfully:', DATA);
 
-            // Initial view based on URL hash or search query
+            // تحديد العرض الأولي بناءً على هاش URL أو استعلام البحث
             const hash = window.location.hash.substring(1);
             const urlParams = new URLSearchParams(window.location.search);
             const searchQuery = urlParams.get('q');
@@ -975,7 +968,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentSearchQuery = searchQuery;
                 switchView('search-results');
             } else {
-                // Default to home if no specific hash or search query
+                // افتراضيًا، انتقل إلى الصفحة الرئيسية إذا لم يكن هناك هاش أو استعلام بحث محدد
                 switchView('home');
             }
 
