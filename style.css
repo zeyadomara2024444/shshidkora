@@ -59,7 +59,7 @@
 }
 
 html {
-    font-size: 13px; 
+    font-size: 13px;  
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -68,11 +68,11 @@ html {
 
 body {
     font-family: var(--font-body);
-    background-color: var(--up-bg-light); 
-    color: var(--up-text-dark); 
+    background-color: var(--up-bg-light);  
+    color: var(--up-text-dark);  
     line-height: 1.6;
-    direction: rtl; 
-    text-align: right; 
+    direction: rtl;  
+    text-align: right;  
     overflow-x: hidden;
     min-height: 100vh;
     position: relative;
@@ -161,7 +161,7 @@ a:hover {
     border: none;
     cursor: pointer;
     font-family: var(--font-body);
-    font-size: clamp(0.8rem, 2.5vw, 0.9rem); 
+    font-size: clamp(0.8rem, 2.5vw, 0.9rem);  
     border-radius: var(--border-radius-button);
     transition: all var(--transition-medium);
     box-shadow: var(--up-shadow-soft);
@@ -171,7 +171,7 @@ a:hover {
     overflow: hidden;
     font-weight: 700;
     border: 2px solid transparent;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.1); 
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);  
     transform: translateZ(0);
     perspective: 1000px;
 }
@@ -424,7 +424,7 @@ a:hover {
 /* --- Main Content Display Area --- */
 .view-section {
     padding: 7vw 0;
-    background-color: var(--up-bg-light); 
+    background-color: var(--up-bg-light);  
     min-height: 50vh;
     opacity: 0;
     transform: translateY(10px);
@@ -609,7 +609,8 @@ a:hover {
 /* Card image (poster) */
 .match-card img {
     width: 100%;
-    height: clamp(180px, 35vw, 250px); /* Increased height for better poster display */
+    /* تم تقليل الطول هنا ليتناسب مع طلبك مع الحفاظ على العرض الأقصى */
+    height: clamp(100px, 20vw, 180px); /* قللت الطول وزودت المرونة للتصغير */
     object-fit: cover;
     background-color: var(--up-bg-dark); /* Darker background for image fallback */
     display: block;
@@ -698,21 +699,22 @@ a:hover {
     display: flex;
     align-items: center;
     /* Changed flex-direction to row-reverse for text before logo in RTL */
-    flex-direction: row-reverse; 
-    flex-grow: 1; 
+    flex-direction: row-reverse;  
+    flex-grow: 1;  
     flex-shrink: 1;
     gap: 0.3rem;
     min-width: 0; /* Allow content to shrink */
     font-size: clamp(0.9rem, 1.2vw, 1rem); /* Font size for team name */
+    justify-content: center; /* تمركز الفريقين ليصبحوا حلقتين حول الـ VS */
 }
 
 .match-card .home-team {
-    justify-content: flex-end; /* Align home team to the right of VS */
+    /* تم إزالة justify-content هنا لأننا نستخدم justify-content: center; في .team العام */
     text-align: right;
 }
 
 .match-card .away-team {
-    justify-content: flex-start; /* Align away team to the left of VS */
+    /* تم إزالة justify-content هنا لأننا نستخدم justify-content: center; في .team العام */
     text-align: left;
 }
 
@@ -720,18 +722,18 @@ a:hover {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    flex-shrink: 1; 
+    flex-shrink: 1;  
     min-width: 0; /* Allow text to truncate */
 }
 
 .match-card .team img {
-    width: clamp(45px, 6vw, 60px); /* Larger team logos */
-    height: clamp(45px, 6vw, 60px); /* Larger team logos */
+    width: clamp(55px, 8vw, 70px); /* حجم أكبر لشعار الفريق */
+    height: clamp(55px, 8vw, 70px); /* حجم أكبر لشعار الفريق */
     object-fit: contain;
-    border-radius: 50%;
-    border: 1px solid rgba(0,0,0,0.1);
-    background-color: rgba(255,255,255,0.05);
-    box-shadow: inset 0 0 3px rgba(0,0,0,0.1);
+    border-radius: 50%; /* تم التأكيد على أن اللوجو دائري */
+    border: 2px solid var(--up-accent-secondary); /* إطار بلون ثانوي بارز */
+    background-color: var(--up-bg-light); /* خلفية اللوجو */
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.4); /* ظل خفيف حول اللوجو */
     transition: transform var(--transition-fast), box-shadow var(--transition-fast);
     padding: 2px;
     flex-shrink: 0;
@@ -740,7 +742,7 @@ a:hover {
 
 .match-card .team img:hover {
     transform: scale(1.1);
-    box-shadow: 0 0 8px var(--up-accent-primary), inset 0 0 5px rgba(0,0,0,0.1);
+    box-shadow: 0 0 12px var(--up-accent-primary), inset 0 0 5px rgba(0,0,0,0.1); /* توهج أكبر عند التمرير */
 }
 
 .match-card .match-league {
@@ -823,7 +825,8 @@ a:hover {
 }
 .news-card img {
     width: 100%;
-    height: clamp(100px, 20vw, 150px);
+    /* تم تقليل الطول هنا ليتناسب مع طلبك مع الحفاظ على العرض الأقصى */
+    height: clamp(80px, 15vw, 120px); /* قللت الطول وزودت المرونة للتصغير */
     object-fit: cover;
     background-color: var(--up-bg-dark);
     display: block;
@@ -885,7 +888,7 @@ a:hover {
 /* --- Match Details Section --- */
 .match-details-section {
     padding: 6vw 3vw;
-    background-color: var(--up-bg-light); 
+    background-color: var(--up-bg-light);  
     border-top: 2px solid var(--up-accent-primary);
     box-shadow: 0 0 20px rgba(0,0,0,0.05) inset; /* Lighter inset shadow */
     animation: fadeIn var(--transition-medium) ease-out;
@@ -993,7 +996,7 @@ a:hover {
 
 /* Match Info Box (Description Section) - Removed completely */
 .match-info-box {
-    display: none !important; 
+    display: none !important;  
 }
 
 
@@ -1219,28 +1222,30 @@ a:hover {
         padding: 0 1rem;
     }
     .match-card img {
-        height: clamp(180px, 60vw, 300px); /* Make image taller for single column */
+        /* تكبير عرض البوستر وتقليل الطول للموبايل */
+        height: clamp(100px, 30vw, 150px); /* قللت الطول للموبايل هنا */
     }
     .match-card .match-teams .team img {
-        width: clamp(40px, 12vw, 60px); /* Make team logos larger on small screens */
-        height: clamp(40px, 12vw, 60px);
+        width: clamp(50px, 14vw, 70px); /* تكبير لوجو الفريق على الشاشات الصغيرة */
+        height: clamp(50px, 14vw, 70px);
     }
     .match-card .vs {
-        font-size: clamp(2.2rem, 8vw, 3rem); /* Even larger VS for mobile */
+        font-size: clamp(2.5rem, 10vw, 3.5rem); /* VS أكبر للموبايل */
         margin: 0 0.8rem;
     }
     .match-card .team {
-        font-size: clamp(0.9rem, 4vw, 1.2rem);
+        font-size: clamp(1rem, 4.5vw, 1.3rem); /* حجم خط الفريق أكبر للموبايل */
     }
     .news-card img {
-        height: clamp(120px, 40vw, 200px); /* Adjust news card image height */
+        /* تكبير عرض بوستر الأخبار وتقليل الطول للموبايل */
+        height: clamp(80px, 25vw, 120px); /* قللت الطول لبوستر الأخبار هنا */
     }
 }
 
 /* Medium devices (480px and up) */
 @media (min-width: 480px) {
     html {
-        font-size: 14px; 
+        font-size: 14px;  
     }
     .container {
         padding: 0 1rem;
@@ -1337,18 +1342,19 @@ a:hover {
         padding: 0 2vw;
     }
     .match-card img {
-        height: clamp(200px, 20vw, 300px); /* Larger height for desktop posters */
+        /* تكبير عرض البوستر وتقليل الطول للكمبيوتر */
+        height: clamp(120px, 12vw, 200px); /* قللت الطول هنا ليتناسب مع طلبك */
     }
     .match-card .match-teams .team img {
-        width: clamp(50px, 5vw, 70px); /* Larger team logos on desktop */
-        height: clamp(50px, 5vw, 70px);
+        width: clamp(60px, 6vw, 80px); /* حجم أكبر لشعار الفريق على الكمبيوتر */
+        height: clamp(60px, 6vw, 80px);
     }
     .match-card .vs {
-        font-size: clamp(2.5rem, 3.5vw, 3.5rem); /* Even larger VS */
-        margin: 0 1rem;
+        font-size: clamp(3rem, 4.5vw, 4.5rem); /* VS أكبر للكمبيوتر */
+        margin: 0 1.2rem;
     }
     .match-card .team span {
-        font-size: clamp(1rem, 1.5vw, 1.2rem);
+        font-size: clamp(1.1rem, 1.8vw, 1.4rem); /* حجم خط الفريق أكبر للكمبيوتر */
     }
 
     /* Removed hero section media queries as the section is removed */
@@ -1374,7 +1380,7 @@ a:hover {
 
 /* Removed image frame for the "ultimate pitch" image in hero section */
 /* #hero-section img.ultimate-pitch-frame {
-    border: 5px solid var(--up-accent-secondary); 
+    border: 5px solid var(--up-accent-secondary);  
     border-radius: var(--border-radius-card);
     box-shadow: var(--up-shadow-medium), var(--up-glow-primary);
     transition: all var(--transition-medium);
