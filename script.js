@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     // ======== Configuration & Data Management ========
-    const API_URL = './matches.json'; // المسار لملف بيانات JSON الخاص بك
+    const API_URL = './matches.json'; // Path to your JSON data file
     const ITEMS_PER_PAGE = 6;
 
-    let DATA = []; // سيخزن البيانات المجلوبة
+    let DATA = []; // Will store fetched data
     let currentPage = {
         home: 1,
         live: 1,
@@ -14,26 +14,22 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     let currentView = 'home';
     let currentFilter = {
-        upcoming: 'upcoming' // الفلتر الافتراضي للمباريات القادمة: 'upcoming' (الكل), 'today', 'tomorrow'
+        upcoming: 'upcoming' // Default filter for upcoming: 'upcoming' (all), 'today', 'tomorrow'
     };
     let currentSearchQuery = '';
 
-    // ثوابت مقارنة التاريخ
+    // Constants for date comparisons
     const NOW = new Date();
     const TODAY_START = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate());
     const TOMORROW_START = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate() + 1);
     const DAY_AFTER_TOMORROW_START = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate() + 2);
 
-    // متغيرات الإعلانات
-    // **ملاحظة هامة:** adTriggers.popunderOpened لم يعد يُستخدم لفتح نوافذ تلقائية.
+    // Ad-related variables
     let adTriggers = {
-        popunderOpened: false, // لم يعد يُستخدم لفتح تلقائي
-        lastDirectLinkTime: 0 // فترة تهدئة لرابط الإعلان المباشر (عند النقر على الفيديو)
+        popunderOpened: false, // Tracks if popunder has been initiated once per session
+        lastDirectLinkTime: 0 // Cooldown for the direct link (video overlay click)
     };
-    const DIRECT_LINK_COOLDOWN_MS = 7000; // 7 ثوانٍ فترة تهدئة لرابط الإعلان المباشر
-    // **هذا هو رابط الإعلان المباشر الوحيد الذي سيفتحه الكود الخاص بك في تبويب جديد.**
-    const AD_DIRECT_LINK_URL = 'https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec';
-
+    const DIRECT_LINK_COOLDOWN_MS = 7000; // 7 seconds cooldown for direct link
 
     // ======== DOM Elements Cache (Static references) ========
     const contentDisplay = document.getElementById('content-display');
@@ -44,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchButton = document.getElementById('search-button');
     const homeLogoLink = document.getElementById('home-logo-link');
 
-    // عناصر الـ SEO (Meta tags)
+    // SEO Elements (Meta tags)
     const dynamicTitle = document.getElementById('dynamic-title');
     const dynamicDescription = document.getElementById('dynamic-description');
     const dynamicKeywords = document.getElementById('dynamic-keywords');
@@ -66,9 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ======== Utility Functions ========
 
     /**
-     * تنسيق سلسلة تاريخ ISO إلى تاريخ ووقت عربي مقروء مع اختصار المنطقة الزمنية ذات الصلة.
-     * @param {string} isoString - سلسلة تاريخ ISO.
-     * @returns {string} سلسلة التاريخ المنسقة.
+     * Formats an ISO date string to a readable Arabic date and time with a relevant timezone abbreviation.
+     * @param {string} isoString - The ISO date string.
+     * @returns {string} Formatted date string.
      */
     const formatDateTime = (isoString) => {
         const date = new Date(isoString);
@@ -78,7 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const formattedDatePart = new Intl.DateTimeFormat('ar-EG', optionsDate).format(date);
         let formattedTimePart = new Intl.DateTimeFormat('ar-EG', optionsTime).format(date);
 
-        // استبدال رموز الصباح/المساء للغة العربية
         formattedTimePart = formattedTimePart.replace('ص', 'ص').replace('م', 'م');
 
         let timezoneAbbreviation = '';
@@ -88,64 +83,58 @@ document.addEventListener('DOMContentLoaded', () => {
         if (offsetString === '+03:00') {
             timezoneAbbreviation = '(بتوقيت جدة)'; // SAST (Saudi Arabia Standard Time)
         } else if (offsetString === '+02:00') {
-            // التحقق من الدوريات الأوروبية الشائعة خلال التوقيت الصيفي لاسم منطقة زمنية أكثر دقة
             if (isoString.includes("الدوري الإسباني") || isoString.includes("الدوري الألماني") || isoString.includes("الدوري الفرنسي") || isoString.includes("دوري أبطال أوروبا")) {
-                timezoneAbbreviation = '(بتوقيت أوروبا/صيفي)'; // CEST for European leagues, or just CET
+                timezoneAbbreviation = '(بتوقيت أوروبا/صيفي)'; // CEST for European leagues
             } else {
-                timezoneAbbreviation = '(بتوقيت القاهرة)'; // إذا كان توقيت مصري غير صيفي أو +02 عام
+                timezoneAbbreviation = '(بتوقيت القاهرة)'; // If it's a non-DST Egyptian time or a generic +02
             }
         } else if (offsetString === '+01:00') {
             timezoneAbbreviation = '(بتوقيت لندن)'; // BST (British Summer Time)
         } else if (offsetString === '+00:00') {
             timezoneAbbreviation = '(بتوقيت جرينتش)'; // GMT/UTC
         } else {
-            // حل بديل للأوفستات غير المعالجة أو في حالة عدم وجود الأوفست
-            timezoneAbbreviation = '(توقيت محلي)'; // أو محاولة الاستنتاج من إعدادات المتصفح المحلية إذا رغبت
+            // Fallback for unhandled offsets or if offset is missing
+            timezoneAbbreviation = '(توقيت محلي)'; // Or try to deduce from browser's locale if desired
         }
 
         return `${formattedDatePart}، ${formattedTimePart} ${timezoneAbbreviation}`;
     };
 
     /**
-     * **النسخة المحدثة من دالة فتح الرابط في تبويب جديد.**
-     * **مهم جدًا:** لكي يعمل هذا بكفاءة ويتجنب مانعات النوافذ المنبثقة، يجب استدعاء هذه الدالة **مباشرةً** داخل معالج حدث نقرة المستخدم.
-     * @param {string} url - الرابط لفتحه.
+     * Attempts to open a URL in a new tab and immediately return focus to the current window.
+     * This is the best effort for a "pop-under" behavior.
+     * @param {string} url - The URL to open.
      */
-    const openInNewTab = (url) => {
+    const openPopUnder = (url) => {
         try {
-            // "_blank" يطلب فتح في تبويب جديد.
-            // "noopener" و "noreferrer" مهمان للأمان والأداء.
             const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
             if (newWindow) {
-                // إذا تم فتح النافذة بنجاح (ولم يتم حظرها)، فلا داعي لمحاولة blur() أو focus()
-                // لأن هدفنا هو فتح تبويب جديد، سواء كان في المقدمة أو الخلفية.
-                // المتصفح هو من يقرر ذلك بناءً على إعداداته وسلوك المستخدم.
+                newWindow.blur(); // Send the new window to the background
+                window.focus(); // Bring current window back to foreground
             } else {
-                // حل بديل في حال قام مانع النوافذ المنبثقة بحظر window.open.
-                // هذا الحل أقل موثوقية في فرض فتح تبويب جديد وقد يفتح في نفس التبويب.
-                console.warn('window.open was blocked or failed, trying fallback with anchor tag.');
+                // Fallback for strict popup blockers: try a normal new tab
                 const link = document.createElement('a');
                 link.href = url;
                 link.target = '_blank';
                 link.rel = 'noopener noreferrer';
-                document.body.appendChild(link); // يجب إلحاق الرابط بـ body
+                document.body.appendChild(link); // Must be in DOM to click
                 link.click();
-                link.remove(); // تنظيف العنصر المؤقت
+                link.remove();
             }
         } catch (e) {
-            console.error("Error opening URL in new tab:", e);
+            console.error("Error opening popunder:", e);
         }
     };
 
 
     /**
-     * تحديث علامات Meta لـ SEO للصفحة ديناميكيًا.
-     * @param {string} title - عنوان الصفحة.
-     * @param {string} description - وصف Meta.
-     * @param {string} keywords - كلمات مفتاحية Meta.
-     * @param {string} url - الرابط الأساسي.
-     * @param {string} [image=''] - رابط صورة Open Graph/Twitter.
-     * @param {string} [imageAlt=''] - نص بديل لصورة Open Graph.
+     * Updates the page's SEO meta tags dynamically.
+     * @param {string} title - Page title.
+     * @param {string} description - Meta description.
+     * @param {string} keywords - Meta keywords.
+     * @param {string} url - Canonical URL.
+     * @param {string} [image=''] - Open Graph/Twitter image URL.
+     * @param {string} [imageAlt=''] - Open Graph image alt text.
      */
     const updateSEO = (title, description, keywords, url, image = '', imageAlt = '') => {
         dynamicTitle.textContent = title;
@@ -158,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dynamicOgUrl.setAttribute('content', url);
         dynamicOgImage.setAttribute('content', image || "https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png");
         dynamicOgImageAlt.setAttribute('content', imageAlt || title);
-        dynamicOgType.setAttribute('content', 'website'); // افتراضي، يمكن أن يكون 'article', 'video.other'
+        dynamicOgType.setAttribute('content', 'website'); // Default, can be 'article', 'video.other'
 
         dynamicTwitterTitle.setAttribute('content', title);
         dynamicTwitterDescription.setAttribute('content', description);
@@ -168,9 +157,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
-     * إنشاء وتحديث بيانات JSON-LD المهيكلة لـ SEO.
-     * @param {object} data - كائن البيانات (مباراة أو خبر).
-     * @param {string} viewName - اسم العرض الحالي.
+     * Generates and updates JSON-LD structured data for SEO.
+     * @param {object} data - The data object (match or news).
+     * @param {string} viewName - The current view name.
      */
     const generateJsonLdSchema = (data, viewName) => {
         let schema = {};
@@ -220,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     "url": channel.link
                 }));
             }
-        } else if (viewName === 'news-details' && data && data.type === 'news') { // افتراض وجود عرض تفاصيل الأخبار
+        } else if (viewName === 'news-details' && data && data.type === 'news') { // Assuming a news details view might exist
             schema = {
                 "@context": "https://schema.org",
                 "@type": "NewsArticle",
@@ -272,14 +261,15 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
-     * تحميل الصور بشكل كسول باستخدام Intersection Observer أو التحميل الأصلي.
-     * يُطبق على الصور ذات سمة data-src و class 'lazy'.
+     * Lazy loads images using Intersection Observer or native loading.
+     * Applied to images with data-src and 'lazy' class.
+     * Added placeholder src for better UX during loading.
      */
     const lazyLoadImages = () => {
         const lazyImages = document.querySelectorAll('img.lazy[data-src]');
 
         if ('loading' in HTMLImageElement.prototype) {
-            // التحميل الكسول الأصلي مدعوم
+            // Native lazy loading supported
             lazyImages.forEach((img) => {
                 img.src = img.dataset.src;
                 img.removeAttribute('data-src');
@@ -287,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 img.onload = () => img.classList.add('loaded');
             });
         } else if ('IntersectionObserver' in window) {
-            // حل بديل لـ Intersection Observer
+            // Fallback to Intersection Observer
             let lazyImageObserver = new IntersectionObserver((entries, observer) => {
                 entries.forEach((entry) => {
                     if (entry.isIntersecting) {
@@ -300,14 +290,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             }, {
-                rootMargin: '0px 0px 200px 0px' // تحميل الصور عندما تكون على بعد 200 بكسل من منفذ العرض
+                rootMargin: '0px 0px 200px 0px' // Load images when 200px from viewport
             });
 
             lazyImages.forEach((lazyImage) => {
                 lazyImageObserver.observe(lazyImage);
             });
         } else {
-            // حل بديل للمتصفحات التي لا تدعم Intersection Observer (تحميل الكل فورًا)
+            // Fallback for browsers that don't support Intersection Observer (load all immediately)
             lazyImages.forEach((img) => {
                 img.src = img.dataset.src;
                 img.removeAttribute('data-src');
@@ -317,9 +307,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
-     * إنشاء عنصر HTML لبطاقة مباراة.
-     * @param {object} match - كائن بيانات المباراة.
-     * @returns {HTMLElement} عنصر بطاقة المباراة الذي تم إنشاؤه.
+     * Creates a match card HTML element.
+     * @param {object} match - Match data object.
+     * @returns {HTMLElement} The created match card element.
      */
     const createMatchCard = (match) => {
         const card = document.createElement('div');
@@ -377,16 +367,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
-     * إنشاء عنصر HTML لبطاقة خبر.
-     * @param {object} news - كائن بيانات الخبر.
-     * @returns {HTMLElement} عنصر بطاقة الخبر الذي تم إنشاؤه.
+     * Creates a news card HTML element.
+     * @param {object} news - News data object.
+     * @returns {HTMLElement} The created news card element.
      */
     const createNewsCard = (news) => {
         const card = document.createElement('div');
         card.classList.add('news-card');
         card.dataset.newsId = news.id;
         card.dataset.type = 'news';
-        // استخدام data-src للتحميل الكسول للصورة المصغرة، بالإضافة إلى loading="lazy" الأصلي
+        // Use data-src for lazy loading thumbnail, along with native loading="lazy"
         card.innerHTML = `
             <img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" data-src="${news.thumbnail}" alt="صورة خبر ${news.title}" class="lazy" loading="lazy" width="250" height="150">
             <div class="news-card-content">
@@ -400,21 +390,21 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
-     * عرض العناصر في حاوية شبكة محددة مع تقسيم الصفحات.
-     * @param {Array<object>} items - مصفوفة من عناصر البيانات (مباريات أو أخبار).
-     * @param {HTMLElement} container - عنصر HTML الحاوية للعرض.
-     * @param {Function} cardCreator - دالة لإنشاء بطاقة فردية (createMatchCard أو createNewsCard).
-     * @param {number} page - رقم الصفحة الحالي لتقسيم الصفحات.
-     * @param {HTMLElement} [emptyStateElement=null] - مرجع اختياري لعنصر الحالة الفارغة.
-     * @param {HTMLElement} [paginationControlsElement=null] - مرجع اختياري لعنصر التحكم في تقسيم الصفحات.
-     * @param {string} [viewNameForAd=''] - اسم العرض الحالي، يُستخدم لمنطق وضع الإعلانات.
+     * Renders items into a specified grid container with pagination.
+     * @param {Array<object>} items - Array of data items (matches or news).
+     * @param {HTMLElement} container - The HTML container element to render into.
+     * @param {Function} cardCreator - Function to create an individual card (createMatchCard or createNewsCard).
+     * @param {number} page - Current page number for pagination.
+     * @param {HTMLElement} [emptyStateElement=null] - Optional reference to the empty state div.
+     * @param {HTMLElement} [paginationControlsElement=null] - Optional reference to the pagination controls div.
+     * @param {string} [viewNameForAd=''] - Current view name, used for ad placement logic
      */
     const renderGrid = (items, container, cardCreator, page, emptyStateElement = null, paginationControlsElement = null, viewNameForAd = '') => {
         if (!container) {
             console.error(`renderGrid: Target container is null or undefined. This indicates an issue with template cloning or element selection. Container expected: ${container?.id || 'N/A'}`);
             return;
         }
-        container.innerHTML = ''; // مسح المحتوى السابق
+        container.innerHTML = ''; // Clear previous content
 
         if (items.length === 0) {
             if (emptyStateElement) emptyStateElement.style.display = 'block';
@@ -434,19 +424,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cardElement instanceof HTMLElement) {
                 container.appendChild(cardElement);
 
-                // **إدراج إعلانات Native Async:**
-                // **ملاحظة هامة جداً:** هذا الجزء من الكود يقوم فقط بإضافة حاوية HTML (div) وسكريبت الإعلان
-                // من profitableratecpm.com.
-                // **السلوك الفعلي لفتح الإعلان (هل يفتح تبويب جديد، أو يحل محل الموقع، أو غير ذلك)
-                // يتم التحكم فيه بالكامل بواسطة السكريبت الذي يتم تحميله من profitableratecpm.com.**
-                // **لا يمكنك التحكم في هذا السلوك من كودك هذا.**
+                // Insert Native Async ad strategically
                 if (viewNameForAd && ['home', 'live', 'upcoming', 'highlights', 'search-results', 'news'].includes(viewNameForAd)) {
-                    // ضع إعلان Native Async بعد كل 3 بطاقات، ولكن ليس في البطاقة الأخيرة لتجنب الوضع الغريب
-                    // وفقط إذا لم تكن الصفحة الأخيرة بأقل من 3 عناصر متبقية
+                    // Place Native Async ad after every 3rd card, but not on the last card to avoid awkward placement
+                    // and only if it's not the last page with fewer than 3 items remaining
                     if ((index + 1) % 3 === 0 && (index + 1) < paginatedItems.length) {
                         const nativeAdDiv = document.createElement('div');
-                        nativeAdDiv.className = 'native-ad-placeholder'; // إضافة فئة للتنسيق
-                        // استخدام ID فريد لكل حاوية إعلان لضمان العرض الصحيح إذا كان هناك العديد في الصفحة
+                        nativeAdDiv.className = 'native-ad-placeholder'; // Add a class for styling
+                        // Using a unique ID for each ad container to ensure proper rendering if multiple are on the page
                         const uniqueAdContainerId = `container-b63334b55ca510415eee91e8173dc2d8-${viewNameForAd}-${page}-${index}`;
                         nativeAdDiv.innerHTML = `
                             <script async="async" data-cfasync="false" src="//pl27154385.profitableratecpm.com/b63334b55ca510415eee91e8173dc2d8/invoke.js"></script>
@@ -460,7 +445,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // تحديث حالة أزرار تقسيم الصفحات
+        // Update pagination button states (pagination controls are now display: none in CSS, so this won't be visible)
         if (paginationControlsElement) {
             const prevBtn = paginationControlsElement.querySelector('.btn-page.prev');
             const nextBtn = paginationControlsElement.querySelector('.btn-page.next');
@@ -468,7 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (nextBtn) nextBtn.disabled = endIndex >= items.length;
         }
 
-        // تطبيق التحميل الكسول على الصور التي تم عرضها حديثًا
+        // Apply lazy loading to newly rendered images
         lazyLoadImages();
     };
 
@@ -476,24 +461,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // ======== View Management & Content Rendering ========
 
     /**
-     * الوظيفة الرئيسية للتبديل بين أقسام (شاشات) التطبيق المختلفة.
-     * @param {string} viewName - اسم العرض للتبديل إليه (مثال: 'home', 'live', 'match-details').
-     * @param {string|number} [dataId=null] - ID اختياري لتفاصيل عنصر محدد (مثال: ID المباراة).
+     * Main function to switch between different sections (views) of the application.
+     * @param {string} viewName - The name of the view to switch to (e.g., 'home', 'live', 'match-details').
+     * @param {string|number} [dataId=null] - Optional ID for specific item details (e.g., match ID).
      */
     const switchView = (viewName, dataId = null) => {
         currentView = viewName;
 
-        // إخفاء جميع أقسام المحتوى الرئيسية في البداية
+        // Hide all main content sections initially
         document.querySelectorAll('.view-section').forEach(section => {
             section.classList.remove('active-view');
             section.style.display = 'none';
         });
 
-        // إلغاء تفعيل جميع روابط التنقل وتفعيل الرابط الحالي
+        // Deactivate all nav links and activate the current one
         navLinks.forEach(link => link.classList.remove('active'));
         const activeNavLink = document.querySelector(`.nav-link[data-target-view="${viewName}"]`);
         if (activeNavLink) activeNavLink.classList.add('active');
-        // إغلاق قائمة الجوال إذا كانت مفتوحة
+        // Close mobile menu if open
         mainNav.classList.remove('active');
         menuToggle.classList.remove('active');
 
@@ -503,11 +488,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let pageUrl = window.location.origin + '/';
         let ogImage = "https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png";
         let ogImageAlt = "شاهد كورة | ملعبك النهائي لكرة القدم";
-        let jsonLdData = {}; // بيانات لترميز Schema
+        let jsonLdData = {}; // Data for schema markup
 
-        let targetSectionClone; // سيحتوي على العنصر الجذر للمحتوى المستنسخ من القالب
+        let targetSectionClone; // Holds the cloned template content's root element
 
-        // عرض المحتوى بناءً على اسم العرض
+        // Render content based on the viewName
         if (viewName === 'home') {
             const template = document.getElementById('home-view-template');
             if (!template) {
@@ -523,18 +508,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // مسح المحتوى السابق من contentDisplay
+            // Clear previous content from contentDisplay
             contentDisplay.innerHTML = '';
             contentDisplay.appendChild(targetSectionClone);
             targetSectionClone.style.display = 'block';
             targetSectionClone.classList.add('active-view');
 
-            // الحصول على مراجع للعناصر *داخل القسم المستنسخ*
+            // Get references to elements *inside the cloned section*
             const mainGridContainer = targetSectionClone.querySelector('#main-match-grid');
             const homePaginationControls = targetSectionClone.querySelector('.pagination-controls');
             const homeMatchesTitle = targetSectionClone.querySelector('#home-matches-title');
 
-            // تصفية الصفحة الرئيسية: مباريات مباشرة + قادمة (اليوم/الغد) + أحدث مباراتين منتهيتين + أحدث خبرين
+            // Filter for home: Live + Upcoming (Today/Tomorrow) + 2 latest finished + 2 latest news
             const liveMatches = DATA.filter(item => item.type === 'match' && item.status === 'Live');
             const upcomingMatchesTodayTomorrow = DATA.filter(item => {
                 if (item.type !== 'match' || item.status !== 'Upcoming') return false;
@@ -551,14 +536,14 @@ document.addEventListener('DOMContentLoaded', () => {
                                            .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
                                            .slice(0, 2);
 
-            // تصفية أي عناصر غير مباريات/أخبار محتملة قبل تمريرها إلى renderGrid
+            // Filter out any potential non-match/news items before passing to renderGrid
             const itemsToRender = [...liveMatches, ...upcomingMatchesTodayTomorrow, ...latestNews, ...finishedMatches].filter(item => item.type === 'match' || item.type === 'news');
 
             homeMatchesTitle.textContent = "أبرز المباريات والجديد";
             renderGrid(itemsToRender, mainGridContainer, (item) => {
                 if (item.type === 'match') return createMatchCard(item);
                 if (item.type === 'news') return createNewsCard(item);
-                return null; // التأكد من إرجاع شيء
+                return null; // Ensure something is returned
             }, currentPage.home, null, homePaginationControls, 'home');
 
 
@@ -575,7 +560,7 @@ document.addEventListener('DOMContentLoaded', () => {
             targetSectionClone = document.importNode(template.content, true).firstElementChild;
             if (!targetSectionClone) { console.error("ERROR: Cloned content of 'live-matches-template' is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب المباريات المباشرة فارغ.</p>'; return; }
 
-            // مسح جميع العناصر الحالية من contentDisplay
+            // Clear all current children of contentDisplay
             contentDisplay.innerHTML = '';
             contentDisplay.appendChild(targetSectionClone);
             targetSectionClone.style.display = 'block';
@@ -707,7 +692,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 targetSectionClone = document.importNode(template.content, true).firstElementChild;
                 if (!targetSectionClone) { console.error("ERROR: Cloned content of 'match-details-view-template' is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب تفاصيل المباراة فارغ.</p>'; return; }
 
-                contentDisplay.innerHTML = ''; // مسح جميع العناصر الحالية من contentDisplay
+                contentDisplay.innerHTML = ''; // Clear all current children of contentDisplay
                 contentDisplay.appendChild(targetSectionClone);
                 targetSectionClone.style.display = 'block';
                 targetSectionClone.classList.add('active-view');
@@ -720,9 +705,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const loadingSpinner = targetSectionClone.querySelector('#video-loading-spinner');
 
                 const suggestedMatchGrid = targetSectionClone.querySelector('#suggested-match-grid');
-                const backToHomeBtn = targetSectionClone.querySelector('#back-to-home-btn'); // الحصول على زر الرجوع ضمن القالب المستنسخ
+                const backToHomeBtn = targetSectionClone.querySelector('#back-to-home-btn'); // Get the back button within the cloned template
 
-                // إضافة مستمع حدث لزر الرجوع، إذا كان موجودًا
+                // Add event listener for the back button, if it exists
                 if (backToHomeBtn) {
                     backToHomeBtn.onclick = (e) => {
                         e.preventDefault();
@@ -733,7 +718,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 matchDetailsTitleElement.textContent = match.title;
 
-                // منطق مشغل الفيديو والـ Overlay
+                // Video Player & Overlay logic
                 matchPlayerContainer.innerHTML = '';
                 overlayThumbnail.src = match.thumbnail;
                 videoOverlay.style.display = 'flex';
@@ -743,29 +728,182 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadingSpinner.style.display = 'block';
                     videoOverlay.style.display = 'none';
 
-                    // **الإعلان الوحيد الذي نتحكم فيه بفتحه في تبويب جديد:**
-                    // يتم تشغيله هنا لأنها نقرة مباشرة من المستخدم على Overlay الفيديو،
-                    // مما يزيد من فرصة عدم حظر المتصفح للإعلان كـ Pop-up.
+                    // === Direct Link Ad: Opens in new tab when user clicks to play video ===
+                    // Trigger with a cooldown
                     const currentTime = Date.now();
                     if (currentTime - adTriggers.lastDirectLinkTime > DIRECT_LINK_COOLDOWN_MS) {
-                        openInNewTab(AD_DIRECT_LINK_URL); // استخدم openInNewTab لضمان الفتح في تبويب جديد
+                        openPopUnder('https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec'); // Use pop-under strategy
                         adTriggers.lastDirectLinkTime = currentTime;
                     }
 
-                    const iframe = document.createElement('iframe');
-                    iframe.src = match.embed_url;
-                    iframe.allow = "autoplay; fullscreen; picture-in-picture";
-                    iframe.frameBorder = "0";
-                    iframe.scrolling = "no";
-                    iframe.setAttribute('referrerpolicy', 'origin');
-                    iframe.onload = () => {
-                        loadingSpinner.style.display = 'none';
-                    };
-                    iframe.onerror = () => {
-                        loadingSpinner.style.display = 'none';
-                        matchPlayerContainer.innerHTML = '<p class="error-message">تعذر تحميل البث. يرجى المحاولة لاحقاً.</p>';
-                    };
-                    matchPlayerContainer.appendChild(iframe);
+                    // *** HLS.js Integration Start ***
+                    // Check if the embed_url is an HLS (.m3u8) stream
+                    if (match.embed_url && match.embed_url.endsWith('.m3u8')) {
+                        const videoElement = document.createElement('video');
+                        videoElement.controls = true;
+                        videoElement.autoplay = true; // Auto-play after user interaction
+                        videoElement.setAttribute('preload', 'auto');
+                        videoElement.style.width = '100%';
+                        videoElement.style.height = '100%';
+                        videoElement.style.backgroundColor = 'black'; // Prevent flicker
+                        videoElement.setAttribute('playsinline', ''); // Important for mobile browsers
+
+                        matchPlayerContainer.appendChild(videoElement);
+
+                        if (Hls.isSupported()) {
+                            // HLS.js configuration for smoother playback and error recovery
+                            const hls = new Hls({
+                                autoStartLoad: true,        // تبدأ التحميل تلقائيا
+                                startPosition: -1,          // تبدأ من أحدث جزء متاح
+                                // ABR (Adaptive Bitrate) settings
+                                capLevelToPlayerSize: true, // تكييف جودة البث لحجم المشغل
+                                maxBufferLength: 30,        // أقصى طول للبفر بالثواني (يمنع التخزين المؤقت الزائد)
+                                maxMaxBufferLength: 60,     // أقصى حد أقصى للبفر
+                                minBufferLength: 5,         // الحد الأدنى للبفر قبل التشغيل
+                                maxBufferHole: 0.5,         // أقصى فجوة مسموح بها في البفر
+                                // Network / retry settings
+                                liveSyncDurationCount: 3,   // عدد الشرائح لمزامنة البث المباشر
+                                enableWorker: true,         // استخدم العاملين على الويب لتحسين الأداء
+                                // Retry logic for network errors
+                                // Higher values mean more retries and longer delays before giving up
+                                fragLoadingMaxRetry: 6,
+                                fragLoadingRetryDelay: 500, // 500ms delay between retries
+                                fragLoadingMaxRetryTimeout: 15000, // Max 15 seconds for fragment loading retries
+                                manifestLoadingMaxRetry: 3,
+                                manifestLoadingRetryDelay: 500,
+                                manifestLoadingMaxRetryTimeout: 5000,
+                                levelLoadingMaxRetry: 3,
+                                levelLoadingRetryDelay: 500,
+                                levelLoadingMaxRetryTimeout: 5000
+                            });
+
+                            hls.loadSource(match.embed_url);
+                            hls.attachMedia(videoElement);
+
+                            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                                videoElement.play().catch(e => console.warn("Autoplay was prevented:", e));
+                                loadingSpinner.style.display = 'none';
+                            });
+
+                            // --- Improved Error Handling for HLS.js ---
+                            hls.on(Hls.Events.ERROR, function (event, data) {
+                                console.error('HLS.js error:', data);
+                                loadingSpinner.style.display = 'none';
+
+                                // Remove any existing temporary error messages before adding a new one
+                                const existingTempMsg = matchPlayerContainer.querySelector('.temporary-error-message');
+                                if (existingTempMsg) existingTempMsg.remove();
+
+                                let errorMsg = 'حدث خطأ غير معروف في البث. يرجى المحاولة لاحقاً.';
+
+                                if (data.fatal) { // إذا كان الخطأ حرج (Fatal Error)
+                                    switch (data.type) {
+                                        case Hls.ErrorTypes.NETWORK_ERROR:
+                                            errorMsg = 'مشكلة في الاتصال بالبث (خطأ شبكة). جارى المحاولة...';
+                                            console.warn('Fatal network error, retrying HLS stream...');
+                                            // The HLS.js config now handles some retries, but we can force a reload.
+                                            // Ensure we don't spam reloads if the stream is truly down.
+                                            // A simple check to not reload immediately if a network error just occurred
+                                            // might be added for more advanced scenarios (e.g., a cooldown).
+                                            hls.startLoad();
+                                            break;
+                                        case Hls.ErrorTypes.MEDIA_ERROR:
+                                            errorMsg = 'مشكلة في تشغيل الفيديو (خطأ في الوسائط). جارى إعادة ضبط البث...';
+                                            console.warn('Fatal media error, trying to recover HLS stream...');
+                                            hls.recoverMediaError();
+                                            break;
+                                        default:
+                                            // لأي أخطاء حرجة أخرى لم يتم التعامل معها بشكل خاص
+                                            errorMsg = 'خطأ حرج في البث. جارى إعادة تشغيل البث...';
+                                            console.warn('Other fatal HLS error, trying to recreate player...');
+                                            // Destroy and re-create Hls instance for severe unrecoverable errors
+                                            hls.destroy();
+                                            // To truly restart, you'd re-call the HLS setup logic
+                                            // For simplicity and avoiding infinite recursion in error handling,
+                                            // we might just display a persistent error message here.
+                                            // Or, we can attempt a full re-initialization of the player,
+                                            // but this needs careful state management to avoid loops.
+                                            // For this solution, we'll try to re-initialize by calling the setup again.
+                                            if (Hls.isSupported()) {
+                                                const newHls = new Hls({
+                                                    autoStartLoad: true,
+                                                    startPosition: -1,
+                                                    capLevelToPlayerSize: true,
+                                                    maxBufferLength: 30,
+                                                    maxMaxBufferLength: 60,
+                                                    minBufferLength: 5,
+                                                    maxBufferHole: 0.5,
+                                                    liveSyncDurationCount: 3,
+                                                    enableWorker: true,
+                                                    fragLoadingMaxRetry: 6,
+                                                    fragLoadingRetryDelay: 500,
+                                                    fragLoadingMaxRetryTimeout: 15000,
+                                                    manifestLoadingMaxRetry: 3,
+                                                    manifestLoadingRetryDelay: 500,
+                                                    manifestLoadingMaxRetryTimeout: 5000,
+                                                    levelLoadingMaxRetry: 3,
+                                                    levelLoadingRetryDelay: 500,
+                                                    levelLoadingMaxRetryTimeout: 5000
+                                                });
+                                                newHls.loadSource(match.embed_url);
+                                                newHls.attachMedia(videoElement);
+                                                newHls.on(Hls.Events.MANIFEST_PARSED, () => videoElement.play().catch(e => console.warn("Autoplay prevented on retry:", e)));
+                                                // Re-attach the error listener to the new HLS instance for continued robustness
+                                                newHls.on(Hls.Events.ERROR, arguments.callee); // Use arguments.callee for self-reference (consider alternative for strict mode)
+                                                // A better way for recursion without arguments.callee in strict mode:
+                                                // setTimeout(() => initHlsPlayer(match.embed_url, videoElement, loadingSpinner, matchPlayerContainer), 1000);
+                                            } else {
+                                                errorMsg = 'تعذر استعادة البث (خطأ غير متوقع). يرجى تحديث الصفحة أو المحاولة لاحقاً.';
+                                            }
+                                            break;
+                                    }
+                                } else {
+                                    // الأخطاء غير الحرجة (Non-fatal errors)
+                                    errorMsg = `مشكلة بسيطة في البث: ${data.details}.`;
+                                    console.warn('Non-fatal HLS.js error:', data);
+                                }
+                                // عرض رسالة الخطأ للمستخدم مؤقتًا
+                                const tempErrorDiv = document.createElement('p');
+                                tempErrorDiv.classList.add('temporary-error-message');
+                                tempErrorDiv.textContent = errorMsg;
+                                matchPlayerContainer.appendChild(tempErrorDiv);
+
+                                setTimeout(() => {
+                                    if (tempErrorDiv && tempErrorDiv.parentNode) {
+                                        tempErrorDiv.remove();
+                                    }
+                                }, 5000);
+                            });
+                            // --- End of Improved Error Handling ---
+
+                        } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+                            // Native HLS support (Safari on iOS/macOS)
+                            videoElement.src = match.embed_url;
+                            videoElement.play().catch(e => console.warn("Autoplay was prevented (native HLS):", e));
+                            loadingSpinner.style.display = 'none';
+                        } else {
+                            // Browser does not support HLS at all
+                            loadingSpinner.style.display = 'none';
+                            matchPlayerContainer.innerHTML = '<p class="error-message">متصفحك لا يدعم تشغيل البث المباشر (HLS). يرجى استخدام متصفح أحدث يدعم HLS.</p>';
+                        }
+                    } else {
+                        // If it's not an HLS stream (e.g., direct MP4 link or iframe)
+                        const iframe = document.createElement('iframe');
+                        iframe.src = match.embed_url;
+                        iframe.allow = "autoplay; fullscreen; picture-in-picture";
+                        iframe.frameBorder = "0";
+                        iframe.scrolling = "no";
+                        iframe.setAttribute('referrerpolicy', 'origin');
+                        iframe.onload = () => {
+                            loadingSpinner.style.display = 'none';
+                        };
+                        iframe.onerror = () => {
+                            loadingSpinner.style.display = 'none';
+                            matchPlayerContainer.innerHTML = '<p class="error-message">تعذر تحميل البث. يرجى المحاولة لاحقاً.</p>';
+                        };
+                        matchPlayerContainer.appendChild(iframe);
+                    }
+                    // *** HLS.js Integration End ***
                 };
 
                 const suggestedMatches = DATA.filter(item =>
@@ -792,7 +930,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
         } else if (viewName === 'search-results') {
-            const template = document.getElementById('home-view-template'); // إعادة استخدام قالب الصفحة الرئيسية لنتائج البحث
+            const template = document.getElementById('home-view-template'); // Re-using home template for search results
             if (!template) { console.error("ERROR: The 'home-view-template' template for search results was not found."); contentDisplay.innerHTML = '<p class="error-message">عذراً، قالب البحث غير موجود.</p>'; return; }
             targetSectionClone = document.importNode(template.content, true).firstElementChild;
             if (!targetSectionClone) { console.error("ERROR: Cloned content of 'home-view-template' for search results is empty."); contentDisplay.innerHTML = '<p class="error-message">عذراً، محتوى قالب البحث فارغ.</p>'; return; }
@@ -817,7 +955,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderGrid(searchResults, mainGridContainer, (item) => {
                 if (item.type === 'match') return createMatchCard(item);
                 if (item.type === 'news') return createNewsCard(item);
-                return null; // التأكد من إرجاع شيء
+                return null; // Ensure something is returned
             }, currentPage.search, null, homePaginationControls, 'search-results');
 
             pageTitle = `نتائج البحث عن "${currentSearchQuery}" | شاهد كورة`;
@@ -834,10 +972,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ======== Event Listeners ========
 
-    // مستمع حدث مفوض للنقرات العامة على الجسم
+    // Delegated event listener for general clicks on the body
     document.body.addEventListener('click', (e) => {
-        // **تم التأكد من إزالة أي كود هنا كان يحاول فتح إعلانات تلقائيًا أو كـ "pop-under".**
-        // هذا يعني أن الكود الخاص بك لا يقوم بفتح إعلانات غير مرغوبة.
         const navLink = e.target.closest('.nav-link');
         const homeLogo = e.target.closest('#home-logo-link');
 
@@ -852,20 +988,20 @@ document.addEventListener('DOMContentLoaded', () => {
             window.history.pushState({ view: 'home' }, '', '#home');
         }
 
-        // حدث النقر لبطاقة المباراة بالكامل (أو زر التفاصيل بداخلها)
+        // Click event for the entire match card (or its detail button within)
         const itemCard = e.target.closest('.match-card');
-        if (itemCard && itemCard.dataset.type === 'match') { // التأكد من أنها نقرة على بطاقة مباراة
-             e.preventDefault(); // منع سلوك الرابط الافتراضي لأي روابط داخلية
+        if (itemCard && itemCard.dataset.type === 'match') { // Ensure it's a match card click
+             e.preventDefault(); // Prevent default link behavior if any internal links are clicked
              const itemId = itemCard.dataset.matchId;
              if (itemId) {
                  switchView('match-details', itemId);
                  window.history.pushState({ view: 'match-details', id: itemId }, '', `#match-${itemId}`);
              }
         }
-        // روابط بطاقات الأخبار تفتح خارجيًا، لذلك لا تحتاج إلى معالج JavaScript خاص بها بخلاف وسم <a> الخاص بها.
+        // News cards link externally, so no special JS handler needed for them beyond their own <a> tag.
 
 
-        // تبديل قائمة الجوال
+        // Toggle mobile menu
         if (e.target.closest('#menu-toggle')) {
             mainNav.classList.toggle('active');
             menuToggle.classList.toggle('active');
@@ -875,7 +1011,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // مستمع حدث مفوض لأزرار تقسيم الصفحات داخل contentDisplay
+    // Delegated event listener for pagination buttons within contentDisplay
     contentDisplay.addEventListener('click', (e) => {
         const prevBtn = e.target.closest('.btn-page.prev');
         const nextBtn = e.target.closest('.btn-page.next');
@@ -888,7 +1024,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (nextBtn) {
                 currentPage[viewKey]++;
             }
-            switchView(currentView, null); // إعادة عرض العرض الحالي بالصفحة المحدثة
+            switchView(currentView, null); // Re-render the current view with updated page
         }
     });
 
@@ -911,16 +1047,16 @@ document.addEventListener('DOMContentLoaded', () => {
             currentSearchQuery = query;
             currentPage.search = 1;
             switchView('search-results');
-            // تحديث رابط URL لنتائج البحث
+            // Update URL for search results
             window.history.pushState({ view: 'search-results', query: query }, '', `/search?q=${encodeURIComponent(query)}`);
         } else if (currentView === 'search-results') {
-            // إذا تم مسح حقل البحث وأنت حاليًا في نتائج البحث، انتقل إلى الصفحة الرئيسية
+            // If search input is cleared and currently on search results, go to home
             switchView('home');
             window.history.pushState({ view: 'home' }, '', '/');
         }
     }
 
-    // التعامل مع أزرار الرجوع/الأمام في المتصفح
+    // Handle browser back/forward buttons
     window.addEventListener('popstate', (event) => {
         const hash = window.location.hash.substring(1);
         const urlParams = new URLSearchParams(window.location.search);
@@ -932,11 +1068,11 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (['home', 'live', 'upcoming', 'highlights', 'news'].includes(hash)) {
             switchView(hash);
         } else if (searchQuery) {
-            searchInput.value = searchQuery; // تعبئة حقل البحث إذا عُدت إلى نتائج البحث عبر السجل
+            searchInput.value = searchQuery; // Populate search input if returning to search results via history
             currentSearchQuery = searchQuery;
             switchView('search-results');
         } else {
-            // افتراضيًا، انتقل إلى الصفحة الرئيسية إذا لم يكن هناك هاش أو استعلام بحث محدد
+            // Default to home if no specific hash or search query
             switchView('home');
         }
     });
@@ -953,7 +1089,7 @@ document.addEventListener('DOMContentLoaded', () => {
             DATA = await response.json();
             console.log('Data loaded successfully:', DATA);
 
-            // تحديد العرض الأولي بناءً على هاش URL أو استعلام البحث
+            // Initial view based on URL hash or search query
             const hash = window.location.hash.substring(1);
             const urlParams = new URLSearchParams(window.location.search);
             const searchQuery = urlParams.get('q');
@@ -968,7 +1104,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentSearchQuery = searchQuery;
                 switchView('search-results');
             } else {
-                // افتراضيًا، انتقل إلى الصفحة الرئيسية إذا لم يكن هناك هاش أو استعلام بحث محدد
+                // Default to home if no specific hash or search query
                 switchView('home');
             }
 
@@ -978,5 +1114,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    fetchData();
+    // Load HLS.js library dynamically
+    const loadHlsJs = () => {
+        return new Promise((resolve, reject) => {
+            if (typeof Hls !== 'undefined') {
+                resolve();
+                return;
+            }
+            // استخدم hls.js (نسخة أخف) لتحسين الأداء على الأجهزة المختلفة
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.light.min.js'; // تم التغيير هنا
+            script.onload = () => resolve();
+            script.onerror = () => {
+                console.error("Failed to load hls.js. HLS playback may not work.");
+                reject();
+            };
+            document.head.appendChild(script);
+        });
+    };
+
+    // Fetch data and then load HLS.js
+    fetchData().then(() => {
+        loadHlsJs();
+    });
 });
