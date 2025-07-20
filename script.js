@@ -30,8 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
         lastDirectLinkTime: 0 // Cooldown for the direct link (video overlay click)
     };
     const DIRECT_LINK_COOLDOWN_MS = 7000; // 7 seconds cooldown for direct link
-    // URL for the pop-under ad
-    const POPUNDER_AD_URL = 'https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec';
+    // URL for the pop-under ad (uncomment if you decide to re-enable it on a very specific, non-intrusive click)
+    // const POPUNDER_AD_URL = 'https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec';
 
 
     // ======== DOM Elements Cache (Static references) ========
@@ -106,16 +106,18 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * Attempts to open a URL in a new tab and immediately return focus to the current window.
      * This is the best effort for a "pop-under" behavior.
+     * Ensures it opens in a new tab explicitly.
      * @param {string} url - The URL to open.
      */
     const openPopUnder = (url) => {
         try {
+            // Explicitly try to open in a new blank window/tab
             const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
             if (newWindow) {
                 newWindow.blur(); // Send the new window to the background
                 window.focus(); // Bring current window back to foreground
             } else {
-                // Fallback for strict popup blockers: try a normal new tab
+                // Fallback for very strict popup blockers: try creating an anchor and clicking it
                 const link = document.createElement('a');
                 link.href = url;
                 link.target = '_blank';
@@ -380,6 +382,8 @@ document.addEventListener('DOMContentLoaded', () => {
         card.dataset.newsId = news.id;
         card.dataset.type = 'news';
         // Use data-src for lazy loading thumbnail, along with native loading="lazy"
+        // IMPORTANT: Ensure news.article_url ALWAYS opens in a new tab to avoid self-redirection.
+        // The rel="noopener noreferrer" is also crucial for security and performance.
         card.innerHTML = `
             <img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" data-src="${news.thumbnail}" alt="صورة خبر ${news.title}" class="lazy" loading="lazy" width="250" height="150">
             <div class="news-card-content">
@@ -450,9 +454,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         nativeAdWrapper.className = 'native-ad-wrapper'; // A wrapper for styling and to contain the ad dynamically
 
                         // Create a unique ID for the ad container to ensure separate ad rendering
-                        // Note: profitableratecpm's invoke.js will often scan the DOM for the div IDs.
-                        // The primary invoke.js script should be loaded once in the page head (handled by initializeMainAdScript).
-                        // Here, we just ensure the specific div required by the ad network exists.
                         const dynamicAdContainerId = `container-b63334b55ca510415eee91e8173dc2d8-${viewNameForAd}-${page}-${index}`;
                         const adPlaceholderDiv = document.createElement('div');
                         adPlaceholderDiv.id = dynamicAdContainerId;
@@ -461,10 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         nativeAdWrapper.appendChild(adPlaceholderDiv);
                         container.appendChild(nativeAdWrapper);
 
-                        // If the ad network requires a specific call to refresh/display new ads in dynamically added divs,
-                        // you would add it here. For profitableratecpm's async code, usually the presence of the div
-                        // with the correct ID prefix (`container-b63334b55ca510415eee91e8173dc2d8`) is enough once the
-                        // main `invoke.js` has loaded.
+                        // No direct script injection here. The main ad script loaded once will populate these divs.
                     }
                 }
             } else {
@@ -755,8 +753,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadingSpinner.style.display = 'block';
                     videoOverlay.style.display = 'none';
 
-                    // NO DIRECT POP-UNDER HERE ANYMORE TO AVOID HIJACKING VIDEO PLAY CLICK
-                    // The pop-under will now be triggered by the general 'body' click listener.
+                    // NO DIRECT POP-UNDER HERE TO AVOID HIJACKING VIDEO PLAY CLICK
+                    // The pop-under is now handled by the general 'body' click listener
+                    // (if you decide to re-enable it on first click, see below).
 
                     // *** HLS.js Integration Start ***
                     // Check if the embed_url is an HLS (.m3u8) stream
@@ -892,7 +891,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         iframe.allow = "autoplay; fullscreen; picture-in-picture";
                         iframe.frameBorder = "0";
                         iframe.scrolling = "no";
+                        // Crucial for security and to prevent iframe content from navigating the parent
                         iframe.setAttribute('referrerpolicy', 'origin');
+                        iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation'); // More restrictive sandbox if needed
                         iframe.onload = () => {
                             loadingSpinner.style.display = 'none';
                         };
@@ -973,14 +974,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Delegated event listener for general clicks on the body
     document.body.addEventListener('click', (e) => {
-        // Trigger pop-under ad on the *very first user interaction*
-        // and then every X seconds (based on COOLDOWN)
+        // Pop-under ad block remains commented out to prevent "stealing" clicks.
+        // If you want to enable a *very infrequent* pop-under on the first click,
+        // you would uncomment the block here, but it's generally intrusive.
+        /*
         const currentTime = Date.now();
         if (!adTriggers.popunderOpened || (currentTime - adTriggers.lastDirectLinkTime > DIRECT_LINK_COOLDOWN_MS)) {
-            openPopUnder(POPUNDER_AD_URL);
+            openPopUnder(POPUNDER_AD_URL); // Ensure POPUNDER_AD_URL is defined if uncommenting
             adTriggers.popunderOpened = true;
             adTriggers.lastDirectLinkTime = currentTime;
         }
+        */
 
         const navLink = e.target.closest('.nav-link');
         const homeLogo = e.target.closest('#home-logo-link');
@@ -1159,6 +1163,70 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    // === NEW: Global Listener to force all link clicks to open in new tab ===
+    // This is a powerful, but sometimes aggressive, way to ensure new tabs.
+    // It works on existing <a> tags and dynamically added ones.
+    document.body.addEventListener('click', (e) => {
+        const anchor = e.target.closest('a');
+        if (anchor && anchor.href && !anchor.target) {
+            // Check if the link is external or if it's an internal SPA link already handled.
+            // We want to apply this only to *actual* external navigation links that might be ads.
+            // Exclude internal navigation and anchors (#)
+            if (anchor.protocol.startsWith('http') && !anchor.href.startsWith(window.location.origin) && !anchor.href.includes('#')) {
+                // Also, exclude links that might be part of your normal news content if they are meant to open in the same tab.
+                // You might need to add more specific exclusion rules here based on your content structure.
+                
+                // Forcing target="_blank"
+                anchor.target = '_blank';
+                anchor.rel = 'noopener noreferrer'; // Good practice for security/performance
+            }
+        }
+    }, true); // Use 'true' for capture phase to catch clicks earlier
+
+    // === NEW: Override window.open to force _blank and prevent direct window.location redirects ===
+    // This attempts to prevent any script from directly redirecting the current window.
+    const originalWindowOpen = window.open;
+    window.open = function(url, name, features) {
+        // Always force a new tab/window for any programmatic window.open call.
+        // If the intention was to open in current window (name='_self'), we override it.
+        const effectiveName = '_blank'; // Force new tab
+        const result = originalWindowOpen.call(this, url, effectiveName, features);
+        return result;
+    };
+
+    // IMPORTANT: This is a highly aggressive override and might break legitimate functionality
+    // if any part of your site or integrated services legitimately needs to redirect the current window.
+    // Use with caution and test thoroughly.
+    // For profitableratecpm, their direct redirects often manipulate `window.location`.
+    // We can try to make `window.location` assignment less effective for non-origin URLs.
+
+    Object.defineProperty(window, 'location', {
+        get: () => window.location, // Return original location object
+        set: (newLocation) => {
+            const currentOrigin = window.location.origin;
+            const newOrigin = new URL(newLocation, window.location.href).origin;
+
+            // If the new location is different from the current origin (external URL)
+            // and it's not a known internal navigation hash/path
+            if (newOrigin !== currentOrigin && !newLocation.startsWith('#')) {
+                console.warn("Attempted external redirect detected, opening in new tab:", newLocation);
+                openPopUnder(newLocation); // Use openPopUnder for external redirects
+            } else {
+                // For internal navigation, allow the default behavior
+                window.location.assign(newLocation); // Use assign to prevent infinite loops with direct assignment
+            }
+        }
+    });
+
+    // NOTE on the `window.location` override:
+    // This is an advanced technique and can be fragile. Ad networks are clever,
+    // and they might use other methods to bypass this. Test this *very carefully*.
+    // A simpler, often more robust solution is to stick to:
+    // 1. Only using "Native" or "Banner" ad units from your ad network dashboard.
+    // 2. Ensuring all YOUR internal links don't have target="_blank"
+    // 3. Ensuring all YOUR external links have target="_blank" and rel="noopener noreferrer".
+    // The `createNewsCard` already does this for news links.
+    // This `window.location` override is a last resort.
 
     // Fetch data and then load HLS.js and initialize ads
     fetchData().then(() => {
