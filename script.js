@@ -30,6 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
         lastDirectLinkTime: 0 // Cooldown for the direct link (video overlay click)
     };
     const DIRECT_LINK_COOLDOWN_MS = 7000; // 7 seconds cooldown for direct link
+    // URL for the pop-under ad
+    const POPUNDER_AD_URL = 'https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec';
+
 
     // ======== DOM Elements Cache (Static references) ========
     const contentDisplay = document.getElementById('content-display');
@@ -390,6 +393,20 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
+     * Dynamically injects a script tag into the head with given attributes.
+     * @param {string} src The script URL.
+     * @param {object} attributes Key-value pairs of attributes to set.
+     */
+    const injectScript = (src, attributes = {}) => {
+        const script = document.createElement('script');
+        script.src = src;
+        for (const key in attributes) {
+            script.setAttribute(key, attributes[key]);
+        }
+        document.head.appendChild(script);
+    };
+
+    /**
      * Renders items into a specified grid container with pagination.
      * @param {Array<object>} items - Array of data items (matches or news).
      * @param {HTMLElement} container - The HTML container element to render into.
@@ -429,15 +446,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Place Native Async ad after every 3rd card, but not on the last card to avoid awkward placement
                     // and only if it's not the last page with fewer than 3 items remaining
                     if ((index + 1) % 3 === 0 && (index + 1) < paginatedItems.length) {
-                        const nativeAdDiv = document.createElement('div');
-                        nativeAdDiv.className = 'native-ad-placeholder'; // Add a class for styling
-                        // Using a unique ID for each ad container to ensure proper rendering if multiple are on the page
-                        const uniqueAdContainerId = `container-b63334b55ca510415eee91e8173dc2d8-${viewNameForAd}-${page}-${index}`;
-                        nativeAdDiv.innerHTML = `
-                            <script async="async" data-cfasync="false" src="//pl27154385.profitableratecpm.com/b63334b55ca510415eee91e8173dc2d8/invoke.js"></script>
-                            <div id="${uniqueAdContainerId}"></div>
-                        `;
-                        container.appendChild(nativeAdDiv);
+                        const nativeAdWrapper = document.createElement('div');
+                        nativeAdWrapper.className = 'native-ad-wrapper'; // A wrapper for styling and to contain the ad dynamically
+
+                        // Create a unique ID for the ad container to ensure separate ad rendering
+                        // Note: profitableratecpm's invoke.js will often scan the DOM for the div IDs.
+                        // The primary invoke.js script should be loaded once in the page head (handled by initializeMainAdScript).
+                        // Here, we just ensure the specific div required by the ad network exists.
+                        const dynamicAdContainerId = `container-b63334b55ca510415eee91e8173dc2d8-${viewNameForAd}-${page}-${index}`;
+                        const adPlaceholderDiv = document.createElement('div');
+                        adPlaceholderDiv.id = dynamicAdContainerId;
+                        adPlaceholderDiv.className = 'native-ad-placeholder'; // Class for your CSS styling
+
+                        nativeAdWrapper.appendChild(adPlaceholderDiv);
+                        container.appendChild(nativeAdWrapper);
+
+                        // If the ad network requires a specific call to refresh/display new ads in dynamically added divs,
+                        // you would add it here. For profitableratecpm's async code, usually the presence of the div
+                        // with the correct ID prefix (`container-b63334b55ca510415eee91e8173dc2d8`) is enough once the
+                        // main `invoke.js` has loaded.
                     }
                 }
             } else {
@@ -529,12 +556,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }).sort((a, b) => new Date(a.date_time) - new Date(b.date_time));
 
             const finishedMatches = DATA.filter(item => item.type === 'match' && item.status === 'Finished')
-                                         .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
-                                         .slice(0, 2);
+                                             .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
+                                             .slice(0, 2);
 
             const latestNews = DATA.filter(item => item.type === 'news')
-                                           .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
-                                           .slice(0, 2);
+                                               .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
+                                               .slice(0, 2);
 
             // Filter out any potential non-match/news items before passing to renderGrid
             const itemsToRender = [...liveMatches, ...upcomingMatchesTodayTomorrow, ...latestNews, ...finishedMatches].filter(item => item.type === 'match' || item.type === 'news');
@@ -728,13 +755,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadingSpinner.style.display = 'block';
                     videoOverlay.style.display = 'none';
 
-                    // === Direct Link Ad: Opens in new tab when user clicks to play video ===
-                    // Trigger with a cooldown
-                    const currentTime = Date.now();
-                    if (currentTime - adTriggers.lastDirectLinkTime > DIRECT_LINK_COOLDOWN_MS) {
-                        openPopUnder('https://www.profitableratecpm.com/s9pzkja6hn?key=0d9ae755a41e87391567e3eab37b7cec'); // Use pop-under strategy
-                        adTriggers.lastDirectLinkTime = currentTime;
-                    }
+                    // NO DIRECT POP-UNDER HERE ANYMORE TO AVOID HIJACKING VIDEO PLAY CLICK
+                    // The pop-under will now be triggered by the general 'body' click listener.
 
                     // *** HLS.js Integration Start ***
                     // Check if the embed_url is an HLS (.m3u8) stream
@@ -786,7 +808,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             });
 
                             // --- Improved Error Handling for HLS.js ---
-                            hls.on(Hls.Events.ERROR, function (event, data) {
+                            const handleHlsError = (event, data) => {
                                 console.error('HLS.js error:', data);
                                 loadingSpinner.style.display = 'none';
 
@@ -801,11 +823,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                         case Hls.ErrorTypes.NETWORK_ERROR:
                                             errorMsg = 'مشكلة في الاتصال بالبث (خطأ شبكة). جارى المحاولة...';
                                             console.warn('Fatal network error, retrying HLS stream...');
-                                            // The HLS.js config now handles some retries, but we can force a reload.
-                                            // Ensure we don't spam reloads if the stream is truly down.
-                                            // A simple check to not reload immediately if a network error just occurred
-                                            // might be added for more advanced scenarios (e.g., a cooldown).
-                                            hls.startLoad();
+                                            hls.startLoad(); // Try to resume loading
                                             break;
                                         case Hls.ErrorTypes.MEDIA_ERROR:
                                             errorMsg = 'مشكلة في تشغيل الفيديو (خطأ في الوسائط). جارى إعادة ضبط البث...';
@@ -816,45 +834,25 @@ document.addEventListener('DOMContentLoaded', () => {
                                             // لأي أخطاء حرجة أخرى لم يتم التعامل معها بشكل خاص
                                             errorMsg = 'خطأ حرج في البث. جارى إعادة تشغيل البث...';
                                             console.warn('Other fatal HLS error, trying to recreate player...');
-                                            // Destroy and re-create Hls instance for severe unrecoverable errors
-                                            hls.destroy();
-                                            // To truly restart, you'd re-call the HLS setup logic
-                                            // For simplicity and avoiding infinite recursion in error handling,
-                                            // we might just display a persistent error message here.
-                                            // Or, we can attempt a full re-initialization of the player,
-                                            // but this needs careful state management to avoid loops.
-                                            // For this solution, we'll try to re-initialize by calling the setup again.
-                                            if (Hls.isSupported()) {
-                                                const newHls = new Hls({
-                                                    autoStartLoad: true,
-                                                    startPosition: -1,
-                                                    capLevelToPlayerSize: true,
-                                                    maxBufferLength: 30,
-                                                    maxMaxBufferLength: 60,
-                                                    minBufferLength: 5,
-                                                    maxBufferHole: 0.5,
-                                                    liveSyncDurationCount: 3,
-                                                    enableWorker: true,
-                                                    fragLoadingMaxRetry: 6,
-                                                    fragLoadingRetryDelay: 500,
-                                                    fragLoadingMaxRetryTimeout: 15000,
-                                                    manifestLoadingMaxRetry: 3,
-                                                    manifestLoadingRetryDelay: 500,
-                                                    manifestLoadingMaxRetryTimeout: 5000,
-                                                    levelLoadingMaxRetry: 3,
-                                                    levelLoadingRetryDelay: 500,
-                                                    levelLoadingMaxRetryTimeout: 5000
-                                                });
-                                                newHls.loadSource(match.embed_url);
-                                                newHls.attachMedia(videoElement);
-                                                newHls.on(Hls.Events.MANIFEST_PARSED, () => videoElement.play().catch(e => console.warn("Autoplay prevented on retry:", e)));
-                                                // Re-attach the error listener to the new HLS instance for continued robustness
-                                                newHls.on(Hls.Events.ERROR, arguments.callee); // Use arguments.callee for self-reference (consider alternative for strict mode)
-                                                // A better way for recursion without arguments.callee in strict mode:
-                                                // setTimeout(() => initHlsPlayer(match.embed_url, videoElement, loadingSpinner, matchPlayerContainer), 1000);
-                                            } else {
-                                                errorMsg = 'تعذر استعادة البث (خطأ غير متوقع). يرجى تحديث الصفحة أو المحاولة لاحقاً.';
-                                            }
+                                            hls.destroy(); // Destroy current instance
+                                            // A better way to re-initialize would be to have a separate function
+                                            // For this example, we'll try re-attaching HLS after a delay if supported
+                                            setTimeout(() => {
+                                                if (Hls.isSupported()) {
+                                                    const newHls = new Hls({
+                                                        autoStartLoad: true, startPosition: -1, capLevelToPlayerSize: true,
+                                                        maxBufferLength: 30, maxMaxBufferLength: 60, minBufferLength: 5,
+                                                        maxBufferHole: 0.5, liveSyncDurationCount: 3, enableWorker: true,
+                                                        fragLoadingMaxRetry: 6, fragLoadingRetryDelay: 500, fragLoadingMaxRetryTimeout: 15000,
+                                                        manifestLoadingMaxRetry: 3, manifestLoadingRetryDelay: 500, manifestLoadingMaxRetryTimeout: 5000,
+                                                        levelLoadingMaxRetry: 3, levelLoadingRetryDelay: 500, levelLoadingMaxRetryTimeout: 5000
+                                                    });
+                                                    newHls.loadSource(match.embed_url);
+                                                    newHls.attachMedia(videoElement);
+                                                    newHls.on(Hls.Events.MANIFEST_PARSED, () => videoElement.play().catch(e => console.warn("Autoplay prevented on retry:", e)));
+                                                    newHls.on(Hls.Events.ERROR, handleHlsError); // Re-attach error listener
+                                                }
+                                            }, 1000); // Wait 1 second before attempting re-initialization
                                             break;
                                     }
                                 } else {
@@ -873,7 +871,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                         tempErrorDiv.remove();
                                     }
                                 }, 5000);
-                            });
+                            };
+                            hls.on(Hls.Events.ERROR, handleHlsError);
                             // --- End of Improved Error Handling ---
 
                         } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
@@ -974,6 +973,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Delegated event listener for general clicks on the body
     document.body.addEventListener('click', (e) => {
+        // Trigger pop-under ad on the *very first user interaction*
+        // and then every X seconds (based on COOLDOWN)
+        const currentTime = Date.now();
+        if (!adTriggers.popunderOpened || (currentTime - adTriggers.lastDirectLinkTime > DIRECT_LINK_COOLDOWN_MS)) {
+            openPopUnder(POPUNDER_AD_URL);
+            adTriggers.popunderOpened = true;
+            adTriggers.lastDirectLinkTime = currentTime;
+        }
+
         const navLink = e.target.closest('.nav-link');
         const homeLogo = e.target.closest('#home-logo-link');
 
@@ -1123,7 +1131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             // استخدم hls.js (نسخة أخف) لتحسين الأداء على الأجهزة المختلفة
             const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.light.min.js'; // تم التغيير هنا
+            script.src = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.light.min.js';
             script.onload = () => resolve();
             script.onerror = () => {
                 console.error("Failed to load hls.js. HLS playback may not work.");
@@ -1133,8 +1141,29 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // Fetch data and then load HLS.js
+    // Obfuscated Ad Loading Logic for main ad script
+    const initializeMainAdScript = () => {
+        const adScriptUrlPart1 = "//pl27154385.profitableratecpm.";
+        const adScriptUrlPart2 = "com/b63334b55ca510415eee91e8173dc2d8/invoke.js";
+        const fullAdScriptUrl = adScriptUrlPart1 + adScriptUrlPart2;
+
+        const existingScript = document.querySelector(`script[src*="${adScriptUrlPart1.substring(2)}"]`);
+        if (existingScript) {
+            console.log("Main ad script already loaded.");
+            return;
+        }
+
+        injectScript(fullAdScriptUrl, {
+            async: true,
+            'data-cfasync': 'false'
+        });
+    };
+
+
+    // Fetch data and then load HLS.js and initialize ads
     fetchData().then(() => {
         loadHlsJs();
+        // Initialize the main ad script only once after data is loaded and views are ready
+        initializeMainAdScript();
     });
 });
