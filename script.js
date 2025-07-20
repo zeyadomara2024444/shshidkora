@@ -557,8 +557,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                              .slice(0, 2);
 
             const latestNews = DATA.filter(item => item.type === 'news')
-                                               .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
-                                               .slice(0, 2);
+                                             .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
+                                             .slice(0, 2);
 
             // Filter out any potential non-match/news items before passing to renderGrid
             const itemsToRender = [...liveMatches, ...upcomingMatchesTodayTomorrow, ...latestNews, ...finishedMatches].filter(item => item.type === 'match' || item.type === 'news');
@@ -748,14 +748,142 @@ document.addEventListener('DOMContentLoaded', () => {
                 videoOverlay.style.display = 'flex';
                 loadingSpinner.style.display = 'none';
 
+                let hlsInstance = null; // To keep track of the Hls instance
+
+                // Function to initialize or re-initialize the HLS player
+                const initializeHlsPlayer = (streamUrl) => {
+                    // Destroy existing HLS instance if any
+                    if (hlsInstance) {
+                        hlsInstance.destroy();
+                        hlsInstance = null;
+                    }
+                    matchPlayerContainer.innerHTML = ''; // Clear player container
+
+                    const videoElement = document.createElement('video');
+                    videoElement.controls = true;
+                    videoElement.autoplay = true; // Auto-play after user interaction
+                    videoElement.setAttribute('preload', 'auto');
+                    videoElement.style.width = '100%';
+                    videoElement.style.height = '100%';
+                    videoElement.style.backgroundColor = 'black'; // Prevent flicker
+                    videoElement.setAttribute('playsinline', ''); // Important for mobile browsers
+                    matchPlayerContainer.appendChild(videoElement);
+
+                    if (Hls.isSupported()) {
+                        hlsInstance = new Hls({
+                            autoStartLoad: true,       // تبدأ التحميل تلقائيا
+                            startPosition: -1,         // تبدأ من أحدث جزء متاح
+                            // ABR (Adaptive Bitrate) settings
+                            capLevelToPlayerSize: true, // تكييف جودة البث لحجم المشغل
+                            maxBufferLength: 30,       // أقصى طول للبفر بالثواني (يمنع التخزين المؤقت الزائد)
+                            maxMaxBufferLength: 60,    // أقصى حد أقصى للبفر
+                            minBufferLength: 5,        // الحد الأدنى للبفر قبل التشغيل
+                            maxBufferHole: 0.5,        // أقصى فجوة مسموح بها في البفر
+                            // Network / retry settings
+                            liveSyncDurationCount: 3,  // عدد الشرائح لمزامنة البث المباشر
+                            enableWorker: true,        // استخدم العاملين على الويب لتحسين الأداء
+                            // Increased retry attempts and delays for robustness
+                            fragLoadingMaxRetry: 10, // زيادة عدد مرات إعادة محاولة تحميل الأجزاء
+                            fragLoadingRetryDelay: 1000, // تأخير أطول بين المحاولات
+                            fragLoadingMaxRetryTimeout: 30000, // وقت أطول لإعادة محاولات تحميل الأجزاء (30 ثانية)
+                            manifestLoadingMaxRetry: 5,
+                            manifestLoadingRetryDelay: 1000,
+                            manifestLoadingMaxRetryTimeout: 15000,
+                            levelLoadingMaxRetry: 5,
+                            levelLoadingRetryDelay: 1000,
+                            levelLoadingMaxRetryTimeout: 15000
+                        });
+
+                        hlsInstance.loadSource(streamUrl);
+                        hlsInstance.attachMedia(videoElement);
+
+                        hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
+                            videoElement.play().catch(e => console.warn("Autoplay was prevented:", e));
+                            loadingSpinner.style.display = 'none';
+                            // Remove any temporary error messages
+                            const existingTempMsg = matchPlayerContainer.querySelector('.temporary-error-message');
+                            if (existingTempMsg) existingTempMsg.remove();
+                        });
+
+                        // --- Improved Error Handling for HLS.js ---
+                        // Use a debounce for fatal error recovery to prevent rapid re-initialization
+                        let hlsFatalErrorTimeout = null;
+                        const REINITIALIZE_DELAY_MS = 3000; // 3 seconds before trying to re-initialize
+
+                        const handleHlsError = (event, data) => {
+                            console.error('HLS.js error:', data);
+                            loadingSpinner.style.display = 'none';
+
+                            // Remove any existing temporary error messages before adding a new one
+                            const existingTempMsg = matchPlayerContainer.querySelector('.temporary-error-message');
+                            if (existingTempMsg) existingTempMsg.remove();
+
+                            let errorMsg = 'حدث خطأ غير معروف في البث. يرجى المحاولة لاحقاً.';
+
+                            if (data.fatal) { // إذا كان الخطأ حرج (Fatal Error)
+                                switch (data.type) {
+                                    case Hls.ErrorTypes.NETWORK_ERROR:
+                                        errorMsg = 'مشكلة في الاتصال بالبث (خطأ شبكة). جارى المحاولة...';
+                                        console.warn('Fatal network error, attempting to recover HLS stream...');
+                                        hlsInstance.startLoad(); // Try to resume loading
+                                        break;
+                                    case Hls.ErrorTypes.MEDIA_ERROR:
+                                        errorMsg = 'مشكلة في تشغيل الفيديو (خطأ في الوسائط). جارى إعادة ضبط البث...';
+                                        console.warn('Fatal media error, trying to recover HLS stream...');
+                                        hlsInstance.recoverMediaError();
+                                        break;
+                                    default:
+                                        errorMsg = 'خطأ حرج في البث. جارى إعادة تشغيل البث...';
+                                        console.warn('Other fatal HLS error, attempting to recreate player...');
+                                        // Clear any previous re-initialization timeout
+                                        if (hlsFatalErrorTimeout) {
+                                            clearTimeout(hlsFatalErrorTimeout);
+                                        }
+                                        hlsFatalErrorTimeout = setTimeout(() => {
+                                            // Completely destroy and re-initialize the player
+                                            initializeHlsPlayer(match.embed_url);
+                                        }, REINITIALIZE_DELAY_MS);
+                                        break;
+                                }
+                            } else {
+                                // الأخطاء غير الحرجة (Non-fatal errors)
+                                errorMsg = `مشكلة بسيطة في البث: ${data.details}.`;
+                                console.warn('Non-fatal HLS.js error:', data);
+                            }
+                            // عرض رسالة الخطأ للمستخدم مؤقتًا
+                            const tempErrorDiv = document.createElement('p');
+                            tempErrorDiv.classList.add('temporary-error-message');
+                            tempErrorDiv.textContent = errorMsg;
+                            matchPlayerContainer.appendChild(tempErrorDiv);
+
+                            setTimeout(() => {
+                                if (tempErrorDiv && tempErrorDiv.parentNode) {
+                                    tempErrorDiv.remove();
+                                }
+                            }, 5000); // Remove message after 5 seconds
+                        };
+                        hlsInstance.on(Hls.Events.ERROR, handleHlsError);
+                        // --- End of Improved Error Handling ---
+
+                    } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+                        // Native HLS support (Safari on iOS/macOS)
+                        videoElement.src = streamUrl;
+                        videoElement.play().catch(e => console.warn("Autoplay was prevented (native HLS):", e));
+                        loadingSpinner.style.display = 'none';
+                        // Remove any temporary error messages
+                        const existingTempMsg = matchPlayerContainer.querySelector('.temporary-error-message');
+                        if (existingTempMsg) existingTempMsg.remove();
+                    } else {
+                        // Browser does not support HLS at all
+                        loadingSpinner.style.display = 'none';
+                        matchPlayerContainer.innerHTML = '<p class="error-message">متصفحك لا يدعم تشغيل البث المباشر (HLS). يرجى استخدام متصفح أحدث يدعم HLS.</p>';
+                    }
+                };
+
                 videoOverlay.onclick = () => {
                     loadingSpinner.style.display = 'block';
                     videoOverlay.style.display = 'none';
 
-                    // === Re-enabling Direct Link Ad on Video Play Click (use with caution) ===
-                    // This is where a direct link ad was previously.
-                    // If you want to use it, ensure its target is '_blank'
-                    // and consider the user experience impact.
                     const currentTime = Date.now();
                     if (currentTime - adTriggers.lastDirectLinkTime > DIRECT_LINK_COOLDOWN_MS) {
                         openPopUnder(POPUNDER_AD_URL); // This URL should ALWAYS open in a new tab.
@@ -763,134 +891,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         adTriggers.lastDirectLinkTime = currentTime;
                     }
 
-
                     // *** HLS.js Integration Start ***
                     // Check if the embed_url is an HLS (.m3u8) stream
                     if (match.embed_url && match.embed_url.endsWith('.m3u8')) {
-                        const videoElement = document.createElement('video');
-                        videoElement.controls = true;
-                        videoElement.autoplay = true; // Auto-play after user interaction
-                        videoElement.setAttribute('preload', 'auto');
-                        videoElement.style.width = '100%';
-                        videoElement.style.height = '100%';
-                        videoElement.style.backgroundColor = 'black'; // Prevent flicker
-                        videoElement.setAttribute('playsinline', ''); // Important for mobile browsers
-
-                        matchPlayerContainer.appendChild(videoElement);
-
-                        if (Hls.isSupported()) {
-                            // HLS.js configuration for smoother playback and error recovery
-                            const hls = new Hls({
-                                autoStartLoad: true,        // تبدأ التحميل تلقائيا
-                                startPosition: -1,          // تبدأ من أحدث جزء متاح
-                                // ABR (Adaptive Bitrate) settings
-                                capLevelToPlayerSize: true, // تكييف جودة البث لحجم المشغل
-                                maxBufferLength: 30,        // أقصى طول للبفر بالثواني (يمنع التخزين المؤقت الزائد)
-                                maxMaxBufferLength: 60,     // أقصى حد أقصى للبفر
-                                minBufferLength: 5,         // الحد الأدنى للبفر قبل التشغيل
-                                maxBufferHole: 0.5,         // أقصى فجوة مسموح بها في البفر
-                                // Network / retry settings
-                                liveSyncDurationCount: 3,   // عدد الشرائح لمزامنة البث المباشر
-                                enableWorker: true,         // استخدم العاملين على الويب لتحسين الأداء
-                                // Retry logic for network errors
-                                // Higher values mean more retries and longer delays before giving up
-                                fragLoadingMaxRetry: 6,
-                                fragLoadingRetryDelay: 500, // 500ms delay between retries
-                                fragLoadingMaxRetryTimeout: 15000, // Max 15 seconds for fragment loading retries
-                                manifestLoadingMaxRetry: 3,
-                                manifestLoadingRetryDelay: 500,
-                                manifestLoadingMaxRetryTimeout: 5000,
-                                levelLoadingMaxRetry: 3,
-                                levelLoadingRetryDelay: 500,
-                                levelLoadingMaxRetryTimeout: 5000
-                            });
-
-                            hls.loadSource(match.embed_url);
-                            hls.attachMedia(videoElement);
-
-                            hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                                videoElement.play().catch(e => console.warn("Autoplay was prevented:", e));
-                                loadingSpinner.style.display = 'none';
-                            });
-
-                            // --- Improved Error Handling for HLS.js ---
-                            const handleHlsError = (event, data) => {
-                                console.error('HLS.js error:', data);
-                                loadingSpinner.style.display = 'none';
-
-                                // Remove any existing temporary error messages before adding a new one
-                                const existingTempMsg = matchPlayerContainer.querySelector('.temporary-error-message');
-                                if (existingTempMsg) existingTempMsg.remove();
-
-                                let errorMsg = 'حدث خطأ غير معروف في البث. يرجى المحاولة لاحقاً.';
-
-                                if (data.fatal) { // إذا كان الخطأ حرج (Fatal Error)
-                                    switch (data.type) {
-                                        case Hls.ErrorTypes.NETWORK_ERROR:
-                                            errorMsg = 'مشكلة في الاتصال بالبث (خطأ شبكة). جارى المحاولة...';
-                                            console.warn('Fatal network error, retrying HLS stream...');
-                                            hls.startLoad(); // Try to resume loading
-                                            break;
-                                        case Hls.ErrorTypes.MEDIA_ERROR:
-                                            errorMsg = 'مشكلة في تشغيل الفيديو (خطأ في الوسائط). جارى إعادة ضبط البث...';
-                                            console.warn('Fatal media error, trying to recover HLS stream...');
-                                            hls.recoverMediaError();
-                                            break;
-                                        default:
-                                            // لأي أخطاء حرجة أخرى لم يتم التعامل معها بشكل خاص
-                                            errorMsg = 'خطأ حرج في البث. جارى إعادة تشغيل البث...';
-                                            console.warn('Other fatal HLS error, trying to recreate player...');
-                                            hls.destroy(); // Destroy current instance
-                                            // A better way to re-initialize would be to have a separate function
-                                            // For this example, we'll try re-attaching HLS after a delay if supported
-                                            setTimeout(() => {
-                                                if (Hls.isSupported()) {
-                                                    const newHls = new Hls({
-                                                        autoStartLoad: true, startPosition: -1, capLevelToPlayerSize: true,
-                                                        maxBufferLength: 30, maxMaxBufferLength: 60, minBufferLength: 5,
-                                                        maxBufferHole: 0.5, liveSyncDurationCount: 3, enableWorker: true,
-                                                        fragLoadingMaxRetry: 6, fragLoadingRetryDelay: 500, fragLoadingMaxRetryTimeout: 15000,
-                                                        manifestLoadingMaxRetry: 3, manifestLoadingRetryDelay: 500, manifestLoadingMaxRetryTimeout: 5000,
-                                                        levelLoadingMaxRetry: 3, levelLoadingRetryDelay: 500, levelLoadingMaxRetryTimeout: 5000
-                                                    });
-                                                    newHls.loadSource(match.embed_url);
-                                                    newHls.attachMedia(videoElement);
-                                                    newHls.on(Hls.Events.MANIFEST_PARSED, () => videoElement.play().catch(e => console.warn("Autoplay prevented on retry:", e)));
-                                                    newHls.on(Hls.Events.ERROR, handleHlsError); // Re-attach error listener
-                                                }
-                                            }, 1000); // Wait 1 second before attempting re-initialization
-                                            break;
-                                    }
-                                } else {
-                                    // الأخطاء غير الحرجة (Non-fatal errors)
-                                    errorMsg = `مشكلة بسيطة في البث: ${data.details}.`;
-                                    console.warn('Non-fatal HLS.js error:', data);
-                                }
-                                // عرض رسالة الخطأ للمستخدم مؤقتًا
-                                const tempErrorDiv = document.createElement('p');
-                                tempErrorDiv.classList.add('temporary-error-message');
-                                tempErrorDiv.textContent = errorMsg;
-                                matchPlayerContainer.appendChild(tempErrorDiv);
-
-                                setTimeout(() => {
-                                    if (tempErrorDiv && tempErrorDiv.parentNode) {
-                                        tempErrorDiv.remove();
-                                    }
-                                }, 5000);
-                            };
-                            hls.on(Hls.Events.ERROR, handleHlsError);
-                            // --- End of Improved Error Handling ---
-
-                        } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
-                            // Native HLS support (Safari on iOS/macOS)
-                            videoElement.src = match.embed_url;
-                            videoElement.play().catch(e => console.warn("Autoplay was prevented (native HLS):", e));
-                            loadingSpinner.style.display = 'none';
-                        } else {
-                            // Browser does not support HLS at all
-                            loadingSpinner.style.display = 'none';
-                            matchPlayerContainer.innerHTML = '<p class="error-message">متصفحك لا يدعم تشغيل البث المباشر (HLS). يرجى استخدام متصفح أحدث يدعم HLS.</p>';
-                        }
+                        initializeHlsPlayer(match.embed_url);
                     } else {
                         // If it's not an HLS stream (e.g., direct MP4 link or iframe)
                         const iframe = document.createElement('iframe');
