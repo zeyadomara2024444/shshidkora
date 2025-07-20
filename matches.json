@@ -1,89 +1,116 @@
 [
-    {
-        "id": 1,
-        "type": "match",
-        "title": "سيلتكvsنيوكاسل يونايتد ",
-        "short_description": "بطولي دوري المبارات الوديه ",
-        "date_time": "2025-07-19T14:00:00+02:00",
-
-        "match_time_gmt": "15:00",
-        "status": "Upcoming",
-        "league_id": 101,
-        "league_name": "دوري المبارات الوديه",
-        "league_logo": "https://i.ibb.co/Xr0hPcdy/1.jpg",
-        "home_team": "نيوكاسل",
-        "away_team": "سيلتك",
-        "home_team_logo": "https://i.ibb.co/wNZbYPYt/2.png",
-        "away_team_logo": "https://i.ibb.co/Y4dSg3gR/3.png",
-        "stadium": "استاد القاهرة الدولي",
-        "commentators": ["مدحت شلبي", "أيمن الكاشف"],
-        "channel_info": [
-            {"name": "OnTime Sports 1", "logo": "/images/channels/ontime-sports.png", "link": "#"},
-            {"name": "AD Sports 1", "logo": "/images/channels/ad-sports.png", "link": "#"}
-        ],
-        "embed_url": "https://stream.sainaertebat.com/hls2/bein1.m3u8",
-        "thumbnail": "https://i.ibb.co/xt59QtWY/3.webp",
-        "highlights_url": null,
-        "score": null,
-        "category": "upcoming",
-        "tags": ["ديربي القاهرة", "الدوري المصري", "كلاسيكو مصر", "الأهلي", "الزمالك"]
-    },
-    {
-    "id": 2,
+{
+    "id": 1,
     "type": "match",
-    "title": "الجزائرvs غانا",
-    "short_description": "بطوله كاس امم افريقيا ",
-    "date_time": "2025-07-19T17:00:00+02:00",
-    "match_time_gmt": "17",
+    "title": "روت فايس-شالكه",
+    "short_description": "بطولي دوري المبارات الوديه ",
+    "date_time": "2025-07-20T14:00:00+02:00",
+"match_time_gmt": "13:00",
+
     "status": "Upcoming",
-    "league_id": "101",
-    "league_name": "بطوله كاس امم افريقيا ",
-    "league_logo": "https://i.ibb.co/zTqx5nt5/5.png",
-    "home_team": "غانا سيدات",
-    "away_team": "الجزائر سيدات",
-    "home_team_logo": "https://i.ibb.co/R4HcrhHM/2.png",
-    "away_team_logo": "https://i.ibb.co/rKXQF1zv/1.png",
-    "stadium": "غانا",
-    "commentators": ["مدحت شلبي"],
-    "channel_info":    [
-            {"name": "OnTime Sports 1", "logo": "/images/channels/ontime-sports.png", "link": "#"},
-            {"name": "AD Sports 1", "logo": "/images/channels/ad-sports.png", "link": "#"}
-        ],
+    "league_id": 101,
+    "league_name": "دوري المبارات الوديه",
+    "league_logo": "https://i.ibb.co/Xr0hPcdy/1.jpg",
+    "home_team": "روت فايس",
+    "away_team": "شالكه",
+    "home_team_logo": "https://i.ibb.co/ds8DyKq3/1.png",
+    "away_team_logo": "https://i.ibb.co/KxnK478C/2.png",
+    "stadium": "استاد القاهرة الدولي",
+    "commentators": ["مدحت شلبي", "أيمن الكاشف"],
+    "channel_info": [
+        {
+            "name": "OnTime Sports 1",
+            "logo": "/images/channels/ontime-sports.png",
+            "link": "#"
+        },
+        {
+            "name": "AD Sports 1",
+            "logo": "/images/channels/ad-sports.png",
+            "link": "#"
+        }
+    ],
     "embed_url": "",
-    "thumbnail": "https://i.ibb.co/TBHg528k/2.jpg",
+    "thumbnail": "https://i.ibb.co/xt59QtWY/3.webp",
     "highlights_url": null,
     "score": null,
     "category": "upcoming",
-    "tags": ["mmm"]
+    "tags": ["ديربي القاهرة", "الدوري المصري", "كلاسيكو مصر", "الأهلي", "الزمالك"]
+},
+{
+    "id": 2,
+    "type": "match",
+    "title": "الصفاقسي-المصري",
+    "short_description": "بطولي دوري المبارات الوديه ",
+    "date_time": "2025-07-20T18:00:00+02:00",
+"match_time_gmt": "13:00",
+
+    "status": "Upcoming",
+    "league_id": 101,
+    "league_name": "دوري المبارات الوديه",
+    "league_logo": "https://i.ibb.co/Xr0hPcdy/1.jpg",
+    "home_team": "الصفاقسي",
+    "away_team": "المصري",
+    "home_team_logo": "https://i.ibb.co/kgkvfH7k/1.png",
+    "away_team_logo": "https://i.ibb.co/Lm3M87Z/2.png",
+    "stadium": "استاد القاهرة الدولي",
+    "commentators": ["مدحت شلبي", "أيمن الكاشف"],
+    "channel_info": [
+        {
+            "name": "OnTime Sports 1",
+            "logo": "/images/channels/ontime-sports.png",
+            "link": "#"
+        },
+        {
+            "name": "AD Sports 1",
+            "logo": "/images/channels/ad-sports.png",
+            "link": "#"
+        }
+    ],
+    "embed_url": "",
+    "thumbnail": "https://i.ibb.co/xt59QtWY/3.webp",
+    "highlights_url": null,
+    "score": null,
+    "category": "upcoming",
+    "tags": ["ديربي القاهرة", "الدوري المصري", "كلاسيكو مصر", "الأهلي", "الزمالك"]
 },
 {
     "id": 3,
     "type": "match",
-    "title": "اشبليه vsسندرلاند",
+    "title":"غلطه سري -ادميرا",
     "short_description": "بطولي دوري المبارات الوديه ",
-    "date_time": "2025-07-19T19:00:00+02:00",
-    "match_time_gmt": "19",
+    "date_time": "2025-07-20T19:30:00+02:00",
+"match_time_gmt": "13:00",
+
     "status": "Upcoming",
-    "league_id": "101",
+    "league_id": 101,
     "league_name": "دوري المبارات الوديه",
     "league_logo": "https://i.ibb.co/Xr0hPcdy/1.jpg",
-    "home_team": "سندرلاند",
-    "away_team": "اشبليه",
-    "home_team_logo": "https://i.ibb.co/Mk3jbwvg/images.png",
-    "away_team_logo": "https://i.ibb.co/mrC6wq6y/Sevilla-FC-logo-svg.png",
+    "home_team": "غلطه سري",
+    "away_team": "ادميرا",
+    "home_team_logo": "https://i.ibb.co/qYWfTCQ2/1.png",
+    "away_team_logo": "https://i.ibb.co/XrB56Qpz/2.png",
     "stadium": "استاد القاهرة الدولي",
-    "commentators": ["مدحت شلبي"],
-     "channel_info":    [
-            {"name": "OnTime Sports 1", "logo": "/images/channels/ontime-sports.png", "link": "#"},
-            {"name": "AD Sports 1", "logo": "/images/channels/ad-sports.png", "link": "#"}
-        ],
+    "commentators": ["مدحت شلبي", "أيمن الكاشف"],
+    "channel_info": [
+        {
+            "name": "OnTime Sports 1",
+            "logo": "/images/channels/ontime-sports.png",
+            "link": "#"
+        },
+        {
+            "name": "AD Sports 1",
+            "logo": "/images/channels/ad-sports.png",
+            "link": "#"
+        }
+    ],
     "embed_url": "",
-    "thumbnail": "https://i.ibb.co/TDWZZ8rp/images.jpg",
+    "thumbnail": "https://i.ibb.co/xt59QtWY/3.webp",
     "highlights_url": null,
     "score": null,
     "category": "upcoming",
-    "tags": []
+    "tags": ["ديربي القاهرة", "الدوري المصري", "كلاسيكو مصر", "الأهلي", "الزمالك"]
 }
+
 
 
   
