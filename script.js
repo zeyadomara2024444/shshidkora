@@ -553,12 +553,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }).sort((a, b) => new Date(a.date_time) - new Date(b.date_time));
 
             const finishedMatches = DATA.filter(item => item.type === 'match' && item.status === 'Finished')
-                                             .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
-                                             .slice(0, 2);
+                                         .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
+                                         .slice(0, 2);
 
             const latestNews = DATA.filter(item => item.type === 'news')
-                                             .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
-                                             .slice(0, 2);
+                                         .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
+                                         .slice(0, 2);
 
             // Filter out any potential non-match/news items before passing to renderGrid
             const itemsToRender = [...liveMatches, ...upcomingMatchesTodayTomorrow, ...latestNews, ...finishedMatches].filter(item => item.type === 'match' || item.type === 'news');
@@ -771,19 +771,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (Hls.isSupported()) {
                         hlsInstance = new Hls({
-                            autoStartLoad: true,       // تبدأ التحميل تلقائيا
-                            startPosition: -1,         // تبدأ من أحدث جزء متاح
+                            autoStartLoad: true,        // تبدأ التحميل تلقائيا
+                            startPosition: -1,          // تبدأ من أحدث جزء متاح
                             // ABR (Adaptive Bitrate) settings
                             capLevelToPlayerSize: true, // تكييف جودة البث لحجم المشغل
-                            maxBufferLength: 30,       // أقصى طول للبفر بالثواني (يمنع التخزين المؤقت الزائد)
-                            maxMaxBufferLength: 60,    // أقصى حد أقصى للبفر
-                            minBufferLength: 5,        // الحد الأدنى للبفر قبل التشغيل
-                            maxBufferHole: 0.5,        // أقصى فجوة مسموح بها في البفر
+                            maxBufferLength: 30,        // أقصى طول للبفر بالثواني (يمنع التخزين المؤقت الزائد)
+                            maxMaxBufferLength: 60,     // أقصى حد أقصى للبفر
+                            minBufferLength: 5,         // الحد الأدنى للبفر قبل التشغيل
+                            maxBufferHole: 0.5,         // أقصى فجوة مسموح بها في البفر
                             // Network / retry settings
-                            liveSyncDurationCount: 3,  // عدد الشرائح لمزامنة البث المباشر
-                            enableWorker: true,        // استخدم العاملين على الويب لتحسين الأداء
+                            liveSyncDurationCount: 3,   // عدد الشرائح لمزامنة البث المباشر
+                            enableWorker: true,         // استخدم العاملين على الويب لتحسين الأداء
                             // Increased retry attempts and delays for robustness
-                            fragLoadingMaxRetry: 10, // زيادة عدد مرات إعادة محاولة تحميل الأجزاء
+                            fragLoadingMaxRetry: 10,    // زيادة عدد مرات إعادة محاولة تحميل الأجزاء
                             fragLoadingRetryDelay: 1000, // تأخير أطول بين المحاولات
                             fragLoadingMaxRetryTimeout: 30000, // وقت أطول لإعادة محاولات تحميل الأجزاء (30 ثانية)
                             manifestLoadingMaxRetry: 5,
@@ -886,8 +886,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const currentTime = Date.now();
                     if (currentTime - adTriggers.lastDirectLinkTime > DIRECT_LINK_COOLDOWN_MS) {
-                        openPopUnder(POPUNDER_AD_URL); // This URL should ALWAYS open in a new tab.
-                                                       // It's the responsibility of profitableratecpm to not hijack.
+                        openPopUnder(POPUNDER_AD_URL); // هذا الرابط يجب أن يفتح دائمًا في تبويبة جديدة.
+                                                       // مسؤولية profitableratecpm هي عدم خطف التبويبة.
                         adTriggers.lastDirectLinkTime = currentTime;
                     }
 
@@ -902,7 +902,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         iframe.allow = "autoplay; fullscreen; picture-in-picture";
                         iframe.frameBorder = "0";
                         iframe.scrolling = "no";
-                        // Crucial for security and to prevent iframe content from navigating the parent
+                        // الكود الأساسي الذي يجب التركيز عليه هنا
+                        // لضمان فتح الإعلان في تبويبة جديدة
+                        iframe.setAttribute('target', '_blank'); // إضافة target="_blank" للإطارات
+                        iframe.setAttribute('rel', 'noopener noreferrer'); // إضافة rel للمزيد من الأمان
+                        // نهاية الكود الأساسي
+
                         iframe.setAttribute('referrerpolicy', 'origin');
                         // No 'sandbox' attribute for iframes containing ads unless you specifically know it won't break them.
                         // iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation');
@@ -1051,6 +1056,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+
+    searchInput.addEventListener('click', (e) => {
+        // إذا كان هناك إعلان "Popunder" مفعل، افتحه عند أول تفاعل مع حقل البحث.
+        // تم تعطيله عالميًا في `document.body.addEventListener`، لكن هذا تفعيل خاص إذا أردت.
+        /*
+        const currentTime = Date.now();
+        if (!adTriggers.popunderOpened || (currentTime - adTriggers.lastDirectLinkTime > DIRECT_LINK_COOLDOWN_MS)) {
+            openPopUnder(POPUNDER_AD_URL);
+            adTriggers.popunderOpened = true;
+            adTriggers.lastDirectLinkTime = currentTime;
+        }
+        */
+    });
 
     searchButton.addEventListener('click', (e) => {
         e.preventDefault();
