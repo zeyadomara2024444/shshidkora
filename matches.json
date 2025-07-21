@@ -2,19 +2,19 @@
 {
     "id": 1,
     "type": "match",
-    "title": "روت فايس-شالكه",
-    "short_description": "بطولي دوري المبارات الوديه ",
-    "date_time": "2025-07-20T14:00:00+02:00",
+    "title": "الوحداتvs الحسين اربد",
+    "short_description": "كاس السوبر لاردني",
+    "date_time": "2025-07-21T16:00:00+02:00",
 "match_time_gmt": "13:00",
 
     "status": "Upcoming",
     "league_id": 101,
-    "league_name": "دوري المبارات الوديه",
-    "league_logo": "https://i.ibb.co/Xr0hPcdy/1.jpg",
-    "home_team": "روت فايس",
-    "away_team": "شالكه",
-    "home_team_logo": "https://i.ibb.co/ds8DyKq3/1.png",
-    "away_team_logo": "https://i.ibb.co/KxnK478C/2.png",
+    "league_name": "كاس السوبر لاردني ",
+    "league_logo": "https://i.ibb.co/xt9YMg9L/1.webp",
+    "home_team": "   الحسين اربد",
+    "away_team": "الوحدات",
+    "home_team_logo": "https://i.ibb.co/NgRQky19/1.jpg",
+    "away_team_logo": "https://i.ibb.co/7NJkSGf3/1.png",
     "stadium": "استاد القاهرة الدولي",
     "commentators": ["مدحت شلبي", "أيمن الكاشف"],
     "channel_info": [
@@ -30,6 +30,7 @@
         }
     ],
     "embed_url": "",
+
     "thumbnail": "https://i.ibb.co/xt59QtWY/3.webp",
     "highlights_url": null,
     "score": null,
@@ -39,19 +40,19 @@
 {
     "id": 2,
     "type": "match",
-    "title": "الصفاقسي-المصري",
+   "title":"لاسبالماسvsبرايتون",
     "short_description": "بطولي دوري المبارات الوديه ",
-    "date_time": "2025-07-20T18:00:00+02:00",
+    "date_time": "2025-07-21T18:00:00+02:00",
 "match_time_gmt": "13:00",
 
     "status": "Upcoming",
     "league_id": 101,
     "league_name": "دوري المبارات الوديه",
     "league_logo": "https://i.ibb.co/Xr0hPcdy/1.jpg",
-    "home_team": "الصفاقسي",
-    "away_team": "المصري",
-    "home_team_logo": "https://i.ibb.co/kgkvfH7k/1.png",
-    "away_team_logo": "https://i.ibb.co/Lm3M87Z/2.png",
+    "home_team":"برايتونvs",
+    "away_team": "لاس بالماس",
+    "home_team_logo": "https://i.ibb.co/4nfrJYtD/1.png",
+    "away_team_logo": "https://i.ibb.co/dsTkbdx0/2.jpg",
     "stadium": "استاد القاهرة الدولي",
     "commentators": ["مدحت شلبي", "أيمن الكاشف"],
     "channel_info": [
@@ -76,19 +77,58 @@
 {
     "id": 3,
     "type": "match",
-    "title":"غلطه سري -ادميرا",
+    "title":"الملعب التونسي ولاهلي",
     "short_description": "بطولي دوري المبارات الوديه ",
-    "date_time": "2025-07-20T19:30:00+02:00",
+    "date_time": "2025-07-21T19:00:00+02:00",
 "match_time_gmt": "13:00",
 
     "status": "Upcoming",
     "league_id": 101,
     "league_name": "دوري المبارات الوديه",
     "league_logo": "https://i.ibb.co/Xr0hPcdy/1.jpg",
-    "home_team": "غلطه سري",
-    "away_team": "ادميرا",
-    "home_team_logo": "https://i.ibb.co/qYWfTCQ2/1.png",
-    "away_team_logo": "https://i.ibb.co/XrB56Qpz/2.png",
+     "home_team":"الملعب التونسي",
+    "away_team": "لاهلي",
+    "home_team_logo": "https://i.ibb.co/d0n9bBwS/1.png",
+    "away_team_logo": "https://i.ibb.co/cXxtsmw2/3.png",
+    "stadium": "استاد القاهرة الدولي",
+    "commentators": ["مدحت شلبي", "أيمن الكاشف"],
+    "channel_info": [
+        {
+            "name": "OnTime Sports 1",
+            "logo": "/images/channels/ontime-sports.png",
+            "link": "#"
+        },
+        {
+            "name": "AD Sports 1",
+            "logo": "/images/channels/ad-sports.png",
+            "link": "#"
+        }
+    ],
+    "embed_url": "",
+    "thumbnail": "https://i.ibb.co/xt59QtWY/3.webp",
+    "highlights_url": null,
+    "score": null,
+    "category": "upcoming",
+    "tags": ["ديربي القاهرة", "الدوري المصري", "كلاسيكو مصر", "الأهلي", "الزمالك"]
+},
+
+
+{
+    "id": 4,
+    "type": "match",
+    "title":"سبورتنجvsسندرلاند",
+    "short_description": "بطولي دوري المبارات الوديه ",
+    "date_time": "2025-07-21T21:00:00+02:00",
+"match_time_gmt": "13:00",
+
+    "status": "Upcoming",
+    "league_id": 101,
+    "league_name": "دوري المبارات الوديه",
+    "league_logo": "https://i.ibb.co/Xr0hPcdy/1.jpg",
+   "home_team":"سبورتنج",
+   "away_team":"سندرلاند",
+    "home_team_logo": "https://i.ibb.co/21YpvNDX/1.png",
+    "away_team_logo": "https://i.ibb.co/x810Rjrm/1.jpg",
     "stadium": "استاد القاهرة الدولي",
     "commentators": ["مدحت شلبي", "أيمن الكاشف"],
     "channel_info": [
@@ -110,8 +150,6 @@
     "category": "upcoming",
     "tags": ["ديربي القاهرة", "الدوري المصري", "كلاسيكو مصر", "الأهلي", "الزمالك"]
 }
-
-
 
   
 ]
