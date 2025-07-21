@@ -1,3 +1,4 @@
+
 /* style.css - تصميم "شاهد كورة" - Ultimate Pitch UI - الإصدار الاحترافي والعصري (تعديل 3) */
 
 /* --- Root Variables for Theme Customization (Lighter & Trendy - Red Accent) --- */
@@ -1396,3 +1397,29 @@ a:hover {
         box-shadow: var(--up-shadow-medium), 0 0 10px rgba(255, 59, 59, 0.4);
     }
 } */
+/* In your CSS file (e.g., style.css) */
+
+#match-player-container {
+    position: relative; /* Important for absolute positioning of children, if needed, and for proper containing */
+    width: 100%;
+    /* Define a height for the container. Use a fixed pixel height, a viewport height (vh),
+       or an aspect ratio trick (padding-bottom). Choose one that fits your design. */
+    height: 500px; /* Example: Fixed height */
+    /* OR */
+    /* height: 56.25vw; /* Example: 16:9 aspect ratio (9 / 16 = 0.5625) relative to viewport width */
+    /* OR */
+    /* padding-bottom: 56.25%; /* Example: For responsive aspect ratio, requires no explicit height,
+                                    and children must be absolutely positioned */
+    background-color: black; /* To see the container */
+    overflow: hidden; /* Important to clip content if player goes outside */
+}
+
+#match-player-container video,
+#match-player-container iframe {
+    position: absolute; /* If using padding-bottom aspect ratio trick on parent */
+    top: 0;
+    left: 0;
+    width: 100%;  /* This is already set by JS, but good to have in CSS too */
+    height: 100%; /* This is already set by JS, but good to have in CSS too */
+    display: block; /* Ensures no extra spacing issues */
+}
