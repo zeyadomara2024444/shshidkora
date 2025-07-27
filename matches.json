@@ -2,19 +2,19 @@
 {
     "id": 1,
     "type": "match",
-    "title": "الوحداتvs الحسين اربد",
-    "short_description": "كاس السوبر لاردني",
-    "date_time": "2025-07-21T19:00:00+02:00",
+    "title": "شباب الاهلي  vs ريال مايوركا ",
+    "short_description": " دولي, المباريات الوديّة الدوليّة",
+    "date_time": "2025-07-27T16:00:00+02:00",
 "match_time_gmt": "13:00",
 
-    "status": "Live",
+    "status": "Upcoming",
     "league_id": 101,
-    "league_name": "كاس السوبر لاردني ",
-    "league_logo": "https://i.ibb.co/xt9YMg9L/1.webp",
-    "home_team": "   الحسين اربد",
-    "away_team": "الوحدات",
-    "home_team_logo": "https://i.ibb.co/NgRQky19/1.jpg",
-    "away_team_logo": "https://i.ibb.co/7NJkSGf3/1.png",
+    "league_name": " دولي, المباريات الوديّة الدوليّة",
+    "league_logo": "https://i.ibb.co/Xr0hPcdy/1.jpg",
+    "home_team": " شباب الاهلي   ",
+    "away_team": "ريال مايوركا ",
+    "home_team_logo": "https://i.ibb.co/vCqK1ncz/1.png",
+    "away_team_logo": "https://i.ibb.co/DgzTv2TT/2.png",
     "stadium": "استاد القاهرة الدولي",
     "commentators": ["مدحت شلبي", "أيمن الكاشف"],
     "channel_info": [
@@ -29,30 +29,30 @@
             "link": "#"
         }
     ],
-    "embed_url": "",
+    "embed_url": "https://aa.yalla1shoot.online/albaplayer/sports-b1/",
 
     "thumbnail": "https://i.ibb.co/xt59QtWY/3.webp",
     "highlights_url": null,
     "score": null,
-    "category": "upcoming",
+    "category": "Live'",
     "tags": ["ديربي القاهرة", "الدوري المصري", "كلاسيكو مصر", "الأهلي", "الزمالك"]
 },
 {
     "id": 2,
     "type": "match",
-   "title":"لاسبالماسvsبرايتون",
-    "short_description": "بطولي دوري المبارات الوديه ",
-    "date_time": "2025-07-21T18:00:00+02:00",
-"match_time_gmt": "13:00",
+   "title":"جينك vsكلوب بروج ",
+    "short_description": "الدوري البلجيكي الدرجة الأولى",
+    "date_time": "2025-07-27T19:30:00+02:00",
+"match_time_gmt": "19:30",
 
-    "status": "live",
+    "status": "Upcoming",
     "league_id": 101,
-    "league_name": "دوري المبارات الوديه",
-    "league_logo": "https://i.ibb.co/Xr0hPcdy/1.jpg",
-    "home_team":"برايتونvs",
-    "away_team": "لاس بالماس",
-    "home_team_logo": "https://i.ibb.co/4nfrJYtD/1.png",
-    "away_team_logo": "https://i.ibb.co/dsTkbdx0/2.jpg",
+    "league_name": "الدوري البلجيكي الدرجة الأولى",
+    "league_logo": "https://i.ibb.co/d0CZdcvW/1.png",
+    "home_team":"جينك ",
+    "away_team":"كلوب بروج ",
+    "home_team_logo": "https://i.ibb.co/dsfhqjkP/1.webp",
+    "away_team_logo": "https://i.ibb.co/Ld5q4R72/2.png",
     "stadium": "استاد القاهرة الدولي",
     "commentators": ["مدحت شلبي", "أيمن الكاشف"],
     "channel_info": [
@@ -67,29 +67,29 @@
             "link": "#"
         }
     ],
-    "embed_url": "",
+    "embed_url": "https://aa.yalla1shoot.online/albaplayer/sports-b1/",
     "thumbnail": "https://i.ibb.co/xt59QtWY/3.webp",
     "highlights_url": null,
     "score": null,
-    "category": "live",
+    "category": "LIVE",
     "tags": ["ديربي القاهرة", "الدوري المصري", "كلاسيكو مصر", "الأهلي", "الزمالك"]
 },
 {
     "id": 3,
     "type": "match",
-    "title":"الملعب التونسي ولاهلي",
+    "title":"تفينتي vsبورتو ",
     "short_description": "بطولي دوري المبارات الوديه ",
-    "date_time": "2025-07-21T19:00:00+02:00",
-"match_time_gmt": "13:00",
+    "date_time": "2025-07-27T20:00:00+02:00",
+"match_time_gmt": "20:00",
 
     "status": "Upcoming",
     "league_id": 101,
     "league_name": "دوري المبارات الوديه",
     "league_logo": "https://i.ibb.co/Xr0hPcdy/1.jpg",
-     "home_team":"الملعب التونسي",
-    "away_team": "لاهلي",
-    "home_team_logo": "https://i.ibb.co/d0n9bBwS/1.png",
-    "away_team_logo": "https://i.ibb.co/cXxtsmw2/3.png",
+     "home_team":"تفينتي ",
+    "away_team":"بورتو ",
+    "home_team_logo": "https://i.ibb.co/rfMGfCQv/1.png",
+    "away_team_logo": "https://i.ibb.co/HL2Wmvbv/1.jpg",
     "stadium": "استاد القاهرة الدولي",
     "commentators": ["مدحت شلبي", "أيمن الكاشف"],
     "channel_info": [
@@ -104,46 +104,7 @@
             "link": "#"
         }
     ],
-    "embed_url": "",
-    "thumbnail": "https://i.ibb.co/xt59QtWY/3.webp",
-    "highlights_url": null,
-    "score": null,
-    "category": "upcoming",
-    "tags": ["ديربي القاهرة", "الدوري المصري", "كلاسيكو مصر", "الأهلي", "الزمالك"]
-},
-
-
-{
-    "id": 4,
-    "type": "match",
-    "title":"سبورتنجvsسندرلاند",
-    "short_description": "بطولي دوري المبارات الوديه ",
-    "date_time": "2025-07-21T21:00:00+02:00",
-"match_time_gmt": "13:00",
-
-    "status": "Upcoming",
-    "league_id": 101,
-    "league_name": "دوري المبارات الوديه",
-    "league_logo": "https://i.ibb.co/Xr0hPcdy/1.jpg",
-   "home_team":"سبورتنج",
-   "away_team":"سندرلاند",
-    "home_team_logo": "https://i.ibb.co/21YpvNDX/1.png",
-    "away_team_logo": "https://i.ibb.co/x810Rjrm/1.jpg",
-    "stadium": "استاد القاهرة الدولي",
-    "commentators": ["مدحت شلبي", "أيمن الكاشف"],
-    "channel_info": [
-        {
-            "name": "OnTime Sports 1",
-            "logo": "/images/channels/ontime-sports.png",
-            "link": "#"
-        },
-        {
-            "name": "AD Sports 1",
-            "logo": "/images/channels/ad-sports.png",
-            "link": "#"
-        }
-    ],
-    "embed_url": "",
+    "embed_url": "https://aa.yalla1shoot.online/albaplayer/sports-b1/",
     "thumbnail": "https://i.ibb.co/xt59QtWY/3.webp",
     "highlights_url": null,
     "score": null,
@@ -151,5 +112,8 @@
     "tags": ["ديربي القاهرة", "الدوري المصري", "كلاسيكو مصر", "الأهلي", "الزمالك"]
 }
 
+
+
   
 ]
+
