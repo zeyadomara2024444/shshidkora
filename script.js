@@ -149,14 +149,16 @@ document.addEventListener('DOMContentLoaded', () => {
         dynamicOgTitle.setAttribute('content', title);
         dynamicOgDescription.setAttribute('content', description);
         dynamicOgUrl.setAttribute('content', url);
-        dynamicOgImage.setAttribute('content', image || "https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png");
+        // Using a generic image path that does not contain 'ultimate-pitch'
+        dynamicOgImage.setAttribute('content', image || "https://i.ibb.co/Lznx7Dcb/photo-6039465033634793751-y-1.jpg");
         dynamicOgImageAlt.setAttribute('content', imageAlt || title);
         dynamicOgType.setAttribute('content', 'website'); // Default, can be 'article', 'video.other'
 
         dynamicTwitterTitle.setAttribute('content', title);
         dynamicTwitterDescription.setAttribute('content', description);
         dynamicTwitterUrl.setAttribute('content', url);
-        dynamicTwitterImage.setAttribute('content', image || "https://shahidkora.online/images/shahidkora-ultimate-pitch-twitter.png");
+        // Using a generic image path that does not contain 'ultimate-pitch'
+        dynamicTwitterImage.setAttribute('content', image || "https://i.ibb.co/Lznx7Dcb/photo-6039465033634793751-y-1.jpg");
         dynamicTwitterCard.setAttribute('content', 'summary_large_image');
     };
 
@@ -223,14 +225,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 "dateModified": data.date_time,
                 "author": {
                     "@type": "Person",
-                    "name": "فريق شاهد كورة"
+                    "name": "فريق كورة لايف" // Updated publisher author name
                 },
                 "publisher": {
                     "@type": "Organization",
-                    "name": "شاهد كورة - Ultimate Pitch",
+                    "name": "كورة لايف", // Removed "Ultimate Pitch"
                     "logo": {
                         "@type": "ImageObject",
-                        "url": "https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png"
+                        // Updated logo URL to a generic one or removed specific mention
+                        "url": "https://i.ibb.co/Lznx7Dcb/photo-6039465033634793751-y-1.jpg"
                     }
                 },
                 "description": data.short_description,
@@ -243,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
             schema = {
                 "@context": "https://schema.org",
                 "@type": "WebSite",
-                "name": "شاهد كورة - Ultimate Pitch",
+                "name": "كورة لايف", // Removed "Ultimate Pitch"
                 "url": siteUrl,
                 "potentialAction": {
                     "@type": "SearchAction",
@@ -506,12 +509,13 @@ document.addEventListener('DOMContentLoaded', () => {
         mainNav.classList.remove('active');
         menuToggle.classList.remove('active');
 
-        let pageTitle = "شاهد كورة: Ultimate Pitch - كل كرة القدم في مكان واحد";
-        let pageDescription = "شاهد كورة - ملعبك النهائي لكرة القدم. بث مباشر بجودة فائقة، أهداف مجنونة، تحليلات عميقة، وآخر الأخبار من قلب الحدث. انغمس في عالم الكرة الحقيقية.";
-        let pageKeywords = "شاهد كورة، بث مباشر، مباريات اليوم، أهداف، ملخصات، أخبار كرة قدم، دوريات عالمية، كرة القدم، مشاهدة مجانية، تحليل كروي، Ultimate Pitch";
+        // Initial SEO values, which will be updated below based on the view
+        let pageTitle = "";
+        let pageDescription = "";
+        let pageKeywords = "";
         let pageUrl = window.location.origin + '/';
-        let ogImage = "https://shahidkora.online/images/shahidkora-ultimate-pitch-og.png";
-        let ogImageAlt = "شاهد كورة | ملعبك النهائي لكرة القدم";
+        let ogImage = "https://i.ibb.co/Lznx7Dcb/photo-6039465033634793751-y-1.jpg"; // Default image
+        let ogImageAlt = "كورة لايف | بث مباشر لمباريات كرة القدم"; // Default image alt
         let jsonLdData = {}; // Data for schema markup
 
         let targetSectionClone; // Holds the cloned template content's root element
@@ -549,7 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (item.type !== 'match' || item.status !== 'Upcoming') return false;
                 const matchDate = new Date(item.date_time);
                 return (matchDate >= TODAY_START && matchDate < TOMORROW_START) ||
-                       (matchDate >= TOMORROW_START && matchDate < DAY_AFTER_TOMORROW_START);
+                               (matchDate >= TOMORROW_START && matchDate < DAY_AFTER_TOMORROW_START);
             }).sort((a, b) => new Date(a.date_time) - new Date(b.date_time));
 
             const finishedMatches = DATA.filter(item => item.type === 'match' && item.status === 'Finished')
@@ -570,12 +574,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 return null; // Ensure something is returned
             }, currentPage.home, null, homePaginationControls, 'home');
 
-
-            pageTitle = "شاهد كورة: Ultimate Pitch - كل كرة القدم في مكان واحد";
-            pageDescription = "شاهد كورة - ملعبك النهائي لكرة القدم. بث مباشر بجودة فائقة، أهداف مجنونة، تحليلات عميقة، وآخر الأخبار من قلب الحدث. انغمس في عالم الكرة الحقيقية.";
-            pageKeywords = "شاهد كورة، بث مباشر، مباريات اليوم، أهداف، ملخصات، أخبار كرة قدم، دوريات عالمية، كرة القدم، مشاهدة مجانية، تحليل كروي، Ultimate Pitch, مباريات اليوم, بث مباشر الأهلي والزمالك, أخبار مبابي, ملخصات الدوري الإسباني";
+            // SEO values for Home page
+            pageTitle = "كورة لايف - بث مباشر للمباريات، جداول، وأخبار كرة القدم حصريًا";
+            pageDescription = "كورة لايف: بوابتك الأولى لمشاهدة جميع مباريات كرة القدم مباشرةً وبجودة عالية بدون تقطيع. تابع أحدث الأهداف، الملخصات، وآخر أخبار الدوريات العالمية حصريًا. عش الشغف الكروي معنا!";
+            pageKeywords = "كورة لايف، بث مباشر، مباريات اليوم، مشاهدة مباريات، كورة القدم، لايف، اهداف، ملخصات، اخبار الكورة، جدول المباريات، دوريات عالمية، ماتشات مباشرة، Kora Live، بث حصري، بدون تقطيع، تحليل مباريات، نتائج المباريات";
             pageUrl = window.location.origin + '/';
-            jsonLdData = { "@type": "WebSite", "name": "شاهد كورة - Ultimate Pitch", "url": pageUrl };
+            // jsonLdData is handled directly in generateJsonLdSchema for the 'home' view
+            // No need to explicitly set ogImage and ogImageAlt here as they have default values in updateSEO
+            // jsonLdData will be set via generateJsonLdSchema
+            jsonLdData = { "@type": "WebSite", "name": "كورة لايف", "url": pageUrl };
 
 
         } else if (viewName === 'live') {
@@ -597,9 +604,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const itemsToRender = DATA.filter(item => item.type === 'match' && item.status === 'Live');
             renderGrid(itemsToRender, liveGridContainer, createMatchCard, currentPage.live, liveEmptyState, livePaginationControls, 'live');
 
-            pageTitle = "شاهد كورة: مباريات كرة القدم مباشرة الآن | بث مباشر";
+            // SEO values for Live Matches page
+            pageTitle = "كورة لايف: مباريات كرة القدم مباشرة الآن | بث مباشر";
             pageDescription = "شاهد جميع مباريات كرة القدم التي تبث مباشرة الآن بجودة عالية. تابع ديربيات الكرة العالمية والمحلية لحظة بلحظة.";
-            pageKeywords = "مباريات مباشرة، بث مباشر، شاهد الآن، كرة قدم لايف، مشاهدة مباريات، بث مجاني، الدوري المصري مباشر، الدوري السعودي مباشر";
+            pageKeywords = "مباريات مباشرة، بث مباشر، كورة لايف، شاهد الآن، كرة قدم لايف، مشاهدة مباريات، بث مجاني، الدوري المصري مباشر، الدوري السعودي مباشر";
             pageUrl = window.location.origin + '/live';
 
 
@@ -652,9 +660,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             renderGrid(filteredUpcoming, upcomingGridContainer, createMatchCard, currentPage.upcoming, upcomingEmptyState, upcomingPaginationControls, 'upcoming');
 
-            pageTitle = "شاهد كورة: مواعيد مباريات كرة القدم القادمة | جدول المباريات";
+            // SEO values for Upcoming Matches page
+            pageTitle = "كورة لايف: مواعيد مباريات كرة القدم القادمة | جدول المباريات";
             pageDescription = "اكتشف مواعيد مباريات كرة القدم القادمة في جميع الدوريات والبطولات الكبرى. لا تفوت أي مباراة حاسمة!";
-            pageKeywords = "مواعيد مباريات، مباريات اليوم، مباريات الغد، جدول المباريات، كرة قدم قادمة، دوري أبطال أوروبا، الدوري الإسباني، الدوري الإنجليزي";
+            pageKeywords = "كورة لايف، مواعيد مباريات، مباريات اليوم، مباريات الغد، جدول المباريات، كرة قدم قادمة، دوري أبطال أوروبا، الدوري الإسباني، الدوري الإنجليزي";
             pageUrl = window.location.origin + '/upcoming';
 
 
@@ -677,9 +686,10 @@ document.addEventListener('DOMContentLoaded', () => {
             itemsToRender.sort((a, b) => new Date(b.date_time) - new Date(a.date_time));
             renderGrid(itemsToRender, highlightsGridContainer, createMatchCard, currentPage.highlights, highlightsEmptyState, highlightsPaginationControls, 'highlights');
 
-            pageTitle = "شاهد كورة: أهداف وملخصات المباريات | أبرز اللقطات";
+            // SEO values for Highlights page
+            pageTitle = "كورة لايف: أهداف وملخصات المباريات | أبرز اللقطات";
             pageDescription = "شاهد أهداف جميع المباريات وملخصات كاملة لأبرز اللقاءات في الدوريات والبطولات الكبرى. استمتع بأجمل اللحظات الكروية.";
-            pageKeywords = "أهداف المباريات، ملخصات كرة القدم، أهداف اليوم، لقطات حاسمة، أفضل الأهداف، ملخصات الدوري الإسباني، ملخصات الدوري الإنجليزي";
+            pageKeywords = "كورة لايف، أهداف المباريات، ملخصات كرة القدم، أهداف اليوم، لقطات حاسمة، أفضل الأهداف، ملخصات الدوري الإسباني، ملخصات الدوري الإنجليزي";
             pageUrl = window.location.origin + '/highlights';
 
 
@@ -702,9 +712,10 @@ document.addEventListener('DOMContentLoaded', () => {
             itemsToRender.sort((a, b) => new Date(b.date_time) - new Date(a.date_time));
             renderGrid(itemsToRender, newsGridContainer, createNewsCard, currentPage.news, newsEmptyState, newsPaginationControls, 'news');
 
-            pageTitle = "شاهد كورة: آخر أخبار كرة القدم | تحديثات حصرية";
+            // SEO values for News page
+            pageTitle = "كورة لايف: آخر أخبار كرة القدم | تحديثات حصرية";
             pageDescription = "تابع آخر أخبار كرة القدم العالمية والمحلية، انتقالات اللاعبين، تحديثات الأندية، وتحليلات حصرية لأبرز الأحداث الكروية.";
-            pageKeywords = "أخبار كرة قدم، انتقالات اللاعبين، أخبار ريال مدريد، أخبار ليفربول، أخبار مبابي، تحديثات رياضية، أخبار الدوري الإنجليزي، أخبار الدوري الإسباني";
+            pageKeywords = "كورة لايف، أخبار كرة قدم، انتقالات اللاعبين، أخبار ريال مدريد، أخبار ليفربول، أخبار مبابي، تحديثات رياضية، أخبار الدوري الإنجليزي، أخبار الدوري الإسباني";
             pageUrl = window.location.origin + '/news';
 
 
@@ -886,8 +897,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const currentTime = Date.now();
                     if (currentTime - adTriggers.lastDirectLinkTime > DIRECT_LINK_COOLDOWN_MS) {
-                        openPopUnder(POPUNDER_AD_URL); // هذا الرابط يجب أن يفتح دائمًا في تبويبة جديدة.
-                                                       // مسؤولية profitableratecpm هي عدم خطف التبويبة.
+                        openPopUnder(POPUNDER_AD_URL); // This URL should ALWAYS open in a new tab.
+                                                        // It's the responsibility of profitableratecpm to not hijack.
                         adTriggers.lastDirectLinkTime = currentTime;
                     }
 
@@ -902,12 +913,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         iframe.allow = "autoplay; fullscreen; picture-in-picture";
                         iframe.frameBorder = "0";
                         iframe.scrolling = "no";
-                        // الكود الأساسي الذي يجب التركيز عليه هنا
-                        // لضمان فتح الإعلان في تبويبة جديدة
-                        iframe.setAttribute('target', '_blank'); // إضافة target="_blank" للإطارات
-                        iframe.setAttribute('rel', 'noopener noreferrer'); // إضافة rel للمزيد من الأمان
-                        // نهاية الكود الأساسي
-
+                        // Crucial for security and to prevent iframe content from navigating the parent
                         iframe.setAttribute('referrerpolicy', 'origin');
                         // No 'sandbox' attribute for iframes containing ads unless you specifically know it won't break them.
                         // iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation');
@@ -932,9 +938,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 renderGrid(suggestedMatches, suggestedMatchGrid, createMatchCard, 1);
 
-                pageTitle = `${match.title} | شاهد كورة بث مباشر وتفاصيل المباراة`;
+                // SEO values for Match Details page
+                pageTitle = `${match.title} | كورة لايف بث مباشر وتفاصيل المباراة`;
                 pageDescription = match.short_description;
-                pageKeywords = [...(match.tags || []), "مشاهدة مباراة", "بث مباشر", "ملخص المباراة", match.home_team, match.away_team, match.league_name].join(', ');
+                pageKeywords = [...(match.tags || []), "مشاهدة مباراة", "بث مباشر", "ملخص المباراة", match.home_team, match.away_team, match.league_name, "كورة لايف"].join(', ');
                 pageUrl = `${window.location.origin}/#match-${match.id}`;
                 ogImage = match.thumbnail;
                 ogImageAlt = `ملصق مباراة ${match.title}`;
@@ -975,13 +982,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 return null; // Ensure something is returned
             }, currentPage.search, null, homePaginationControls, 'search-results');
 
-            pageTitle = `نتائج البحث عن "${currentSearchQuery}" | شاهد كورة`;
-            pageDescription = `نتائج البحث عن "${currentSearchQuery}" في مباريات كرة القدم وآخر الأخبار على شاهد كورة.`;
-            pageKeywords = `بحث كرة قدم، ${currentSearchQuery}, نتائج بحث، مباريات، أخبار`;
+            // SEO values for Search Results page
+            pageTitle = `نتائج البحث عن "${currentSearchQuery}" | كورة لايف`;
+            pageDescription = `نتائج البحث عن "${currentSearchQuery}" في مباريات كرة القدم وآخر الأخبار على كورة لايف.`;
+            pageKeywords = `بحث كرة قدم، ${currentSearchQuery}, نتائج بحث، مباريات، أخبار، كورة لايف`;
             pageUrl = `${window.location.origin}/search?q=${encodeURIComponent(currentSearchQuery)}`;
             jsonLdData = { "@type": "SearchResultsPage", "name": pageTitle, "url": pageUrl };
         }
 
+        // Always call updateSEO and generateJsonLdSchema at the end of switchView
         updateSEO(pageTitle, pageDescription, pageKeywords, pageUrl, ogImage, ogImageAlt);
         generateJsonLdSchema(jsonLdData, viewName);
     };
@@ -1056,19 +1065,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-
-    searchInput.addEventListener('click', (e) => {
-        // إذا كان هناك إعلان "Popunder" مفعل، افتحه عند أول تفاعل مع حقل البحث.
-        // تم تعطيله عالميًا في `document.body.addEventListener`، لكن هذا تفعيل خاص إذا أردت.
-        /*
-        const currentTime = Date.now();
-        if (!adTriggers.popunderOpened || (currentTime - adTriggers.lastDirectLinkTime > DIRECT_LINK_COOLDOWN_MS)) {
-            openPopUnder(POPUNDER_AD_URL);
-            adTriggers.popunderOpened = true;
-            adTriggers.lastDirectLinkTime = currentTime;
-        }
-        */
-    });
 
     searchButton.addEventListener('click', (e) => {
         e.preventDefault();
