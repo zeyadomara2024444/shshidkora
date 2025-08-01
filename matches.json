@@ -2,19 +2,20 @@
 {
     "id": 1,
     "type": "match",
-    "title": "الغرافة vsالشباب",
-    "short_description": " دولي, المباريات الوديّة الدوليّة",
-    "date_time": "2025-07-28T18:00:00+02:00",
+    "title": "الأهلي السعودي vsإلتشي ",
+    "short_description": "دولي, المباريات الوديّة الدوليّة",
+    "date_time": "2025-08-01T11:30:00+02:00",
+
 "match_time_gmt": "18:00",
 
-    "status": "Upcoming",
+    "status": "Live",
     "league_id": 101,
-    "league_name": " دولي, المباريات الوديّة الدوليّة",
-    "league_logo": "https://i.ibb.co/Xr0hPcdy/1.jpg",
-    "home_team": " الشباب ",
-    "away_team": "الغرافة ",
-    "home_team_logo": "https://i.ibb.co/CFTNmcq/1.png",
-    "away_team_logo": "https://i.ibb.co/YTqNnTqK/2.png",
+    "league_name": "دولي, المباريات الوديّة الدوليّة",
+    "league_logo": "https://i.ibb.co/XfNTk1yp/1.png",
+    "home_team": "إلتشي ",
+    "away_team":"الأهلي السعودي ",
+    "home_team_logo": "https://i.ibb.co/KzqjMdZf/1.png",
+    "away_team_logo": "https://i.ibb.co/B2Q4427x/2.png",
     "stadium": "استاد القاهرة الدولي",
     "commentators": ["مدحت شلبي", "أيمن الكاشف"],
     "channel_info": [
@@ -36,46 +37,6 @@
     "score": null,
     "category": "Live'",
     "tags": ["ديربي القاهرة", "الدوري المصري", "كلاسيكو مصر", "الأهلي", "الزمالك"]
-},
-{
-    "id": 2,
-    "type": "match",
-   "title":"اتلتيكو توكومان vsRiestra",
-    "short_description":"الدوري الأرجنتيني الممتاز ",
-    "date_time": "2025-07-28T21:00:00+02:00",
-"match_time_gmt": "19:30",
-
-    "status": "Upcoming",
-    "league_id": 101,
-    "league_name": "الدوري البلجيكي الدرجة الأولى",
-    "league_logo": "https://i.ibb.co/wqMjRfh/1.png",
-    "home_team":"اتلتيكو توكومان " ,
-    "away_team":"Riestra",
-    "home_team_logo": "https://i.ibb.co/ymBtQ86V/1.png",
-    "away_team_logo": "https://i.ibb.co/z9THgBQ/1200px-Escudo-del-Club-Deportivo-Riestra-svg.png",
-    "stadium": "استاد القاهرة الدولي",
-    "commentators": ["مدحت شلبي", "أيمن الكاشف"],
-    "channel_info": [
-        {
-            "name": "OnTime Sports 1",
-            "logo": "/images/channels/ontime-sports.png",
-            "link": "#"
-        },
-        {
-            "name": "AD Sports 1",
-            "logo": "/images/channels/ad-sports.png",
-            "link": "#"
-        }
-    ],
-    "embed_url": "https://aa.yalla1shoot.online/albaplayer/sports-b1/",
-    "thumbnail": "https://i.ibb.co/xt59QtWY/3.webp",
-    "highlights_url": null,
-    "score": null,
-    "category": "LIVE",
-    "tags": ["ديربي القاهرة", "الدوري المصري", "كلاسيكو مصر", "الأهلي", "الزمالك"]
 }
-
-
-
   
 ]
