@@ -105,28 +105,22 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
-     * Attempts to open a URL in a new tab and immediately return focus to the current window.
-     * This is the best effort for a "pop-under" behavior.
+     * Attempts to open a URL in a new tab without hijacking the current one.
+     * This is the most reliable way to handle ads that may try to open in the current tab.
      * @param {string} url - The URL to open.
      */
-    const openPopUnder = (url) => {
+    const openInNewTab = (url) => {
         try {
-            const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
-            if (newWindow) {
-                newWindow.blur(); // Send the new window to the background
-                window.focus(); // Bring current window back to foreground
-            } else {
-                // Fallback for strict popup blockers: try a normal new tab
-                const link = document.createElement('a');
-                link.href = url;
-                link.target = '_blank';
-                link.rel = 'noopener noreferrer';
-                document.body.appendChild(link); // Must be in DOM to click
-                link.click();
-                link.remove();
-            }
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.style.display = 'none'; // Hide the link from the user
+            document.body.appendChild(link); // Must be in DOM to click
+            link.click();
+            link.remove();
         } catch (e) {
-            console.error("Error opening popunder:", e);
+            console.error("Error opening ad in new tab:", e);
         }
     };
 
@@ -557,12 +551,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }).sort((a, b) => new Date(a.date_time) - new Date(b.date_time));
 
             const finishedMatches = DATA.filter(item => item.type === 'match' && item.status === 'Finished')
-                                         .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
-                                         .slice(0, 2);
+                                             .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
+                                             .slice(0, 2);
 
             const latestNews = DATA.filter(item => item.type === 'news')
-                                         .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
-                                         .slice(0, 2);
+                                             .sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
+                                             .slice(0, 2);
 
             // Filter out any potential non-match/news items before passing to renderGrid
             const itemsToRender = [...liveMatches, ...upcomingMatchesTodayTomorrow, ...latestNews, ...finishedMatches].filter(item => item.type === 'match' || item.type === 'news');
@@ -782,19 +776,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (Hls.isSupported()) {
                         hlsInstance = new Hls({
-                            autoStartLoad: true,        // تبدأ التحميل تلقائيا
-                            startPosition: -1,          // تبدأ من أحدث جزء متاح
+                            autoStartLoad: true,       // تبدأ التحميل تلقائيا
+                            startPosition: -1,         // تبدأ من أحدث جزء متاح
                             // ABR (Adaptive Bitrate) settings
                             capLevelToPlayerSize: true, // تكييف جودة البث لحجم المشغل
-                            maxBufferLength: 30,        // أقصى طول للبفر بالثواني (يمنع التخزين المؤقت الزائد)
-                            maxMaxBufferLength: 60,     // أقصى حد أقصى للبفر
-                            minBufferLength: 5,         // الحد الأدنى للبفر قبل التشغيل
-                            maxBufferHole: 0.5,         // أقصى فجوة مسموح بها في البفر
+                            maxBufferLength: 30,       // أقصى طول للبفر بالثواني (يمنع التخزين المؤقت الزائد)
+                            maxMaxBufferLength: 60,      // أقصى حد أقصى للبفر
+                            minBufferLength: 5,        // الحد الأدنى للبفر قبل التشغيل
+                            maxBufferHole: 0.5,        // أقصى فجوة مسموح بها في البفر
                             // Network / retry settings
-                            liveSyncDurationCount: 3,   // عدد الشرائح لمزامنة البث المباشر
-                            enableWorker: true,         // استخدم العاملين على الويب لتحسين الأداء
+                            liveSyncDurationCount: 3,  // عدد الشرائح لمزامنة البث المباشر
+                            enableWorker: true,        // استخدم العاملين على الويب لتحسين الأداء
                             // Increased retry attempts and delays for robustness
-                            fragLoadingMaxRetry: 10,    // زيادة عدد مرات إعادة محاولة تحميل الأجزاء
+                            fragLoadingMaxRetry: 10,   // زيادة عدد مرات إعادة محاولة تحميل الأجزاء
                             fragLoadingRetryDelay: 1000, // تأخير أطول بين المحاولات
                             fragLoadingMaxRetryTimeout: 30000, // وقت أطول لإعادة محاولات تحميل الأجزاء (30 ثانية)
                             manifestLoadingMaxRetry: 5,
@@ -896,9 +890,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     videoOverlay.style.display = 'none';
 
                     const currentTime = Date.now();
+                    // استخدام openInNewTab لضمان فتح الإعلان في تبويبة جديدة
                     if (currentTime - adTriggers.lastDirectLinkTime > DIRECT_LINK_COOLDOWN_MS) {
-                        openPopUnder(POPUNDER_AD_URL); // This URL should ALWAYS open in a new tab.
-                                                        // It's the responsibility of profitableratecpm to not hijack.
+                        openInNewTab(POPUNDER_AD_URL);
                         adTriggers.lastDirectLinkTime = currentTime;
                     }
 
@@ -1005,7 +999,7 @@ document.addEventListener('DOMContentLoaded', () => {
         /*
         const currentTime = Date.now();
         if (!adTriggers.popunderOpened || (currentTime - adTriggers.lastDirectLinkTime > DIRECT_LINK_COOLDOWN_MS)) {
-            openPopUnder(POPUNDER_AD_URL);
+            openInNewTab(POPUNDER_AD_URL);
             adTriggers.popunderOpened = true;
             adTriggers.lastDirectLinkTime = currentTime;
         }
